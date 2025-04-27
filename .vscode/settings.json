@@ -21,4 +21,7 @@
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
   },
+  "yaml.schemas": {
+    "https://www.artillery.io/schema.json": []
+  },
 }

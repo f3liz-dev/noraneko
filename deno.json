@@ -7,7 +7,8 @@
     "@std/fs": "jsr:@std/fs@^1.0.17",
     "#i18n/": "./i18n/",
     "#apps/": "./apps/",
-    "#libs/": "./libs/"
+    "#libs/": "./libs/",
+    "#features-chrome/": "./apps/features-chrome/"
   },
   "compilerOptions": {
     "lib": ["dom", "dom.asynciterable", "deno.ns", "ESNext"]

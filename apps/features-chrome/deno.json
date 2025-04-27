@@ -1,0 +1,13 @@
+{
+  "name": "@nora/chrome-features",
+  "importMap": "./importMap.json",
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+    "types": ["npm:vite/client", "jsr:@nora/lib-dom-gecko"]
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["no-sloppy-imports", "no-window"]
+    }
+  }
+}

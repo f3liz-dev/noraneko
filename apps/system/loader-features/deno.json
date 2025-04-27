@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+    "types": ["npm:vite/client", "jsr:@nora/lib-dom-gecko"]
+  },
+  "importMap": "../../chrome-features/importMap.json",
+  "tasks": {
+    "build": "deno run -A npm:vite build"
+  }
+}

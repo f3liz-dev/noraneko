@@ -12,6 +12,7 @@
     "npm:@bytecodealliance/preview2-shim@~0.17.2": "0.17.2",
     "npm:@deno/vite-plugin@^1.0.4": "1.0.4_vite@6.0.11__@types+node@22.15.2__lightningcss@1.29.3_@types+node@22.15.2_lightningcss@1.29.3",
     "npm:@jsr/std__assert@^1.0.13": "1.0.13",
+    "npm:@jsr/std__fs@^1.0.17": "1.0.17",
     "npm:@jsr/std__internal@^1.0.6": "1.0.6",
     "npm:@solid-primitives/deep@~0.3.1": "0.3.1_solid-js@1.9.5__seroval@1.2.1",
     "npm:@solid-primitives/map@0.6": "0.6.0_solid-js@1.9.5__seroval@1.2.1",
@@ -51,6 +52,8 @@
     "npm:oxlint@~0.16.7": "0.16.7",
     "npm:pathe@^2.0.3": "2.0.3",
     "npm:puppeteer-core@^24.7.2": "24.7.2_devtools-protocol@0.0.1425554",
+    "npm:rolldown-vite@*": "6.3.5_@types+node@22.15.2_picomatch@4.0.2_@oxc-project+runtime@0.66.0_typescript@5.8.3",
+    "npm:rolldown-vite@latest": "6.3.5_@types+node@22.15.2_picomatch@4.0.2_@oxc-project+runtime@0.66.0_typescript@5.8.3",
     "npm:rolldown@1.0.0-beta.3": "1.0.0-beta.3_valibot@1.0.0-beta.12__typescript@5.8.3_typescript@5.8.3",
     "npm:rolldown@^1.0.0-beta.8": "1.0.0-beta.8_valibot@1.0.0__typescript@5.8.3_typescript@5.8.3",
     "npm:solid-element@^1.9.1": "1.9.1_solid-js@1.9.5__seroval@1.2.1",
@@ -58,6 +61,7 @@
     "npm:solid-styled-jsx@~0.27.1": "0.27.1_solid-js@1.9.5__seroval@1.2.1_styled-jsx@3.4.7__react@17.0.2__stylis@3.5.4",
     "npm:sortablejs@^1.15.6": "1.15.6",
     "npm:stacktracey@^2.1.8": "2.1.8",
+    "npm:tsdown@*": "0.9.8_rolldown@1.0.0-beta.8-commit.151352b__valibot@1.0.0___typescript@5.8.3__typescript@5.8.3_typescript@5.8.3",
     "npm:tsdown@0.9.8": "0.9.8_rolldown@1.0.0-beta.8-commit.151352b__valibot@1.0.0___typescript@5.8.3__typescript@5.8.3_typescript@5.8.3",
     "npm:tsdown@~0.9.8": "0.9.8_rolldown@1.0.0-beta.8-commit.151352b__valibot@1.0.0___typescript@5.8.3__typescript@5.8.3_typescript@5.8.3",
     "npm:typescript@^5.8.3": "5.8.3",
@@ -590,8 +594,17 @@
         "@jsr/std__internal"
       ]
     },
+    "@jsr/std__fs@1.0.17": {
+      "integrity": "sha512-z6MmQd5iz+7sfEpbnnjmRm0I4qtTHGStQ9cUDzXI8aBRe9PP5dL6jyRQCuRIsvGUvYZPfi8SOauFpsYv8aSuOw==",
+      "dependencies": [
+        "@jsr/std__path"
+      ]
+    },
     "@jsr/std__internal@1.0.6": {
       "integrity": "sha512-1NLtCx9XAL44nt56gzmRSCgXjIthHVzK62fTkJdq8/XsP7eN9a21AZDpc0EGJ/cgvmmOB52UGh46OuKrrY7eVg=="
+    },
+    "@jsr/std__path@1.0.9": {
+      "integrity": "sha512-RgmPBRH22dP5D3ojPqsqH8eXHvOv9uOOycmnIzTeP0ufkw/B0Qgjbmn6JgFsJS1VD6iqhfYDXmlqf/jSARz/Gg=="
     },
     "@napi-rs/lzma-android-arm-eabi@1.4.1": {
       "integrity": "sha512-yenreSpZ9IrqppJOiWDqWMmja7XtSgio9LhtxYwgdILmy/OJTe/mlTYv+FhJBf7hIV9Razu5eBuEa3zKri81IA=="
@@ -796,6 +809,9 @@
     "@oxc-parser/binding-win32-x64-msvc@0.66.0": {
       "integrity": "sha512-J8HaFgP17qNyCLMnnqzGeI4NYZDcXDEECj6tMaJTafPJc+ooPF0vkEJhp6TrTOkg09rvf2EKVOkLO2C3OMLKrA=="
     },
+    "@oxc-project/runtime@0.66.0": {
+      "integrity": "sha512-B0+lqyEYPKP6E9lLVegluJoHDr2+hcs3J5D5kogdHCPwzp/JfzYqZlurOU82uoaiw0A9Ct9QPp+5RhY9TOuakg=="
+    },
     "@oxc-project/types@0.46.0": {
       "integrity": "sha512-BHU261xrLasw04d2cToR36F6VV0T7t62rtQUprvBRL4Uru9P23moMkDmZUMSZSQj0fIUTA3oTOTwQ7cc4Av/iw=="
     },
@@ -997,6 +1013,9 @@
     "@rolldown/binding-darwin-arm64@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-2F4bhDtV6CHBx7JMiT9xvmxkcZLHFmonfbli36RyfvgThDOAu92bis28zDTdguDY85lN/jBRKX/eOvX+T5hMkg=="
     },
+    "@rolldown/binding-darwin-arm64@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-2GCVymE4qe30/ox/w+3aOOTCsvphbXCW41BxATiYJQzNPXQ7NY3RMTfvuDKUQW5KJSr3rKSj0zxPbjFJYCfGWw=="
+    },
     "@rolldown/binding-darwin-x64@1.0.0-beta.3": {
       "integrity": "sha512-Fk+rqyeszMaZK12wItqFDXdUadg+TVQqOPh0fdaCefVebd29N+9fpFrARyo8gReyt/lcnEN4nWgdn7l99R70QA=="
     },
@@ -1005,6 +1024,9 @@
     },
     "@rolldown/binding-darwin-x64@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-8VMChhFLeD/oOAQUspFtxZaV7ctDob63w626kwvBBIHtlpY2Ohw4rsfjjtGckyrTCI/RROgZv/TVVEsG3GkgLw=="
+    },
+    "@rolldown/binding-darwin-x64@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-iiCq6rUyx+BjwAp5keIJnJiaGC8W+rfp6YgtsEjJUTqv+s9+UQxhXyw7qwnp1YkahTKiuyUUSM+CVcecbcrXlw=="
     },
     "@rolldown/binding-freebsd-x64@1.0.0-beta.3": {
       "integrity": "sha512-B7QzJKu53MB/hvwO276AsyxN+p9lfgCkIO94TQB6t3auq3pDCC6u6gdRI1Ydwn6/gpMLiUNCW4mnpxCE5fE5tg=="
@@ -1015,6 +1037,9 @@
     "@rolldown/binding-freebsd-x64@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-4W28EgaIidbWIpwB3hESMBfiOSs7LBFpJGa8JIV488qLEnTR/pqzxDEoOPobhRSJ1lJlv0vUgA8+DKBIldo2gw=="
     },
+    "@rolldown/binding-freebsd-x64@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-8qkE8ANkELvEiE26Jpdlh7QRw7uOaqLOnbAPAJ9NySo6+VwAWILefQgo+pamXTEsHpAZqSo7DapFWjUtZdkUDg=="
+    },
     "@rolldown/binding-linux-arm-gnueabihf@1.0.0-beta.3": {
       "integrity": "sha512-NB5JrXP5dAigDTbvVc6VWiOY3Rr/0u1pi/9LYoBtMYiST7hYOrBPO9lvDF9w/23yKCr1+8PF4wFGR/YxKTNN5Q=="
     },
@@ -1023,6 +1048,9 @@
     },
     "@rolldown/binding-linux-arm-gnueabihf@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-1ECtyzIKlAHikR7BhS4hk7Hxw8xCH6W3S+Sb74EM0vy5AqPvWSbgLfAwagYC7gNDcMMby3I757X7qih5fIrGiw=="
+    },
+    "@rolldown/binding-linux-arm-gnueabihf@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-QCBw+96ZABHtJU3MBbl5DnD18/I+Lg06/MegyCHPI1j0VnqdmK8lDIPuaBzrj52USLYBoABC9HhuXMbIN0OfPA=="
     },
     "@rolldown/binding-linux-arm64-gnu@1.0.0-beta.3": {
       "integrity": "sha512-bYyZLXzJ2boZ7CdUuCSAaTcWkVKcBUOL+B86zv+tRyrtk4BIpHF+L+vOg5uPD/PHwrIglxAno5MN4NnpkUj5fQ=="
@@ -1033,6 +1061,9 @@
     "@rolldown/binding-linux-arm64-gnu@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-wU1kp8qPRUKC8N82dNs3F5+UyKRww9TUEO5dQ5mxCb0cG+y4l5rVaXpMgvL0VuQahPVvTMs577QPhJGb4iDONw=="
     },
+    "@rolldown/binding-linux-arm64-gnu@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-bjGStzNXe1hD6vP6g2/T134RU85Mev+o+XEIB8kJT3Z9tq09SqDhN3ONqzUaeF7QQawv2M8XXDUOIdPhsrgmvg=="
+    },
     "@rolldown/binding-linux-arm64-musl@1.0.0-beta.3": {
       "integrity": "sha512-t/jaaFrCSvwX2075jRfa2bwAcsuTtY1/sIT4XqsDg2MVxWQtaUyBx5Mi0pqZKTjdOPnL+f/zoUC9dxT2lUpNmw=="
     },
@@ -1041,6 +1072,9 @@
     },
     "@rolldown/binding-linux-arm64-musl@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-odDjO2UtEEMAzwmLHEOKylJjQa+em1REAO9H19PA+O+lPu6evVbre5bqu8qCjEtHG1Q034LpZR86imCP2arb/w=="
+    },
+    "@rolldown/binding-linux-arm64-musl@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-ZpN8ub+PiDBYjTMcXt3ihoPKpXikAYPfpJXdx1x0IjJmFqlLsSWxU6aqbkHBxALER7SxwQ4e9r5LPZKJnwBr7Q=="
     },
     "@rolldown/binding-linux-x64-gnu@1.0.0-beta.3": {
       "integrity": "sha512-EeDNLPU0Xw8ByRWxNLO30AF0fKYkdb/6rH5G073NFBDkj7ggYR/CvsNBjtDeCJ7+I6JG4xUjete2+VeV+GQjiA=="
@@ -1051,6 +1085,9 @@
     "@rolldown/binding-linux-x64-gnu@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-Ty2T67t2Oj1lg417ATRENxdk8Jkkksc/YQdCJyvkGqteHe60pSU2GGP/tLWGB+I0Ox+u387bzU/SmfmrHZk9aw=="
     },
+    "@rolldown/binding-linux-x64-gnu@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-ysVj17eqf0amHpF9pKOv5JWsW2F89oVql88PD4ldamhBUZq8unZdPqr8fogx+08TmURDtu9ygZlBvSB55VdzJQ=="
+    },
     "@rolldown/binding-linux-x64-musl@1.0.0-beta.3": {
       "integrity": "sha512-iTcAj8FKac3nyQhvFuqKt6Xqu9YNDbe1ew6US2OSN4g3zwfujgylaRCitEG+Uzd7AZfSVVLAfqrxKMa36Sj9Mg=="
     },
@@ -1059,6 +1096,9 @@
     },
     "@rolldown/binding-linux-x64-musl@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-Fm1TxyeVE+gy74HM26CwbEOUndIoWAMgWkVDxYBD64tayvp5JvltpGHaqCg6x5i+X2F5XCDCItqwVlC7/mTxIw=="
+    },
+    "@rolldown/binding-linux-x64-musl@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-Yob3aIWUdXaCW1aKA0Ypo2ie8p+3uvOSobR9WTabx+aS7NPJuQbjAJP6n3CZHRPoKnJBCeftt3Bh8bFk1SKCMQ=="
     },
     "@rolldown/binding-wasm32-wasi@1.0.0-beta.3": {
       "integrity": "sha512-sYgbsbyspvVZ2zplqsTxjf2N3e8UQGQnSsN5u4bMX461gY5vAsjUiA4nf1/ztDBMHWT79lF2QNx4csjnjSxMlA==",
@@ -1078,6 +1118,12 @@
         "@napi-rs/wasm-runtime"
       ]
     },
+    "@rolldown/binding-wasm32-wasi@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-/tGqIUvsjTMe5h8DAR5XM++IsAMNmxgD2vFN+OzwE3bNAS3qk3w7rq6JyD+hBWwz+6QLgYVCTD7fNDXAYZKgWw==",
+      "dependencies": [
+        "@napi-rs/wasm-runtime"
+      ]
+    },
     "@rolldown/binding-win32-arm64-msvc@1.0.0-beta.3": {
       "integrity": "sha512-qszMtrWybBLTFaew2WgEBRMlz1B/V8XxU87uezXlKcLW36aoRWR8LspZvqqoBkvJzbQtfOgm1HdTIk/v3Rn7QQ=="
     },
@@ -1086,6 +1132,9 @@
     },
     "@rolldown/binding-win32-arm64-msvc@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-0lskDFKQwf5PMjl17qHAroU6oVU0Zn8NbAH/PdM9QB1emOzyFDGa20d4kESGeo3Uq7xOKXcTORJV/JwKIBORqw=="
+    },
+    "@rolldown/binding-win32-arm64-msvc@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-uIuzY9dNeSLhAL4YW7YDYQ0wlSIDU7fzkhGYsfcH37ItSpOdxisxJLu4tLbl8i0AarLJvfH1+MgMSSGC2ioAtQ=="
     },
     "@rolldown/binding-win32-ia32-msvc@1.0.0-beta.3": {
       "integrity": "sha512-J+mzAO68VK91coLVuUln/XN0ummIEOODyupZ2BmXY8suBHPVAyLLAP54rlucBPQmzU8fI6DXM2bl2whZ+KEXpQ=="
@@ -1096,6 +1145,9 @@
     "@rolldown/binding-win32-ia32-msvc@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-DfG1S0zGKnUfr95cNCmR4YPiZ/moS7Tob5eV+9r5JGeHZVWFHWwvJdR0jArj6Ty0LbBFDTVVB3iAvqRSji+l0Q=="
     },
+    "@rolldown/binding-win32-ia32-msvc@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-tadc/hpAWQ6TPaF7U1AX6h/BYDm0Ukxg6o4647IfDREvncyf4RaNo99ByBSfoOYxqwlA2nu4llXkXx0rhWCfsQ=="
+    },
     "@rolldown/binding-win32-x64-msvc@1.0.0-beta.3": {
       "integrity": "sha512-r06rAi+1eStgavGnw+2y4F7gpb0w9ocnKk0Ir7LmegLAkMZ/v4Fjo9jZUrLTLtmI36108v1uvUPrIAFzFOWE7g=="
     },
@@ -1104,6 +1156,9 @@
     },
     "@rolldown/binding-win32-x64-msvc@1.0.0-beta.8-commit.151352b": {
       "integrity": "sha512-5HZEtc8U2I1O903hXBynWtWaf+qzAFj66h5B7gOtVcvqIk+lKRVSupA85OdIvR7emrsYU25ikpfiU5Jhg9kTbQ=="
+    },
+    "@rolldown/binding-win32-x64-msvc@1.0.0-beta.8-commit.2686eb1": {
+      "integrity": "sha512-8nMcDSZpCR2KuKCkgeA9/Em967VhB1jZys8W0j95tcKMyNva/Bnq9wxNH5CAMtL3AzV/QIT92RrHTWbIt0m1MA=="
     },
     "@rollup/pluginutils@5.1.4": {
       "integrity": "sha512-USm05zrsFxYLPdWWq+K3STlWiT/3ELn3RcV5hJMghpeAIhxfsUIg6mt12CBJBInWMV4VneoV7SfGv8xIwo2qNQ==",
@@ -3812,6 +3867,20 @@
         "typescript"
       ]
     },
+    "rolldown-vite@6.3.5_@types+node@22.15.2_picomatch@4.0.2_@oxc-project+runtime@0.66.0_typescript@5.8.3": {
+      "integrity": "sha512-lTKMNb6Vl2fNblU8ve4SM+3p0gwYzKy2fjae7KTLuKKN8bdI+TwgFeB97ICEKq/t6KNNAg8f66FaK/q0cylrNg==",
+      "dependencies": [
+        "@oxc-project/runtime",
+        "@types/node@22.15.2",
+        "fdir",
+        "fsevents",
+        "lightningcss",
+        "picomatch@4.0.2",
+        "postcss",
+        "rolldown@1.0.0-beta.8-commit.2686eb1_@oxc-project+runtime@0.66.0_valibot@1.0.0__typescript@5.8.3_typescript@5.8.3",
+        "tinyglobby"
+      ]
+    },
     "rolldown@1.0.0-beta.3_valibot@1.0.0-beta.12__typescript@5.8.3_typescript@5.8.3": {
       "integrity": "sha512-DBpF1K8tSwU/0dQ7zL9BYcje0/GjO5lgfdEW0rHHFfGjGDh8TBVNlokfEXtdt/IoJOiTdtySfsrgarLJkZmZTQ==",
       "dependencies": [
@@ -3848,6 +3917,28 @@
         "@rolldown/binding-win32-arm64-msvc@1.0.0-beta.8-commit.151352b",
         "@rolldown/binding-win32-ia32-msvc@1.0.0-beta.8-commit.151352b",
         "@rolldown/binding-win32-x64-msvc@1.0.0-beta.8-commit.151352b",
+        "@valibot/to-json-schema@1.0.0_valibot@1.0.0__typescript@5.8.3_typescript@5.8.3",
+        "ansis",
+        "valibot@1.0.0_typescript@5.8.3"
+      ]
+    },
+    "rolldown@1.0.0-beta.8-commit.2686eb1_@oxc-project+runtime@0.66.0_valibot@1.0.0__typescript@5.8.3_typescript@5.8.3": {
+      "integrity": "sha512-NIo+n0m7ZVC6VXQ4l2zNYJOQ84lEthihbByZBBHzmyyhH/605jL43n2qFTPNy6W3stDnTCyp8/YYDlw39+fXlA==",
+      "dependencies": [
+        "@oxc-project/runtime",
+        "@oxc-project/types@0.66.0",
+        "@rolldown/binding-darwin-arm64@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-darwin-x64@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-freebsd-x64@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-linux-arm-gnueabihf@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-linux-arm64-gnu@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-linux-arm64-musl@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-linux-x64-gnu@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-linux-x64-musl@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-wasm32-wasi@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-win32-arm64-msvc@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-win32-ia32-msvc@1.0.0-beta.8-commit.2686eb1",
+        "@rolldown/binding-win32-x64-msvc@1.0.0-beta.8-commit.2686eb1",
         "@valibot/to-json-schema@1.0.0_valibot@1.0.0__typescript@5.8.3_typescript@5.8.3",
         "ansis",
         "valibot@1.0.0_typescript@5.8.3"
@@ -4786,10 +4877,6 @@
         }
       },
       "apps/modules": {
-        "dependencies": [
-          "jsr:@nora/lib-dom-gecko@*",
-          "npm:vite@*"
-        ],
         "packageJson": {
           "dependencies": [
             "npm:@swc/cli@0.6.0",
@@ -4800,6 +4887,24 @@
             "npm:tsdown@0.9.8",
             "npm:unplugin-swc@^1.5.2",
             "npm:vite@^6.3.3"
+          ]
+        }
+      },
+      "apps/system/modules-loader": {
+        "dependencies": [
+          "jsr:@nora/lib-dom-gecko@*",
+          "jsr:@std/fs@^1.0.17",
+          "npm:@deno/vite-plugin@^1.0.4",
+          "npm:birpc@^2.3.0",
+          "npm:oxlint@~0.16.7",
+          "npm:rolldown-vite@latest",
+          "npm:tsdown@~0.9.8",
+          "npm:vite@*"
+        ],
+        "packageJson": {
+          "dependencies": [
+            "npm:@jsr/std__fs@^1.0.17",
+            "npm:pathe@^2.0.3"
           ]
         }
       },

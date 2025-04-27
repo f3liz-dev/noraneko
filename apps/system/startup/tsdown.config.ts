@@ -1,5 +1,4 @@
 import { defineConfig } from "tsdown/config";
-import Starter from "unplugin-starter/rolldown";
 import { generateJarManifest } from "../../common/scripts/gen_jarmanifest.ts";
 import { resolve } from "pathe";
 import { Plugin } from "rolldown";
@@ -24,11 +23,6 @@ const genJarmn = {
   },
 } satisfies Plugin;
 
-console.log(Deno.args);
-
-let mode = "";
-if (!(Deno.args.at(-1)?.includes("."))) mode = Deno.args.at(-1)!;
-
 export default [
   defineConfig({
     entry: [
@@ -37,11 +31,9 @@ export default [
       "src/about-newtab.ts",
     ],
     outDir: "_dist",
-    define: {
-      "import.meta.env.MODE": `"${mode}"`,
-    },
     platform: "browser",
     treeshake: false,
-    plugins: [genJarmn]
+    plugins: [genJarmn],
+    external: /^resource:\/\/|^chrome:\/\//g,
   }),
 ];

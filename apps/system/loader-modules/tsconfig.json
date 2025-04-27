@@ -11,7 +11,7 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@nora/modules/*": ["../../modules/*"]
     },
     "types": ["vite/client"],
   }

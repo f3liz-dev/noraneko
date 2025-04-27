@@ -4,7 +4,10 @@
   "workspace": ["./libs/*", "./apps/*", "./apps/system/*"],
   "imports": {
     "@std/encoding": "jsr:@std/encoding@^1.0.10",
-    "@std/fs": "jsr:@std/fs@^1.0.17"
+    "@std/fs": "jsr:@std/fs@^1.0.17",
+    "#i18n/": "./i18n/",
+    "#apps/": "./apps/",
+    "#libs/": "./libs/"
   },
   "compilerOptions": {
     "lib": ["dom", "dom.asynciterable", "deno.ns", "ESNext"]

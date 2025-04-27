@@ -1,0 +1,4 @@
+{
+  "name": "@nora/chrome-features",
+  "importMap": "./importMap.json"
+}

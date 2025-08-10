@@ -28,9 +28,14 @@ module FelesBuild
     end
 
     def self.generate_uuid_v7
-      # This is a simplified UUIDv7 generator, as Ruby's SecureRandom doesn't have it built-in.
-      # For a real implementation, a proper library would be better.
-      SecureRandom.uuid
+      script_path = File.expand_path('../scripts/gen-uuid.ts', __dir__)
+      stdout, stderr, status = Open3.capture3('deno', 'run', '--allow-net', script_path)
+
+      unless status.success?
+        raise "Failed to generate UUIDv7: #{stderr}"
+      end
+
+      stdout.strip
     end
 
     def self.generate_update_xml(meta_path, output_path)

@@ -31,6 +31,8 @@ class FelesBuildCLI
       parse_build_options
     when 'init'
       parse_init_options
+    when 'patch'
+      parse_patch_options
     when '--help', '-h', nil
       print_main_help
     else
@@ -60,16 +62,47 @@ class FelesBuildCLI
       end
     end
     opt_parser.parse!(@argv)
-    puts "Running dev command with options: #{options}"
+
+    @logger.info "Starting development environment..."
+
+    # Initial setup
     FelesBuild::Initializer.run
     FelesBuild::Patcher.run
     FelesBuild::Symlinker.run
     FelesBuild::Builder.run(mode: 'dev')
-    FelesBuild::DevServer.run
     FelesBuild::Injector.run('dev')
-    FelesBuild::Injector.inject_xhtml(true)
+    FelesBuild::Injector.inject_xhtml_from_ts(true)
     FelesBuild::DevEnvManager.setup
-    FelesBuild::BrowserLauncher.run
+
+    # Set up graceful shutdown
+    trap('INT') do
+      @logger.info "Shutting down..."
+      FelesBuild::DevServer.shutdown
+      exit 130
+    end
+
+    # Create a pipe for the ready signal
+    reader, writer = IO.pipe
+
+    # Run dev server in a background thread
+    server_thread = Thread.new do
+      FelesBuild::DevServer.run(writer)
+    end
+
+    # Wait for the dev server to be ready
+    @logger.info "Waiting for dev servers to be ready..."
+    ready_signal = reader.gets
+    if ready_signal&.strip == FelesBuild::Defines::DEV_SERVER[:ready_string]
+      @logger.success "Dev servers are ready."
+      FelesBuild::BrowserLauncher.run
+    else
+      @logger.error "Dev servers failed to start or did not send ready signal."
+    end
+
+    # After browser is closed, shut down the servers
+    @logger.info "Browser closed. Shutting down dev servers."
+    FelesBuild::DevServer.shutdown
+    server_thread.join
   end
 
   def parse_build_options
@@ -98,7 +131,7 @@ class FelesBuildCLI
       FelesBuild::Builder.run(mode: 'production')
     elsif options[:phase] == 'after-mach'
       FelesBuild::Injector.run('production')
-      FelesBuild::Injector.inject_xhtml(false)
+      FelesBuild::Injector.inject_xhtml_from_ts(false)
     end
   end
 
@@ -114,6 +147,22 @@ class FelesBuildCLI
     opt_parser.parse!(@argv)
     FelesBuild::Initializer.run
     FelesBuild::Patcher.run
+  end
+
+  def parse_patch_options
+    options = { action: 'apply' }
+    opt_parser = OptionParser.new do |opts|
+      opts.banner = "Usage: feles-build patch [options]"
+      opts.on("--action ACTION", String, "Specify the patch action (apply, create, init)") do |action|
+        options[:action] = action
+      end
+      opts.on("-h", "--help", "Prints this help") do
+        puts opts
+        exit
+      end
+    end
+    opt_parser.parse!(@argv)
+    FelesBuild::Patcher.run(options[:action])
   end
 end
 

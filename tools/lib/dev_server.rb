@@ -17,13 +17,19 @@ module FelesBuild
         { name: 'settings', path: File.join(PROJECT_ROOT, 'src/ui/settings') }
       ]
 
+      # Ensure logs directory exists
+      logs_dir = File.join(PROJECT_ROOT, 'logs')
+      Dir.mkdir(logs_dir) unless Dir.exist?(logs_dir)
+
       servers.each do |server|
         process = ChildProcess.build('npx', 'vite', '--port', get_port_for(server[:name]).to_s)
         process.cwd = server[:path]
-        process.io.stdout = process.io.stderr = File.open(File::NULL, 'w') # Suppress output
+        log_file_path = File.join(logs_dir, "vite-#{server[:name]}.log")
+        log_file = File.open(log_file_path, 'w')
+        process.io.stdout = process.io.stderr = log_file # Redirect output to log file
         process.start
         @vite_processes << process
-        @logger.info "Started Vite dev server for #{server[:name]} with PID: #{process.pid}"
+        @logger.info "Started Vite dev server for #{server[:name]} with PID: #{process.pid}, logging to #{log_file_path}"
       end
 
       @logger.info "All Vite dev servers started."

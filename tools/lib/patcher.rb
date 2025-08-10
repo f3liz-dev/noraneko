@@ -78,7 +78,7 @@ module FelesBuild
         reverse_is_aborted = false
         Dir.children(PATCHES_TMP).sort.each do |patch|
           patch_path = File.join(PATCHES_TMP, patch)
-          _stdout, stderr, status = Open3.capture3('git', 'apply', '-R', '--reject', '--whitespace=fix', '--unsafe-paths', "--directory=#{bin_dir}", patch_path)
+          _stdout, stderr, status = Open3.capture3('git', 'apply', '-R', '--reject', '--whitespace=fix', '--unsafe-paths', '--directory', bin_dir, patch_path)
           unless status.success?
             @logger.warn "Failed to reverse patch: #{patch_path}"
             @logger.warn stderr
@@ -97,7 +97,7 @@ module FelesBuild
         next unless patch.end_with?('.patch')
         patch_path = File.join(PATCHES_DIR, patch)
         @logger.info "Applying patch: #{patch_path}"
-        _stdout, stderr, status = Open3.capture3('git', 'apply', '--reject', '--whitespace=fix', '--unsafe-paths', "--directory=#{bin_dir}", patch_path)
+        _stdout, stderr, status = Open3.capture3('git', 'apply', '--reject', '--whitespace=fix', '--unsafe-paths', '--directory', bin_dir, patch_path)
         if status.success?
           FileUtils.cp(patch_path, File.join(PATCHES_TMP, patch))
         else

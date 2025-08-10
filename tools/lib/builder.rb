@@ -13,14 +13,27 @@ module FelesBuild
     end
 
     def self.run_in_parallel(commands)
-      pids = commands.map do |cmd, dir|
+      processes = commands.map do |cmd, dir|
         @logger.info "Running `#{cmd.join(' ')}` in `#{dir}`"
-        spawn(*cmd, chdir: dir, out: '/dev/null', err: '/dev/null')
+        stdout_r, stdout_w = IO.pipe
+        stderr_r, stderr_w = IO.pipe
+        pid = spawn(*cmd, chdir: dir, out: stdout_w, err: stderr_w)
+        # Close write ends in parent
+        stdout_w.close
+        stderr_w.close
+        { pid: pid, stdout: stdout_r, stderr: stderr_r, cmd: cmd, dir: dir }
       end
 
-      pids.each do |pid|
+      processes.each do |proc|
+        pid = proc[:pid]
+        out = proc[:stdout].read
+        err = proc[:stderr].read
+        proc[:stdout].close
+        proc[:stderr].close
         Process.wait(pid)
-        raise "Build command failed with status #{$?.exitstatus}" unless $?.success?
+        unless $?.success?
+          raise "Build command `#{proc[:cmd].join(' ')}` in `#{proc[:dir]}` failed with status #{$?.exitstatus}\nSTDOUT:\n#{out}\nSTDERR:\n#{err}"
+        end
       end
     end
 

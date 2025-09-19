@@ -3,6 +3,7 @@
 import { render } from "@nora/solid-xul";
 import type { JSXElement } from "solid-js";
 
+// deno-lint-ignore no-namespace
 export namespace ContextMenuUtils {
   const checkItems: (() => void)[] = [];
   const contextMenuObserver: MutationObserver = new MutationObserver(() => {
@@ -21,6 +22,9 @@ export namespace ContextMenuUtils {
     return document?.querySelector(
       "#contentAreaContextMenu",
     ) as XULElement | null;
+  }
+  export function tabContextMenu(): XULElement | null {
+    return document?.querySelector("#tabContextMenu") as XULElement | null;
   }
   function pdfjsContextMenuSeparator(): XULElement | null {
     return document?.querySelector(
@@ -55,6 +59,28 @@ export namespace ContextMenuUtils {
     contextMenuObserverFunc();
   }
 
+  export function addContextBoxTab(
+    id: string,
+    l10n: string,
+    renderElementId: string,
+    runFunction: () => void,
+    // checkID: string,
+    // checkedFunction: () => void,
+  ) {
+    const contextMenu = ContextMenu(id, l10n, runFunction);
+    // const targetNode = document?.getElementById(checkID) as XULElement;
+    const renderElement = document?.getElementById(
+      renderElementId,
+    ) as XULElement;
+
+    render(() => contextMenu, tabContextMenu(), {
+      marker: renderElement,
+    });
+    // contextMenuObserver.observe(targetNode, { attributes: true });
+    // checkItems.push(checkedFunction);
+    // contextMenuObserverFunc();
+  }
+
   function contextMenuObserverFunc() {
     for (const checkItem of checkItems) {
       checkItem();
@@ -67,30 +93,35 @@ export namespace ContextMenuUtils {
     });
   }
 
-  export function onPopupShowing() {
-    console.log("onpopupshowing");
-    if (!screenShotContextMenuItems()?.hidden) {
-      const sep = pdfjsContextMenuSeparator();
-      if (sep) sep.hidden = false;
+  export function onPopupShowing(type: "contentArea" | "tab") {
+    if (type === "contentArea") {
+      if (!screenShotContextMenuItems()?.hidden) {
+        const sep = pdfjsContextMenuSeparator();
+        if (sep) sep.hidden = false;
 
-      const nextSibling = screenShotContextMenuItems()
-        ?.nextSibling as XULElement;
-      if (nextSibling) nextSibling.hidden = false;
-    }
-
-    (async () => {
-      for (const contextMenuSeparator of contextMenuSeparators()) {
-        const nextSibling = contextMenuSeparator.nextSibling as XULElement;
-
-        if (
-          nextSibling?.hidden &&
-          contextMenuSeparator.id !== "context-sep-navigation" &&
-          contextMenuSeparator.id !== "context-sep-pdfjs-selectall"
-        ) {
-          contextMenuSeparator.hidden = true;
-        }
+        const nextSibling = screenShotContextMenuItems()
+          ?.nextSibling as XULElement;
+        if (nextSibling) nextSibling.hidden = false;
       }
-    })();
+
+      (async () => {
+        for (const contextMenuSeparator of contextMenuSeparators()) {
+          const nextSibling = contextMenuSeparator.nextSibling as XULElement;
+
+          if (
+            nextSibling?.hidden &&
+            contextMenuSeparator.id !== "context-sep-navigation" &&
+            contextMenuSeparator.id !== "context-sep-pdfjs-selectall"
+          ) {
+            contextMenuSeparator.hidden = true;
+          }
+        }
+      })();
+    } else if (type === "tab") {
+      addContextBoxTab("context_renameTab", "", "context_moveTabOptions", () =>
+        console.log("hi!"),
+      );
+    }
   }
 }
 

@@ -67,6 +67,7 @@ export namespace ContextMenuUtils {
     // checkID: string,
     // checkedFunction: () => void,
   ) {
+    document?.getElementById(id)?.remove();
     const contextMenu = ContextMenu(id, l10n, runFunction);
     // const targetNode = document?.getElementById(checkID) as XULElement;
     const renderElement = document?.getElementById(

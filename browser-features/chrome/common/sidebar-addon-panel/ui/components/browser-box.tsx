@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { createEffect, createRoot, getOwner, runWithOwner } from "solid-js";
-import { isFloatingDragging } from "../../core/data.ts";
+import { isFloatingDragging } from "../../../sidebar/core/data.ts";
 
 export function BrowserBox() {
   const owner = getOwner?.();

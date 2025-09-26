@@ -4,17 +4,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { createResource, Show, Suspense } from "solid-js";
-import { getFaviconURLForPanel } from "../../core/utils/favicon-getter.ts";
+import { getFaviconURLForPanel } from "../../../sidebar/core/utils/favicon-getter.ts";
 import type { CPanelSidebar } from "./panel-sidebar";
 import {
   panelSidebarData,
   selectedPanelId,
   setPanelSidebarData,
-} from "../../core/data.ts";
-import type { Panel } from "../../core/utils/type.ts";
-import { isExtensionExist } from "../../core/extension-panels.ts";
-import { getUserContextColor } from "../../core/utils/userContextColor-getter.ts";
-import { setContextPanel } from "./sidebar-contextMenu.ts";
+} from "../../../sidebar/core/data.ts";
+import type { Panel } from "../../../sidebar/core/utils/type.ts";
+import { isExtensionExist } from "../../../sidebar/core/extension-panels.ts";
+import { getUserContextColor } from "../../../sidebar/core/utils/userContextColor-getter.ts";
+import { setContextPanel } from "./sidebar-contextMenu.tsx";
 
 export function PanelSidebarButton(props: {
   panel: Panel;

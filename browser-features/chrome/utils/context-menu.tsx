@@ -63,7 +63,7 @@ export namespace ContextMenuUtils {
     id: string,
     l10n: string,
     renderElementId: string,
-    runFunction: () => void,
+    runFunction: (ev?: Event) => void,
     // checkID: string,
     // checkedFunction: () => void,
   ) {
@@ -119,8 +119,11 @@ export namespace ContextMenuUtils {
         }
       })();
     } else if (type === "tab") {
-      addContextBoxTab("context_renameTab", "", "context_moveTabOptions", () =>
-        console.log("hi!"),
+      addContextBoxTab(
+        "context_renameTab",
+        "",
+        "context_moveTabOptions",
+        (ev) => console.log(ev, window.TabContextMenu.contextTab),
       );
     }
   }

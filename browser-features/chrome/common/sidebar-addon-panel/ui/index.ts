@@ -30,4 +30,4 @@ export { ExtensionSiteBrowser } from "../panel/browsers/extension-site-browser.t
 export * from "../../sidebar/core/utils/type.ts";
 
 /* Export styles as inline-able entries for bundler consumers (now sourced from our own styles directory) */
-export { default as style } from "../styles/style.css?inline";
+export { default as style } from "./styles/style.css?inline";

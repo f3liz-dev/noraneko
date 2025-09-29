@@ -69,7 +69,7 @@ export async function run(mode = "dev", buildid2: string): Promise<void> {
         `--env.__BUILDID2__=${buildid2}`,
         `--env.__VERSION2__=${version}`,
       ],
-      path.join(PROJECT_ROOT, "bridge/loader-modules"),
+      path.join(PROJECT_ROOT, "browser-features/modules"),
     ],
     [
       [
@@ -81,7 +81,7 @@ export async function run(mode = "dev", buildid2: string): Promise<void> {
         "--base",
         "chrome://noraneko/content",
       ],
-      path.join(PROJECT_ROOT, "bridge/loader-features"),
+      path.join(PROJECT_ROOT, "browser-features/chrome"),
     ],
   ];
 
@@ -100,7 +100,7 @@ export async function run(mode = "dev", buildid2: string): Promise<void> {
         "--base",
         "chrome://noraneko/content",
       ],
-      path.join(PROJECT_ROOT, "bridge/loader-features"),
+      path.join(PROJECT_ROOT, "browser-features/chrome"),
     ],
     [
       [
@@ -110,7 +110,7 @@ export async function run(mode = "dev", buildid2: string): Promise<void> {
         `--env.__BUILDID2__=${buildid2}`,
         `--env.__VERSION2__=${version}`,
       ],
-      path.join(PROJECT_ROOT, "bridge/loader-modules"),
+      path.join(PROJECT_ROOT, "browser-features/modules"),
     ],
     // [
     //   [
@@ -134,10 +134,10 @@ export async function run(mode = "dev", buildid2: string): Promise<void> {
 
   if (mode.startsWith("production")) {
     const mounts: Array<[string, string]> = [
-      ["content", "bridge/loader-features/_dist"],
+      ["content", "browser-features/chrome/_dist"],
       ["startup", "bridge/startup/_dist"],
       ["skin", "browser-features/skin"],
-      ["resource", "bridge/loader-modules/_dist"],
+      ["resource", "browser-features/modules/_dist"],
     ];
 
     const dirPath = "_dist/noraneko";

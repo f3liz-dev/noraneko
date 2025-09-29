@@ -9,7 +9,7 @@ const r = (dir: string) => {
 };
 
 export default defineConfig({
-  entry: [r("../../bridge/loader-modules/link-modules/**/*.mts")],
+  entry: [r("**/*.mts")],
   outDir: r("_dist"),
   format: "esm",
   target: "esnext",

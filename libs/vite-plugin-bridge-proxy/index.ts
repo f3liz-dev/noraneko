@@ -26,9 +26,16 @@ export function createBridgeProxyPlugin(options: BridgeProxyOptions): Plugin {
     name: "bridge-proxy",
     configResolved(config) {
       // Override output directory to target directory
-      if (config.build.outDir) {
+      if (config.build && config.build.outDir) {
         config.build.outDir = path.resolve(targetDir, "_dist");
       }
+    },
+    resolveId(id, importer) {
+      // Handle any imports from bridge directory by redirecting to actual bridge location
+      if (id.startsWith("../../bridge/loader-features/") && bridgeType === "loader-features") {
+        return path.resolve(bridgeDir, id.replace("../../bridge/loader-features/", ""));
+      }
+      return null;
     },
     configureServer(server) {
       // In dev mode, serve files from bridge directory

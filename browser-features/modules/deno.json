@@ -1,10 +1,15 @@
 {
   "name": "@nora/modules",
+  "tasks": {
+    "build": "deno run -A tsdown"
+  },
   "imports": {
     "@jsr/std__fs": "npm:@jsr/std__fs@^1.0.17",
+    "@nora/vite-plugin-gen-jarmn": "../../libs/vite-plugin-gen-jarmn/plugin.ts",
     "birpc": "npm:birpc@^2.3.0",
     "pathe": "npm:pathe@^2.0.3",
-    "vite": "npm:rolldown-vite@latest"
+    "vite": "npm:rolldown-vite@latest",
+    "tsdown": "npm:tsdown@^0.4.0"
   },
   "exports": {
     ".": "./*"

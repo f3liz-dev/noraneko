@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: MPL-2.0
+
+import { defineConfig } from "tsdown";
+import { genJarmnPlugin } from "@nora/vite-plugin-gen-jarmn";
+
+export default defineConfig({
+  entry: ["**/*.mts"],
+  outDir: "_dist",
+  format: "esm",
+  target: "esnext",
+  external: /^resource:\/\/|^chrome:\/\//,
+  plugins: [genJarmnPlugin("resource", "noraneko", "resource")],
+});

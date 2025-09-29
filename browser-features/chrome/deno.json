@@ -1,9 +1,13 @@
 {
   "name": "@nora/features-chrome",
+  "tasks": {
+    "build": "deno run -A vite build"
+  },
   "imports": {
     "@deno/vite-plugin": "npm:@deno/vite-plugin@^1.0.4",
     "@jsr/std__assert": "npm:@jsr/std__assert@^1.0.14",
     "@types/uuid": "npm:@types/uuid@^10.0.0",
+    "@nora/vite-plugin-gen-jarmn": "../../libs/vite-plugin-gen-jarmn/plugin.ts",
 
     "es-toolkit": "npm:es-toolkit@^1.36.0",
     "fp-ts": "npm:fp-ts@^2.16.11",

@@ -11,5 +11,8 @@
   },
   "compilerOptions": {
     "types": ["npm:vite/client", "jsr:@types/gecko"]
+  },
+  "tasks": {
+    "build": "deno run -A npm:tsdown"
   }
 }

@@ -10,7 +10,7 @@ import i18next from "i18next";
 import "#features-chrome/@types/i18next.d.ts";
 
 const { CustomizableUI } = ChromeUtils.importESModule(
-  "resource:///modules/CustomizableUI.sys.mjs",
+  "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
 );
 
 @noraComponent(import.meta.hot)

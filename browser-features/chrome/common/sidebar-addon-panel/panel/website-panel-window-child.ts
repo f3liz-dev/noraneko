@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { Panels } from "../../core/utils/type.ts";
+import type { Panels } from "../../sidebar/core/utils/type.ts";
 
 const PANEL_SIDEBAR_DATA_PREF_NAME = "floorp.panelSidebar.data";
 

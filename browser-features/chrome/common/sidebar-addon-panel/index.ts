@@ -196,7 +196,7 @@ export { PanelSidebarFloating } from "./ui/components/floating.tsx";
 export { BrowserBox } from "./ui/components/browser-box.tsx";
 export { FloatingSplitter } from "./ui/components/floating-splitter.tsx";
 export { SidebarHeader } from "./ui/components/sidebar-header.tsx";
-export { PanelSidebarButton, SidebarPanelButton } from "./ui/components/sidebar-panel-button.tsx";
+export { PanelSidebarButton } from "./ui/components/sidebar-panel-button.tsx";
 export { SidebarSelectbox } from "./ui/components/sidebar-selectbox.tsx";
 export { SidebarSplitter } from "./ui/components/sidebar-splitter.tsx";
 export { PanelSidebarElem, PanelSidebarElem as Sidebar } from "./ui/components/sidebar.tsx";

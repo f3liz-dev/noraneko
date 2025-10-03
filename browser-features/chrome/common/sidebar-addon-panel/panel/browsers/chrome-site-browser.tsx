@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { Panel } from "../../core/utils/type.ts";
-import { STATIC_PANEL_DATA } from "../../core/static-panels.ts";
+import type { Panel } from "../../../sidebar/core/utils/type.ts";
+import { STATIC_PANEL_DATA } from "../../../sidebar/core/static-panels.ts";
 
 export function ChromeSiteBrowser({ id, type, url }: Panel) {
   const panel = STATIC_PANEL_DATA[url as keyof typeof STATIC_PANEL_DATA];

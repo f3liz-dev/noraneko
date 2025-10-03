@@ -9,7 +9,7 @@ import {
   selectedPanelId,
   setIsFloating,
   setSelectedPanelId,
-} from "../../core/data.ts";
+} from "../../../sidebar/core/data.ts";
 import { PanelNavigator } from "../../panel/panel-navigator.ts";
 import type { CPanelSidebar } from "./panel-sidebar.tsx";
 

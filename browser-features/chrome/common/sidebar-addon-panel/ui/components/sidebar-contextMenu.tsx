@@ -5,7 +5,7 @@
 
 import type { CPanelSidebar } from "./panel-sidebar.tsx";
 import { createSignal, Show } from "solid-js";
-import type { Panel } from "../../core/utils/type.ts";
+import type { Panel } from "../../../sidebar/core/utils/type.ts";
 import { ContextMenuUtils } from "#features-chrome/utils/context-menu.tsx";
 import { createRoot, getOwner, type Owner, runWithOwner } from "solid-js";
 import i18next from "i18next";

@@ -14,12 +14,12 @@ import {
   selectedPanelId,
   setPanelSidebarData,
   setSelectedPanelId,
-} from "../../core/data.ts";
-import type { Panel, Panels } from "../../core/utils/type.ts";
+} from "../../../sidebar/core/data.ts";
+import type { Panel, Panels } from "../../../sidebar/core/utils/type.ts";
 import { createEffect } from "solid-js";
-import { getExtensionSidebarAction } from "../../core/extension-panels.ts";
+import { getExtensionSidebarAction } from "../../../sidebar/core/extension-panels.ts";
 import { WebsitePanel } from "../../panel/website-panel-window-parent.ts";
-import "../../core/utils/webRequest.ts";
+import "../../../sidebar/core/utils/webRequest.ts";
 
 export class CPanelSidebar {
   private panelDisposers: Map<string, () => void> = new Map();

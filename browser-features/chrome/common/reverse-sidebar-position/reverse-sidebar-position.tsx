@@ -4,7 +4,7 @@ import { BrowserActionUtils } from "#features-chrome/utils/browser-action";
 import iconStyle from "./icon.css?inline";
 
 const { CustomizableUI } = ChromeUtils.importESModule(
-  "resource:///modules/CustomizableUI.sys.mjs",
+  "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
 );
 
 export class ReverseSidebarPosition {

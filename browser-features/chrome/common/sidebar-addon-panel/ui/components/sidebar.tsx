@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { render } from "@nora/solid-xul";
-import style from "./style.css?inline";
+import style from "../styles/style.css?inline";
 import { SidebarHeader } from "./sidebar-header.tsx";
 import { SidebarSelectbox } from "./sidebar-selectbox.tsx";
 import { SidebarSplitter } from "./sidebar-splitter.tsx";
@@ -15,7 +15,11 @@ import {
   runWithOwner,
   Show,
 } from "solid-js";
-import { isFloating, isPanelSidebarEnabled, selectedPanelId } from "../../core";
+import {
+  isFloating,
+  isPanelSidebarEnabled,
+  selectedPanelId,
+} from "../../../sidebar/core";
 import { FloatingSplitter } from "./floating-splitter.tsx";
 import { BrowserBox } from "./browser-box.tsx";
 import type { CPanelSidebar } from "./panel-sidebar.tsx";

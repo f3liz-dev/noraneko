@@ -7,8 +7,8 @@ import {
   panelSidebarData,
   setPanelSidebarData,
   setSelectedPanelId,
-} from "../../core/data.ts";
-import type { Panel } from "../../core/utils/type.ts";
+} from "../../../sidebar/core/data.ts";
+import type { Panel } from "../../../sidebar/core/utils/type.ts";
 
 /**
  * Minimal synchronous modal replacement.

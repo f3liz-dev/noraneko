@@ -2,7 +2,6 @@
 
 import * as Initializer from "./src/initializer.ts";
 import * as Patcher from "./src/patcher.ts";
-import * as Symlinker from "./src/symlinker.ts";
 import * as Update from "./src/update.ts";
 import * as Builder from "./src/builder.ts";
 import * as DevServer from "./src/dev_server.ts";
@@ -19,7 +18,6 @@ async function runDev(): Promise<void> {
   // Initial setup
   await Initializer.run();
   Patcher.run("apply");
-  Symlinker.run();
 
   const buildid2 = Update.generateUuidV7();
   await Builder.run("dev", buildid2);
@@ -88,7 +86,6 @@ async function runStage(): Promise<void> {
   // Initial setup
   await Initializer.run();
   Patcher.run("apply");
-  Symlinker.run();
 
   // Build production assets
   const buildid2 = Update.generateUuidV7();
@@ -157,7 +154,6 @@ async function runBuild(phase?: string): Promise<void> {
   }
 
   if (optionsPhase === "before-mach") {
-    Symlinker.run();
     // Build production assets
     const buildid2 = Update.generateUuidV7();
     await Builder.run("production", buildid2);

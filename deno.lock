@@ -2976,7 +2976,6 @@
           "npm:fp-ts@^2.16.11",
           "npm:i18next@^25.0.1",
           "npm:io-ts@^2.2.22",
-          "npm:rolldown-vite@latest",
           "npm:solid-js@^1.9.5",
           "npm:solid-styled-jsx@~0.27.1",
           "npm:unplugin-swc@^1.5.2",
@@ -2984,7 +2983,8 @@
           "npm:vite-plugin-istanbul@7",
           "npm:vite-plugin-solid@^2.11.6",
           "npm:vite-tsconfig-paths@^5.1.4",
-          "npm:vite@*"
+          "npm:vite@*",
+          "npm:vite@^7.1.3"
         ]
       },
       "browser-features/modules": {
@@ -2994,6 +2994,7 @@
           "npm:birpc@^2.3.0",
           "npm:pathe@^2.0.3",
           "npm:rolldown-vite@latest",
+          "npm:tsdown@~0.14.1",
           "npm:vite@*"
         ]
       },

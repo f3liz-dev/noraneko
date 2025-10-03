@@ -15,7 +15,7 @@ const r = (dir: string) => {
 export default defineConfig({
   publicDir: r("../../bridge/loader-features/public"),
   server: {
-    port: 5181,
+    port: 5173,
     strictPort: true,
   },
 

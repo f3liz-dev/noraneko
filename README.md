@@ -12,9 +12,10 @@ Noraneko Browser is currently testbed for Floorp 12.
 
 Have a nice day!
 
-## Noraneko Docs available
-
-Please visit [noraneko.pages.dev](https://noraneko.pages.dev)!
+<p align="center">
+<img src=".github/assets/readme/noraneko.structure.light.excalidraw.svg#gh-light-mode-only" width="1200px" alt="Noraneko Logo and Workmark"></img>
+<img src=".github/assets/readme/noraneko.structure.dark.excalidraw.svg#gh-dark-mode-only" width="1200px" alt="Noraneko Logo and Workmark"></img>
+</p>
 
 ## Credits
 

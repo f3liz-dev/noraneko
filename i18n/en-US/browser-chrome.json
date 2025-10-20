@@ -2,5 +2,9 @@
   "undo-closed-tab": {
     "label": "Reopen closed tab",
     "tooltiptext": "Reopen closed tab"
+  },
+  "rename-tab": {
+    "label": "Rename Tab",
+    "tooltiptext": "Rename this tab"
   }
 }

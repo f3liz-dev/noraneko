@@ -121,9 +121,14 @@ export namespace ContextMenuUtils {
     } else if (type === "tab") {
       addContextBoxTab(
         "context_renameTab",
-        "",
+        "rename-tab",
         "context_moveTabOptions",
-        (ev) => console.log(ev, window.TabContextMenu.contextTab),
+        () => {
+          const tab = window.TabContextMenu?.contextTab;
+          if (tab && window.gNoraShowTabRenameInput) {
+            window.gNoraShowTabRenameInput(tab);
+          }
+        },
       );
     }
   }

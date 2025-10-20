@@ -49,7 +49,7 @@ export class TabRenameManager {
     const linkedPanel = (tab as any).linkedPanel;
     if (!linkedPanel) {
       (tab as any).linkedPanel =
-        `panel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        `panel-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     }
     return (tab as any).linkedPanel;
   }

@@ -46,10 +46,12 @@ export class TabRenameManager {
   }
 
   getTabId(tab: XULElement): string {
-    if (!tab.linkedPanel) {
-      tab.linkedPanel = `panel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const linkedPanel = (tab as any).linkedPanel;
+    if (!linkedPanel) {
+      (tab as any).linkedPanel =
+        `panel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     }
-    return tab.linkedPanel;
+    return (tab as any).linkedPanel;
   }
 
   setTabName(tab: XULElement, customName: string): void {

@@ -17,10 +17,10 @@ export default class TabRename extends NoraComponentBase {
     tabRenameManager = new TabRenameManager();
 
     // Inject CSS
-    const styleElement = document.createElement("style");
+    const styleElement = document!.createElement("style");
     styleElement.className = "nora-tab-rename-styles";
     styleElement.textContent = tabRenameStyle;
-    document.head.appendChild(styleElement);
+    document!.head!.appendChild(styleElement);
 
     // Expose the showTabRenameInput function globally
     if (!window.gNoraShowTabRenameInput) {
@@ -78,7 +78,7 @@ export function showTabRenameInput(tab: XULElement): void {
   const placeholder = currentCustomName || currentLabel;
 
   // Create input element
-  const input = document.createElement("input");
+  const input = document!.createElement("input");
   input.type = "text";
   input.className = "tab-rename-input";
   input.value = currentCustomName || "";
@@ -95,7 +95,7 @@ export function showTabRenameInput(tab: XULElement): void {
   `;
 
   // Hide label, show input
-  tabLabel.style.display = "none";
+  (tabLabel.style as any).display = "none";
   const tabContent = tab.querySelector(".tab-content") as HTMLElement;
   if (tabContent) {
     tabContent.appendChild(input);
@@ -107,7 +107,7 @@ export function showTabRenameInput(tab: XULElement): void {
     if (input.parentNode) {
       input.remove();
     }
-    tabLabel.style.display = "";
+    (tabLabel.style as any).display = "";
   };
 
   const save = () => {

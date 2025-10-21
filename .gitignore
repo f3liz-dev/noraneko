@@ -3,6 +3,9 @@
 **/node_modules/
 **/.turbo
 
+# Lock files (project uses pnpm)
+package-lock.json
+
 *.tar.zst
 *.tar.xz
 *.zip
@@ -14,3 +17,7 @@ target/
 
 logs/
 .serena/
+
+# Test artifacts
+.firefox-cache/
+tests/.firefox-cache/

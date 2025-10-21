@@ -13,14 +13,18 @@ The tests validate core browser functionality including:
 ## Running Tests
 
 ### Run all tests
+
+Using npm (recommended in CI/CD environments):
+```bash
+npm test
+```
+
+Or using deno task:
 ```bash
 deno task test
 ```
 
-Or using npm:
-```bash
-npm test
-```
+**Note:** In some environments, `deno task test` may encounter SSL certificate issues with npm registry. In these cases, use `npm test` instead.
 
 ### Test Files
 

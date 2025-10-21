@@ -3,6 +3,9 @@
 **/node_modules/
 **/.turbo
 
+# Lock files (project uses pnpm)
+package-lock.json
+
 *.tar.zst
 *.tar.xz
 *.zip

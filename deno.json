@@ -34,7 +34,8 @@
     "node_modules/**/*"
   ],
   "tasks": {
-    "feles-build": "deno run -A tools/feles-build.ts"
+    "feles-build": "deno run -A tools/feles-build.ts",
+    "test": "node tests/browser-integration.test.js"
   },
   "nodeModulesDir": "auto"
 }

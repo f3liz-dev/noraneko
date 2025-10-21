@@ -14,3 +14,7 @@ target/
 
 logs/
 .serena/
+
+# Test artifacts
+.firefox-cache/
+tests/.firefox-cache/

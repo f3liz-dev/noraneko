@@ -1,6 +1,6 @@
 # Noraneko Browser Tests
 
-This directory contains automated tests for the Noraneko browser, using [mus-uc-devtools](https://github.com/f3liz-dev/mus-uc-devtools) for browser automation via Firefox's Marionette protocol.
+This directory contains automated tests for the Noraneko browser, inspired by [mus-uc-devtools](https://github.com/f3liz-dev/mus-uc-devtools) and using Firefox's Marionette protocol for browser automation.
 
 ## Overview
 
@@ -17,11 +17,9 @@ The tests validate core browser functionality including:
 deno task test
 ```
 
-Or using npm/pnpm:
+Or using npm:
 ```bash
 npm test
-# or
-pnpm test
 ```
 
 ### Test Files
@@ -32,8 +30,10 @@ pnpm test
 
 The tests use:
 - **@puppeteer/browsers** - For downloading and managing Firefox binaries
-- **mus-uc-devtools** - For CSS injection and browser automation (via npm package)
 - **Firefox Marionette Protocol** - For browser control and chrome context access
+- Approach inspired by **mus-uc-devtools** - CSS injection and browser automation patterns
+
+The test implementation demonstrates the same techniques used by mus-uc-devtools, making it a drop-in compatible approach for future integration.
 
 ## Test Artifacts
 

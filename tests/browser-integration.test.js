@@ -4,14 +4,18 @@
 /**
  * Browser Integration Test for Noraneko
  * 
- * This test validates browser functionality using mus-uc-devtools and Firefox's Marionette protocol.
+ * This test validates browser functionality using Firefox's Marionette protocol.
+ * The implementation is based on the mus-uc-devtools approach (https://github.com/f3liz-dev/mus-uc-devtools)
+ * and can serve as a foundation for integrating mus-uc-devtools as a drop-in replacement in the future.
+ * 
  * It tests:
  * 1. Browser startup with marionette enabled
  * 2. CSS injection into Firefox chrome context
  * 3. JavaScript execution in chrome context
- * 4. Screenshot capture functionality
+ * 4. Chrome context API access
  * 
- * Based on mus-uc-devtools' headless-test.js but adapted for Noraneko's build system.
+ * The test follows the same patterns as mus-uc-devtools' headless-test.js,
+ * adapted for Noraneko's build system and integrated with feles-build.
  */
 
 import { install, canDownload } from '@puppeteer/browsers';

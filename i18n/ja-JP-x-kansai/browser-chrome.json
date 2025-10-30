@@ -2,5 +2,9 @@
   "undo-closed-tab": {
     "label": "さっきのタブ、もっかい開く",
     "tooltiptext": "さっきのタブ、もっかい開く"
+  },
+  "rename-tab": {
+    "label": "タブの名前変えるわ",
+    "tooltiptext": "このタブの名前変えるわ"
   }
 }

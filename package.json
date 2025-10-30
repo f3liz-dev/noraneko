@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "type": "module",
+  "scripts": {
+    "test": "node tests/integration-test.mjs"
+  },
   "keywords": [],
   "author": "",
   "private": true,

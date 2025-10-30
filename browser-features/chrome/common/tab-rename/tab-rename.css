@@ -1,23 +1,13 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-/* Show custom label when set */
-.tabbrowser-tab[customlabel] .tab-label {
-  font-style: italic;
-}
-
-.tabbrowser-tab[customlabel] .tab-label::before {
-  content: attr(customlabel) " ";
-  font-style: normal;
-  font-weight: 500;
-}
-
-/* Hide original label when custom label is set */
-.tabbrowser-tab[customlabel] .tab-label {
-  font-size: 0;
-}
-
-.tabbrowser-tab[customlabel] .tab-label::before {
-  font-size: var(--tab-font-size, 11px);
+.tabbrowser-tab[data-customlabel] {
+  .tab-label::before {
+    content: var(--customlabel);
+    font-size: 1rem;
+  }
+  .tab-label {
+    font-size: 0;
+  }
 }
 
 /* Style for the rename input */

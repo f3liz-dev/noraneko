@@ -74,8 +74,10 @@ export function showTabRenameInput(tab: XULElement): void {
   }
 
   const currentCustomName = tabRenameManager.getTabName(tab);
-  const currentLabel = tab.getAttribute("label") || "";
-  const placeholder = currentCustomName || currentLabel;
+  // Always use the original tab title as the placeholder. If we have a saved
+  // original title (the label at the time the tab was first renamed), use
+  // that. Otherwise fall back to the current tab label attribute.
+  const placeholder = tabRenameManager.getOriginalTitle(tab) || tab.getAttribute("label") || "";
 
   // Create input element
   const input = document!.createElement("input");
@@ -98,7 +100,7 @@ export function showTabRenameInput(tab: XULElement): void {
   (tabLabel.style as any).display = "none";
   const tabContent = tab.querySelector(".tab-content") as HTMLElement;
   if (tabContent) {
-    tabContent.appendChild(input);
+    tabContent.querySelector(".tab-label-container")?.before(input);
     input.focus();
     input.select();
   }

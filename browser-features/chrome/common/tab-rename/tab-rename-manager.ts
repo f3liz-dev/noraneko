@@ -77,12 +77,33 @@ export class TabRenameManager {
     return this.renamedTabs().get(tabId)?.customName;
   }
 
+  /**
+   * Return the original title saved for this tab (the label at the time
+   * the tab was first renamed). If there is no saved original title,
+   * returns the current tab label or undefined.
+   */
+  getOriginalTitle(tab: XULElement): string | undefined {
+    const tabId = this.getTabId(tab);
+    return this.renamedTabs().get(tabId)?.originalTitle || tab.getAttribute("label") || undefined;
+  }
+
   applyTabName(tab: XULElement): void {
     const customName = this.getTabName(tab);
     if (customName) {
-      tab.setAttribute("customlabel", customName);
+      // Set a data attribute so CSS can match presence, and expose the
+      // value via a CSS variable. We JSON.stringify the value so it is
+      // quoted and any internal quotes are escaped for use in `content`.
+      tab.setAttribute("data-customlabel", "");
+      try {
+        const quoted = JSON.stringify(customName);
+        (tab as unknown as HTMLElement).style.setProperty("--customlabel", quoted);
+      } catch {
+        // Fallback: set raw value (may break if contains quotes)
+        (tab as unknown as HTMLElement).style.setProperty("--customlabel", customName);
+      }
     } else {
-      tab.removeAttribute("customlabel");
+      tab.removeAttribute("data-customlabel");
+  (tab as unknown as HTMLElement).style.removeProperty("--customlabel");
     }
   }
 
@@ -94,7 +115,8 @@ export class TabRenameManager {
       return newMap;
     });
     this.saveToPrefs();
-    tab.removeAttribute("customlabel");
+  tab.removeAttribute("data-customlabel");
+  (tab as unknown as HTMLElement).style.removeProperty("--customlabel");
   }
 
   applyAllTabNames(): void {

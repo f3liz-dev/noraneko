@@ -1,6 +1,6 @@
 # mus-uc-devtools
 
-This directory contains vendored binaries of [mus-uc-devtools](https://github.com/f3liz-dev/mus-uc-devtools), a tool for developing userChrome CSS for Firefox using the Marionette protocol.
+This directory contains vendored binaries of [mus-uc-devtools](https://github.com/f3liz-dev/mus-uc-devtools), a JavaScript executor for testing Noraneko browser-chrome UI code via Firefox Marionette protocol.
 
 ## Contents
 
@@ -11,27 +11,57 @@ This directory contains vendored binaries of [mus-uc-devtools](https://github.co
   - `package.json` - Package metadata
 - `run.mjs` - Node.js runner script for the WASI binary
 
-## Usage
+## Primary Use Case: Testing Browser UI Code
 
-### Using the Runner Script
-
-The easiest way to use mus-uc-devtools is through the runner script:
+The main purpose of this integration is to execute JavaScript in Firefox chrome context for testing Noraneko's browser UI components:
 
 ```bash
-# Show help
+# Execute JavaScript to test browser UI
+node tools/mus-uc-devtools/run.mjs -- exec -f test-browser-ui.js
+
+# Take screenshots for visual validation
+node tools/mus-uc-devtools/run.mjs -- screenshot -o ui-state.png
+
+# Show all available commands
 node tools/mus-uc-devtools/run.mjs -- --help
+```
 
-# Load CSS into Firefox
-node tools/mus-uc-devtools/run.mjs -- load -f userChrome.css
+## Example: Testing Browser UI
 
-# Take a screenshot
+Create a test script `test-browser-ui.js`:
+
+```javascript
+// Access browser window and components
+const window = Services.wm.getMostRecentWindow("navigator:browser");
+const document = window.document;
+
+// Test UI elements exist
+const urlbar = document.getElementById("urlbar");
+const tabsToolbar = document.getElementById("TabsToolbar");
+
+// Return test results
+return {
+  urlbarPresent: urlbar !== null,
+  tabsToolbarPresent: tabsToolbar !== null,
+  tabCount: window.gBrowser.tabs.length
+};
+```
+
+Run the test:
+```bash
+node tools/mus-uc-devtools/run.mjs -- exec -f test-browser-ui.js
+```
+
+## Additional Features
+
+While the primary use is JavaScript execution, mus-uc-devtools also supports:
+
+```bash
+# Screenshot capture
 node tools/mus-uc-devtools/run.mjs -- screenshot -o output.png
 
-# Execute JavaScript in Firefox chrome context
-node tools/mus-uc-devtools/run.mjs -- exec -f script.js
-
-# Watch CSS file for changes
-node tools/mus-uc-devtools/run.mjs -- watch -f style.css
+# CSS loading (for styling tests)
+node tools/mus-uc-devtools/run.mjs -- load -f userChrome.css
 ```
 
 ### Programmatic Usage

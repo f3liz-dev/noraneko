@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Example test showing how to use mus-uc-devtools for browser testing
+ * Example test showing how to test Noraneko browser-chrome UI code
+ * using mus-uc-devtools as a JavaScript executor through Marionette
  * 
  * NOTE: This test requires Firefox with Marionette enabled.
  * To enable Marionette:
@@ -9,15 +10,15 @@
  * 3. Set marionette.port to 2828
  * 4. Restart Firefox
  * 
- * This test is for demonstration purposes and won't run in CI without Firefox.
+ * This test demonstrates testing browser UI components via JS execution.
  */
 
 import { wasmPath, wasmBuffer } from '../tools/mus-uc-devtools/dist/index.js';
 import { existsSync } from 'fs';
 
-console.log('mus-uc-devtools Browser Test Example\n');
-console.log('This example demonstrates how to use mus-uc-devtools for browser automation.');
-console.log('It requires Firefox with Marionette enabled (marionette.port = 2828).\n');
+console.log('Noraneko Browser UI Testing Example\n');
+console.log('This example demonstrates using mus-uc-devtools as a JavaScript executor');
+console.log('to test browser-chrome UI code via Firefox Marionette protocol.\n');
 
 // 1. Verify the WASI binary is available
 console.log('1. Checking WASI binary...');
@@ -32,63 +33,77 @@ console.log('\n2. Loading WASM buffer...');
 const buffer = wasmBuffer();
 console.log(`✓ WASM buffer loaded (${(buffer.length / 1024).toFixed(1)} KB)`);
 
-// 3. Example usage with a WASI runtime (conceptual)
-console.log('\n3. Example usage with WASI runtime:');
+// 3. Example: Testing browser UI via JavaScript execution
+console.log('\n3. Example: Testing Browser UI Components');
 console.log(`
-To run the mus-uc CLI tool, you would use:
+To test Noraneko browser UI code, use the 'exec' command to run JavaScript
+in Firefox chrome context. This gives you full access to browser internals.
 
-  # Using wasmtime
-  wasmtime ${wasmPath} -- --help
-  wasmtime ${wasmPath} -- load -f style.css
-  wasmtime ${wasmPath} -- screenshot -o output.png
+Example test script (save as test-browser-ui.js):
 
-  # Using wasmer
-  wasmer run ${wasmPath} -- --help
+  // Get browser window
+  const window = Services.wm.getMostRecentWindow("navigator:browser");
+  const document = window.document;
+  
+  // Test that browser UI elements exist
+  const urlbar = document.getElementById("urlbar");
+  const tabsToolbar = document.getElementById("TabsToolbar");
+  const navBar = document.getElementById("nav-bar");
+  
+  // Validate elements
+  const results = {
+    urlbar: urlbar !== null,
+    tabsToolbar: tabsToolbar !== null,
+    navBar: navBar !== null,
+    browserReady: window.gBrowser !== undefined
+  };
+  
+  // Return test results
+  return { success: true, results };
 
-  # From Node.js with @bytecodealliance/preview2-shim
-  import { readFile } from 'fs/promises';
-  import { WASI } from '@bytecodealliance/preview2-shim';
-  
-  const wasm = await readFile('${wasmPath}');
-  const wasi = new WASI({
-    args: ['mus-uc', 'load', '-f', 'style.css'],
-    env: process.env,
-  });
-  
-  const module = await WebAssembly.compile(wasm);
-  const instance = await WebAssembly.instantiate(module, {
-    wasi_snapshot_preview1: wasi.wasiImport,
-  });
-  
-  wasi.start(instance);
+Run the test:
+  node tools/mus-uc-devtools/run.mjs -- exec -f test-browser-ui.js
 `);
 
-// 4. Example test scenarios
-console.log('4. Example test scenarios:');
+// 4. Example test scenarios for Noraneko UI
+console.log('4. Example Test Scenarios for Noraneko:');
 console.log(`
-// Test 1: CSS Injection
-// Load custom CSS into browser chrome context
-wasmtime ${wasmPath} -- load -f userChrome.css
+// Test 1: Validate Browser Window State
+// Create: tests/validate-window.js
+const window = Services.wm.getMostRecentWindow("navigator:browser");
+return {
+  windowOpen: window !== null,
+  tabCount: window.gBrowser.tabs.length,
+  currentURL: window.gBrowser.currentURI.spec
+};
 
-// Test 2: Screenshot comparison
-// Capture before/after screenshots
-wasmtime ${wasmPath} -- screenshot -o before.png
-// Apply CSS changes...
-wasmtime ${wasmPath} -- screenshot -o after.png
-// Compare screenshots...
+// Test 2: Test Custom UI Features
+// Test Noraneko-specific browser chrome UI
+const customElement = window.document.getElementById("noraneko-custom-feature");
+return {
+  featurePresent: customElement !== null,
+  featureVisible: customElement && !customElement.hidden
+};
 
-// Test 3: JavaScript execution
-// Execute JS in Firefox chrome context
-wasmtime ${wasmPath} -- exec -f test-script.js
+// Test 3: Test Browser Actions
+// Simulate user interactions and validate responses
+window.gBrowser.selectedTab = window.gBrowser.addTab("https://example.com");
+await new Promise(r => setTimeout(r, 1000));
+return {
+  newTabCreated: window.gBrowser.tabs.length > 1,
+  tabURL: window.gBrowser.selectedBrowser.currentURI.spec
+};
 
-// Test 4: Watch mode
-// Auto-reload CSS on file changes during development
-wasmtime ${wasmPath} -- watch -f style.css
+// Test 4: Screenshot for Visual Validation
+// After running UI tests, capture screenshots
+node tools/mus-uc-devtools/run.mjs -- screenshot -o ui-state.png
 `);
 
-console.log('\n✅ Example test completed!');
-console.log('\nTo implement functional tests:');
-console.log('  1. Install a WASI runtime (wasmtime or wasmer)');
-console.log('  2. Start Firefox with Marionette enabled');
-console.log('  3. Create test scripts that invoke mus-uc commands');
-console.log('  4. Integrate with CI/CD pipeline');
+console.log('\n✅ Example completed!');
+console.log('\nNext steps for testing Noraneko browser UI:');
+console.log('  1. Start Firefox with Marionette enabled (marionette.port = 2828)');
+console.log('  2. Create JavaScript test files that validate UI components');
+console.log('  3. Execute tests using: node tools/mus-uc-devtools/run.mjs -- exec -f test.js');
+console.log('  4. Capture screenshots for visual validation if needed');
+console.log('  5. Integrate tests into CI/CD pipeline');
+

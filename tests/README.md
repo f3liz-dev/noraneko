@@ -1,11 +1,11 @@
 # Noraneko Browser Tests
 
-This directory contains automated tests for the Noraneko browser using `mus-uc-devtools`.
+This directory contains automated tests for the Noraneko browser using `mus-uc-devtools` as a JavaScript executor through Firefox Marionette protocol.
 
 ## Test Structure
 
 - `integration-test.mjs` - Basic integration test verifying mus-uc-devtools vendored binaries
-- `browser-test-example.mjs` - Example showing how to use mus-uc-devtools for browser testing
+- `browser-test-example.mjs` - Example showing how to test browser-chrome UI code
 
 ## Running Tests
 
@@ -20,31 +20,31 @@ node tests/integration-test.mjs
 node tests/browser-test-example.mjs
 ```
 
-## Using mus-uc-devtools
+## Using mus-uc-devtools for Testing Browser UI
 
 ### Quick Start
 
-The easiest way to use mus-uc-devtools is through the runner script:
+The primary use of mus-uc-devtools is to execute JavaScript in Firefox chrome context for testing Noraneko's browser UI:
 
 ```bash
+# Execute JavaScript to test browser UI
+node tools/mus-uc-devtools/run.mjs -- exec -f test-ui.js
+
 # Show available commands
 node tools/mus-uc-devtools/run.mjs -- --help
 
-# Load CSS into Firefox chrome context
-node tools/mus-uc-devtools/run.mjs -- load -f userChrome.css
-
-# Take a screenshot
+# Take screenshots for visual validation
 node tools/mus-uc-devtools/run.mjs -- screenshot -o output.png
 ```
 
 ### About mus-uc-devtools
 
-[mus-uc-devtools](https://github.com/f3liz-dev/mus-uc-devtools) is a tool for developing userChrome CSS for Firefox using the Marionette protocol. It provides:
+[mus-uc-devtools](https://github.com/f3liz-dev/mus-uc-devtools) provides JavaScript execution in Firefox chrome context via the Marionette protocol. This enables:
 
-- CSS injection into Firefox chrome context
-- Screenshot capture for browser UI elements
-- JavaScript execution in Firefox chrome context
-- Watch mode for automatic CSS reload
+- **JavaScript execution** - Test browser-chrome UI code directly in Firefox
+- **Browser automation** - Automate testing of Noraneko UI features
+- **Screenshot capture** - Visual validation of UI elements
+- **Chrome context access** - Full access to browser internals for testing
 
 The vendored binaries are located in `tools/mus-uc-devtools/dist/`.
 
@@ -57,10 +57,10 @@ The vendored binaries are located in `tools/mus-uc-devtools/dist/`.
 - Demonstrate usage examples
 
 ### Functional Tests (Future)
-- CSS injection into browser chrome context
-- Screenshot capture and comparison
-- Browser automation with Marionette protocol
-- UI element testing
+- Test browser-chrome UI components
+- Validate Noraneko feature implementations
+- Automate UI interaction testing
+- Screenshot-based visual regression testing
 
 ## Requirements
 
@@ -86,15 +86,16 @@ Future integration points:
 
 ## Adding New Tests
 
-1. Create a new test file in `tests/` directory (e.g., `tests/css-injection-test.mjs`)
-2. Import necessary utilities from `mus-uc-devtools`
-3. Follow the existing test structure with clear output
-4. Update this README with new test descriptions
+1. Create a new test file in `tests/` directory (e.g., `tests/ui-feature-test.mjs`)
+2. Write JavaScript test code to execute in Firefox chrome context
+3. Use the runner to execute tests: `node tools/mus-uc-devtools/run.mjs -- exec -f your-test.js`
+4. Follow the existing test structure with clear output
+5. Update this README with new test descriptions
 
 ## Example Test Scenarios
 
 See `browser-test-example.mjs` for examples of:
-- CSS injection testing
-- Screenshot comparison
-- JavaScript execution in chrome context
-- Watch mode for development
+- Testing browser-chrome UI code via JavaScript execution
+- Accessing browser internals for validation
+- Screenshot capture for visual testing
+- Automated UI testing patterns

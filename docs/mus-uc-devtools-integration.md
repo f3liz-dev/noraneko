@@ -1,6 +1,15 @@
 # mus-uc-devtools Integration Summary
 
-This document summarizes the integration of mus-uc-devtools into the Noraneko browser project.
+This document summarizes the integration of mus-uc-devtools into the Noraneko browser project as a **JavaScript executor for testing browser-chrome UI code** via Firefox Marionette protocol.
+
+## Purpose
+
+The primary purpose of this integration is to enable **automated testing of Noraneko's browser UI components** by executing JavaScript in Firefox chrome context. This allows us to:
+
+- Test browser-chrome UI code directly
+- Validate Noraneko-specific features and components
+- Automate UI interaction testing
+- Perform visual validation via screenshots
 
 ## What was done
 
@@ -19,7 +28,7 @@ Built and vendored the mus-uc-devtools project in `tools/mus-uc-devtools/dist/`:
 Added comprehensive tests in `tests/` directory:
 
 - **integration-test.mjs** - Validates vendored binaries are accessible and working
-- **browser-test-example.mjs** - Demonstrates how to use mus-uc-devtools for browser testing
+- **browser-test-example.mjs** - Demonstrates how to test browser UI code via JS execution
 - **README.md** - Documentation for test structure and usage
 
 ### 3. Added utilities
@@ -37,9 +46,52 @@ Created helper scripts for easy usage:
 - Added `deno task test` to `deno.json` for feles-build integration
 - Updated `.gitignore` to include vendored binaries
 
-## How to use
+## Primary Use Case: Testing Browser UI Code
 
-### Running tests
+### Example Test Script
+
+Create `test-browser-ui.js`:
+
+```javascript
+// Access browser window
+const window = Services.wm.getMostRecentWindow("navigator:browser");
+const document = window.document;
+
+// Test Noraneko UI components
+const urlbar = document.getElementById("urlbar");
+const customFeature = document.getElementById("noraneko-custom-feature");
+
+// Validate and return results
+return {
+  browserReady: window.gBrowser !== undefined,
+  urlbarPresent: urlbar !== null,
+  customFeaturePresent: customFeature !== null,
+  tabCount: window.gBrowser.tabs.length
+};
+```
+
+### Run the test:
+
+```bash
+node tools/mus-uc-devtools/run.mjs -- exec -f test-browser-ui.js
+```
+
+## Usage
+
+### Testing Browser UI
+
+```bash
+# Execute JavaScript to test UI components
+node tools/mus-uc-devtools/run.mjs -- exec -f test-ui.js
+
+# Take screenshot for visual validation
+node tools/mus-uc-devtools/run.mjs -- screenshot -o ui-state.png
+
+# Show help
+node tools/mus-uc-devtools/run.mjs -- --help
+```
+
+### Running integration tests
 
 ```bash
 # Using npm
@@ -47,25 +99,6 @@ npm test
 
 # Using deno
 deno task test
-```
-
-### Using mus-uc-devtools CLI
-
-```bash
-# Show help
-node tools/mus-uc-devtools/run.mjs -- --help
-
-# Load CSS into Firefox
-node tools/mus-uc-devtools/run.mjs -- load -f userChrome.css
-
-# Take a screenshot
-node tools/mus-uc-devtools/run.mjs -- screenshot -o output.png
-
-# Execute JavaScript in Firefox chrome context
-node tools/mus-uc-devtools/run.mjs -- exec -f script.js
-
-# Watch CSS file for changes
-node tools/mus-uc-devtools/run.mjs -- watch -f style.css
 ```
 
 ### Programmatic usage
@@ -102,21 +135,21 @@ Future integration points:
 
 ## What mus-uc-devtools provides
 
-mus-uc-devtools is a tool for developing userChrome CSS for Firefox using the Marionette protocol:
+mus-uc-devtools enables JavaScript execution in Firefox chrome context via the Marionette protocol:
 
-- **CSS injection** - Load CSS into Firefox chrome context
-- **Screenshot capture** - Take screenshots of browser UI
-- **JavaScript execution** - Run JS in Firefox chrome context
-- **Chrome manifest** - Support for chrome:// URIs in CSS
-- **Watch mode** - Auto-reload CSS on file changes
+- **JavaScript execution** - Primary feature for testing browser UI code
+- **Browser automation** - Automate testing of Noraneko features
+- **Screenshot capture** - Visual validation of UI state
+- **Chrome context access** - Full access to browser internals
+- **CSS injection** - Additional capability for styling tests
 
 ## Future work
 
-1. Add functional tests that run with Firefox
-2. Create CSS injection tests
-3. Add screenshot comparison tests
+1. Create automated UI tests for Noraneko features
+2. Add test suite for browser-chrome components
+3. Implement screenshot-based visual regression testing
 4. Integrate with CI/CD for automated testing
-5. Add visual regression testing
+5. Add coverage reports for UI code
 
 ## References
 

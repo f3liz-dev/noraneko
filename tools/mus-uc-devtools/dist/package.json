@@ -1,0 +1,30 @@
+{
+  "name": "mus-uc-devtools",
+  "collaborators": [
+    "mus-uc-devtools contributors"
+  ],
+  "description": "A tool to develop userChrome CSS for Firefox using the Marionette protocol",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/f3liz-dev/mus-uc-devtools"
+  },
+  "files": [
+    "mus-uc.wasm",
+    "mus_uc_devtools_bg.wasm",
+    "mus_uc_devtools.js",
+    "mus_uc_devtools.d.ts",
+    "index.js"
+  ],
+  "main": "index.js",
+  "types": "mus_uc_devtools.d.ts",
+  "keywords": [
+    "firefox",
+    "userchrome",
+    "css",
+    "marionette",
+    "devtools"
+  ]
+}

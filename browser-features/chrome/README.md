@@ -35,3 +35,11 @@ utils/
 example/
 
 - as test and template for basic codes
+
+## Tailwind CSS v4 Support
+
+This directory includes Tailwind CSS v4 support for styling components.
+
+- See [TAILWIND.md](./TAILWIND.md) for setup details and usage instructions
+- CSS entry point: `utils/tailwind.css`
+- Configuration: `vite.config.ts`

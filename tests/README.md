@@ -5,18 +5,39 @@ This directory contains automated tests for the Noraneko browser using `mus-uc-d
 ## Test Structure
 
 - `integration-test.mjs` - Basic integration test verifying mus-uc-devtools vendored binaries
+- `browser-test-example.mjs` - Example showing how to use mus-uc-devtools for browser testing
 
 ## Running Tests
 
 ```bash
 # Run all tests
 npm test
+# or
+deno task test
 
 # Or run directly with Node.js
 node tests/integration-test.mjs
+node tests/browser-test-example.mjs
 ```
 
-## About mus-uc-devtools
+## Using mus-uc-devtools
+
+### Quick Start
+
+The easiest way to use mus-uc-devtools is through the runner script:
+
+```bash
+# Show available commands
+node tools/mus-uc-devtools/run.mjs -- --help
+
+# Load CSS into Firefox chrome context
+node tools/mus-uc-devtools/run.mjs -- load -f userChrome.css
+
+# Take a screenshot
+node tools/mus-uc-devtools/run.mjs -- screenshot -o output.png
+```
+
+### About mus-uc-devtools
 
 [mus-uc-devtools](https://github.com/f3liz-dev/mus-uc-devtools) is a tool for developing userChrome CSS for Firefox using the Marionette protocol. It provides:
 
@@ -33,6 +54,7 @@ The vendored binaries are located in `tools/mus-uc-devtools/dist/`.
 - Verify vendored binaries exist and are accessible
 - Test WASM module loading
 - Validate package structure
+- Demonstrate usage examples
 
 ### Functional Tests (Future)
 - CSS injection into browser chrome context
@@ -47,7 +69,15 @@ The vendored binaries are located in `tools/mus-uc-devtools/dist/`.
 
 ## Integration with feles-build
 
-Tests can be integrated with the feles-build workflow to run automatically during development and before production builds.
+Tests are integrated with the feles-build workflow and can be run using:
+
+```bash
+# Using npm
+npm test
+
+# Using deno task
+deno task test
+```
 
 Future integration points:
 - Pre-build validation
@@ -60,3 +90,11 @@ Future integration points:
 2. Import necessary utilities from `mus-uc-devtools`
 3. Follow the existing test structure with clear output
 4. Update this README with new test descriptions
+
+## Example Test Scenarios
+
+See `browser-test-example.mjs` for examples of:
+- CSS injection testing
+- Screenshot comparison
+- JavaScript execution in chrome context
+- Watch mode for development

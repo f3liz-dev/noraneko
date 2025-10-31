@@ -58,4 +58,13 @@ export abstract class NoraComponentBase {
     }, hot);
   }
   abstract init(): void;
+  
+  /**
+   * Return module metadata for dependency management and internal RPC
+   */
+  abstract _metadata(): {
+    moduleName: string;
+    dependencies: string[];
+    softDependencies: string[];
+  };
 }

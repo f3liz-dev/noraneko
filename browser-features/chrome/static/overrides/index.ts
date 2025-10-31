@@ -9,3 +9,11 @@ import { Overrides } from "./overrides.js";
 export function init() {
   Overrides.getInstance();
 }
+
+export function _metadata() {
+  return {
+    moduleName: "overrides",
+    dependencies: [],
+    softDependencies: [],
+  };
+}

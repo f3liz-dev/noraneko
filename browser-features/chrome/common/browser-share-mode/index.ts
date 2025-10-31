@@ -16,4 +16,12 @@ export default class BrowserShareMode extends NoraComponentBase {
       hotCtx: import.meta.hot,
     });
   }
+
+  _metadata() {
+    return {
+      moduleName: "browser-share-mode",
+      dependencies: [],
+      softDependencies: [],
+    };
+  }
 }

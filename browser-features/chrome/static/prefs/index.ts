@@ -21,3 +21,11 @@ export function initBeforeSessionStoreInit() {
 }
 
 export function init() {}
+
+export function _metadata() {
+  return {
+    moduleName: "prefs",
+    dependencies: [],
+    softDependencies: [],
+  };
+}

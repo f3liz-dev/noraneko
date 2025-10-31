@@ -51,3 +51,11 @@ export function init() {
     });
   });
 }
+
+export function _metadata() {
+  return {
+    moduleName: "downloadbar",
+    dependencies: [],
+    softDependencies: [],
+  };
+}

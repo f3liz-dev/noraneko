@@ -59,6 +59,14 @@ export default class TabRename extends NoraComponentBase {
       styleElement.remove();
     });
   }
+
+  _metadata() {
+    return {
+      moduleName: "tab-rename",
+      dependencies: [],
+      softDependencies: [],
+    };
+  }
 }
 
 export function showTabRenameInput(tab: XULElement): void {

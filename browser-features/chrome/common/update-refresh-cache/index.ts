@@ -24,3 +24,11 @@ export function init() {
   //   // );
   // }
 }
+
+export function _metadata() {
+  return {
+    moduleName: "update-refresh-cache",
+    dependencies: [],
+    softDependencies: [],
+  };
+}

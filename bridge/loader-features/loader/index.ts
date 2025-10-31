@@ -10,7 +10,11 @@ import {
 
 console.log("[noraneko] Initializing scripts...");
 
-export default async function initScripts() {
+export const loader = {
+  load: initScripts,
+};
+
+export async function initScripts() {
   // Import required modules and initialize i18n
   ChromeUtils.importESModule("resource://noraneko/modules/BrowserGlue.sys.mjs");
   const { NoranekoConstants } = ChromeUtils.importESModule(

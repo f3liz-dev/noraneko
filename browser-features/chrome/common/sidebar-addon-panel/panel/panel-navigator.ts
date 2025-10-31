@@ -6,10 +6,10 @@
 import type { CPanelSidebar } from "../index";
 import { WebsitePanel } from "./website-panel-window-parent.ts";
 
-export namespace PanelNavigator {
-  export let gPanelSidebar: CPanelSidebar | null = null;
+class CPanelNavigator {
+  gPanelSidebar: CPanelSidebar | null = null;
 
-  function call<T = void>(
+  call<T = void>(
     sideBarId: string,
     websiteFn?: (id: string) => T,
     sidebarFn?: (id: string) => T,
@@ -39,30 +39,38 @@ export namespace PanelNavigator {
   }
 
   /* Navigation */
-  export function back(sideBarId: string) {
-    return call(sideBarId, (id) => WebsitePanel.getInstance().goBackPanel(id), (id) =>
-      gPanelSidebar?.getBrowserElement(id)?.goBack(),
+  back(sideBarId: string) {
+    return call(
+      sideBarId,
+      (id) => WebsitePanel.getInstance().goBackPanel(id),
+      (id) => gPanelSidebar?.getBrowserElement(id)?.goBack(),
     );
   }
 
-  export function forward(sideBarId: string) {
-    return call(sideBarId, (id) => WebsitePanel.getInstance().goForwardPanel(id), (id) =>
-      gPanelSidebar?.getBrowserElement(id)?.goForward(),
+  forward(sideBarId: string) {
+    return call(
+      sideBarId,
+      (id) => WebsitePanel.getInstance().goForwardPanel(id),
+      (id) => gPanelSidebar?.getBrowserElement(id)?.goForward(),
     );
   }
 
-  export function reload(sideBarId: string) {
-    return call(sideBarId, (id) => WebsitePanel.getInstance().reloadPanel(id), (id) =>
-      gPanelSidebar?.getBrowserElement(id)?.reload(),
+  reload(sideBarId: string) {
+    return call(
+      sideBarId,
+      (id) => WebsitePanel.getInstance().reloadPanel(id),
+      (id) => gPanelSidebar?.getBrowserElement(id)?.reload(),
     );
   }
 
-  export function goIndexPage(sideBarId: string) {
+  goIndexPage(sideBarId: string) {
     return call(
       sideBarId,
       (id) => WebsitePanel.getInstance().goIndexPagePanel(id),
       (id) => {
-        const browser = gPanelSidebar?.getBrowserElement(id) as XULElement | undefined;
+        const browser = gPanelSidebar?.getBrowserElement(id) as
+          | XULElement
+          | undefined;
         if (browser) {
           browser.src = "";
           browser.src = gPanelSidebar?.getPanelData(id)?.url ?? "";
@@ -72,14 +80,16 @@ export namespace PanelNavigator {
   }
 
   /* Mute/Unmute */
-  export function toggleMute(sideBarId: string) {
-    return call(sideBarId, (id) => WebsitePanel.getInstance().toggleMutePanel(id), (id) =>
-      gPanelSidebar?.getBrowserElement(id)?.toggleMute(),
+  toggleMute(sideBarId: string) {
+    return call(
+      sideBarId,
+      (id) => WebsitePanel.getInstance().toggleMutePanel(id),
+      (id) => gPanelSidebar?.getBrowserElement(id)?.toggleMute(),
     );
   }
 
   /* Zoom (prefer WebsitePanel API) */
-  export function zoomIn(sideBarId: string) {
+  zoomIn(sideBarId: string) {
     try {
       WebsitePanel.getInstance().zoomInPanel(sideBarId);
     } catch (e) {
@@ -87,7 +97,7 @@ export namespace PanelNavigator {
     }
   }
 
-  export function zoomOut(sideBarId: string) {
+  zoomOut(sideBarId: string) {
     try {
       WebsitePanel.getInstance().zoomOutPanel(sideBarId);
     } catch (e) {
@@ -95,7 +105,7 @@ export namespace PanelNavigator {
     }
   }
 
-  export function zoomReset(sideBarId: string) {
+  zoomReset(sideBarId: string) {
     try {
       WebsitePanel.getInstance().resetZoomLevelPanel(sideBarId);
     } catch (e) {
@@ -103,3 +113,5 @@ export namespace PanelNavigator {
     }
   }
 }
+
+export const PanelNavigator = new CPanelNavigator();

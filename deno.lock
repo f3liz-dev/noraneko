@@ -15,32 +15,25 @@
     "npm:@bytecodealliance/preview2-shim@~0.17.4": "0.17.4",
     "npm:@deno/vite-plugin@^1.0.4": "1.0.5_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@types+node@24.9.2_lightningcss@1.30.2",
     "npm:@deno/vite-plugin@^1.0.5": "1.0.5_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@types+node@24.9.2_lightningcss@1.30.2",
-    "npm:@jsr/std__assert@^1.0.14": "1.0.14",
-    "npm:@jsr/std__collections@^1.1.3": "1.1.3",
+    "npm:@jsr/std__assert@^1.0.15": "1.0.15",
     "npm:@jsr/std__fs@^1.0.17": "1.0.19",
     "npm:@jsr/std__toml@^1.0.11": "1.0.11",
-    "npm:@jsr/std__toml@^1.0.9": "1.0.10",
     "npm:@prettier/plugin-oxc@^0.0.4": "0.0.4",
-    "npm:@solid-primitives/deep@~0.3.3": "0.3.3_solid-js@1.9.10__seroval@1.3.2",
     "npm:@swc/core@^1.14.0": "1.14.0",
     "npm:@tailwindcss/vite@^4.1.13": "4.1.16_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@types+node@24.9.2_lightningcss@1.30.2",
     "npm:@tailwindcss/vite@^4.1.16": "4.1.16_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@types+node@24.9.2_lightningcss@1.30.2",
-    "npm:@types/chroma-js@^3.1.1": "3.1.1",
+    "npm:@types/chroma-js@^3.1.2": "3.1.2",
     "npm:@types/node@^24.9.2": "24.9.2",
-    "npm:@types/uuid@10": "10.0.0",
+    "npm:@types/uuid@11": "11.0.0",
     "npm:@vitejs/plugin-react-swc@^4.2.0": "4.2.0_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@types+node@24.9.2_lightningcss@1.30.2",
     "npm:birpc@^2.3.0": "2.6.1",
     "npm:chalk@^5.6.2": "5.6.2",
     "npm:chokidar@^4.0.3": "4.0.3",
-    "npm:chroma-js@^3.1.1": "3.1.2",
     "npm:chroma-js@^3.1.2": "3.1.2",
-    "npm:es-toolkit@^1.36.0": "1.39.10",
-    "npm:es-toolkit@^1.39.10": "1.39.10",
+    "npm:es-toolkit@^1.41.0": "1.41.0",
     "npm:fast-glob@^3.3.3": "3.3.3",
     "npm:fp-ts@^2.16.10": "2.16.11",
     "npm:fp-ts@^2.16.11": "2.16.11",
-    "npm:i18next@^25.0.1": "25.6.0_typescript@5.9.3",
-    "npm:i18next@^25.4.2": "25.6.0_typescript@5.9.3",
     "npm:i18next@^25.6.0": "25.6.0_typescript@5.9.3",
     "npm:io-ts@^2.2.22": "2.2.22_fp-ts@2.16.11",
     "npm:lightningcss@^1.30.2": "1.30.2",
@@ -56,28 +49,18 @@
     "npm:rolldown@^1.0.0-beta.9-commit.d91dfb5": "1.0.0-beta.9-commit.d91dfb5",
     "npm:solid-js@^1.9.10": "1.9.10_seroval@1.3.2",
     "npm:solid-js@^1.9.5": "1.9.10_seroval@1.3.2",
-    "npm:solid-js@^1.9.9": "1.9.10_seroval@1.3.2",
     "npm:solid-styled-jsx@~0.27.1": "0.27.1_solid-js@1.9.10__seroval@1.3.2_styled-jsx@3.4.7__react@17.0.2__stylis@3.5.4",
     "npm:tailwindcss@^4.1.13": "4.1.16",
     "npm:tailwindcss@^4.1.16": "4.1.16",
     "npm:tsdown@*": "0.14.2_typescript@5.9.3_rolldown@1.0.0-beta.45",
     "npm:tsdown@~0.14.1": "0.14.2_typescript@5.9.3_rolldown@1.0.0-beta.45",
     "npm:typescript@^5.9.3": "5.9.3",
-    "npm:unplugin-swc@^1.5.2": "1.5.8_@swc+core@1.14.0",
-    "npm:unplugin-swc@^1.5.7": "1.5.8_@swc+core@1.14.0",
     "npm:unplugin-swc@^1.5.8": "1.5.8_@swc+core@1.14.0",
     "npm:uuid@13": "13.0.0",
-    "npm:uuid@^11.1.0": "11.1.0",
-    "npm:vite-plugin-istanbul@7": "7.2.0_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@types+node@24.9.2_lightningcss@1.30.2",
-    "npm:vite-plugin-istanbul@^7.1.0": "7.2.0_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@types+node@24.9.2_lightningcss@1.30.2",
     "npm:vite-plugin-istanbul@^7.2.0": "7.2.0_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@types+node@24.9.2_lightningcss@1.30.2",
     "npm:vite-plugin-solid@^2.11.10": "2.11.10_solid-js@1.9.10__seroval@1.3.2_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@babel+core@7.28.5_@types+node@24.9.2_lightningcss@1.30.2",
-    "npm:vite-plugin-solid@^2.11.6": "2.11.10_solid-js@1.9.10__seroval@1.3.2_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@babel+core@7.28.5_@types+node@24.9.2_lightningcss@1.30.2",
-    "npm:vite-plugin-solid@^2.11.8": "2.11.10_solid-js@1.9.10__seroval@1.3.2_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_@babel+core@7.28.5_@types+node@24.9.2_lightningcss@1.30.2",
     "npm:vite-tsconfig-paths@^5.1.4": "5.1.4_vite@7.1.12__@types+node@24.9.2__lightningcss@1.30.2__picomatch@4.0.3_typescript@5.9.3_@types+node@24.9.2_lightningcss@1.30.2",
-    "npm:vite@*": "7.1.12_@types+node@24.9.2_lightningcss@1.30.2_picomatch@4.0.3",
     "npm:vite@^7.1.12": "7.1.12_@types+node@24.9.2_lightningcss@1.30.2_picomatch@4.0.3",
-    "npm:vite@^7.1.3": "7.1.12_@types+node@24.9.2_lightningcss@1.30.2_picomatch@4.0.3",
     "npm:vite@^7.1.4": "7.1.12_@types+node@24.9.2_lightningcss@1.30.2_picomatch@4.0.3"
   },
   "jsr": {
@@ -473,12 +456,12 @@
         "@jridgewell/sourcemap-codec"
       ]
     },
-    "@jsr/std__assert@1.0.14": {
-      "integrity": "sha512-BcjBimpxuy7mXjWo7sZ3TtPitx91w3UqssyY92RmJIuoMGYywZRGxaxqK9/oybljbZbZpPOSrkgQI9wKpgZ9vQ==",
+    "@jsr/std__assert@1.0.15": {
+      "integrity": "sha512-iaekOy2yP8hMA5pN5PHMXic4MH0pRggviqTvPd4iEMkS66lDOFTV0uxDRwRc3ia4btRB39QiSUXJPpVZCQu8nA==",
       "dependencies": [
         "@jsr/std__internal"
       ],
-      "tarball": "https://npm.jsr.io/~/11/@jsr/std__assert/1.0.14.tgz"
+      "tarball": "https://npm.jsr.io/~/11/@jsr/std__assert/1.0.15.tgz"
     },
     "@jsr/std__collections@1.1.3": {
       "integrity": "sha512-jGG6mv3IjOyxm6PyT1YVbLyAlZL+Gow6LOpBw+84qb1nkdJY0+t6bi7ICEqAwUz87cNjBS0P+yZQ5HHclJhsfw==",
@@ -492,9 +475,9 @@
       ],
       "tarball": "https://npm.jsr.io/~/11/@jsr/std__fs/1.0.19.tgz"
     },
-    "@jsr/std__internal@1.0.10": {
-      "integrity": "sha512-fmD6yKep/sMnB2yPQU/REZG7Z4N9SZwcUBNnceo4QkXk67l3JEfxHoROQ/YHeVSOmq6x55Ra6nuMjz2ib3nj3g==",
-      "tarball": "https://npm.jsr.io/~/11/@jsr/std__internal/1.0.10.tgz"
+    "@jsr/std__internal@1.0.12": {
+      "integrity": "sha512-6xReMW9p+paJgqoFRpOE2nogJFvzPfaLHLIlyADYjKMUcwDyjKZxryIbgcU+gxiTygn8yCjld1HoI0ET4/iZeA==",
+      "tarball": "https://npm.jsr.io/~/11/@jsr/std__internal/1.0.12.tgz"
     },
     "@jsr/std__path@1.1.2": {
       "integrity": "sha512-5hkOR1s5M7am02Bn9KS+SNMNwUSivz7t7/w2HBhFIfO7Eh8+mWilaZ+1tdanV9aaSHr4c99Zo4Da+cCSuzUOdA==",
@@ -502,13 +485,6 @@
         "@jsr/std__internal"
       ],
       "tarball": "https://npm.jsr.io/~/11/@jsr/std__path/1.1.2.tgz"
-    },
-    "@jsr/std__toml@1.0.10": {
-      "integrity": "sha512-knKM6tIfTwH1LRpTr64GuShUZZdLCzt3z3PgEovxqTeXyShvgmLKCS13KBxIHWqEYxxWBAj6vydXUdhIJ8b37A==",
-      "dependencies": [
-        "@jsr/std__collections"
-      ],
-      "tarball": "https://npm.jsr.io/~/11/@jsr/std__toml/1.0.10.tgz"
     },
     "@jsr/std__toml@1.0.11": {
       "integrity": "sha512-+LZAizoPAPwMDmRZr86/xPrbO8E0Oq0BJ70mr1fNMobJ/6X6v15Jk16ZClFGukWgzBMd8ggiMWnzp24+N3VNZg==",
@@ -971,33 +947,6 @@
       "os": ["win32"],
       "cpu": ["x64"]
     },
-    "@solid-primitives/deep@0.3.3_solid-js@1.9.10__seroval@1.3.2": {
-      "integrity": "sha512-YnCV2OFbBlNYlww0lSD7oDpk9zN20KQWr699s6euwd6+oRE1nbI+vqrfYuqC7E0WPDfk0DIG+ylY1xvY31ZlTg==",
-      "dependencies": [
-        "@solid-primitives/memo",
-        "solid-js"
-      ]
-    },
-    "@solid-primitives/memo@1.4.3_solid-js@1.9.10__seroval@1.3.2": {
-      "integrity": "sha512-CA+n9yaoqbYm+My5tY2RWb6EE16tVyehM4GzwQF4vCwvjYPAYk1JSRIVuMC0Xuj5ExD2XQJE5E2yAaKY2HTUsg==",
-      "dependencies": [
-        "@solid-primitives/scheduled",
-        "@solid-primitives/utils",
-        "solid-js"
-      ]
-    },
-    "@solid-primitives/scheduled@1.5.2_solid-js@1.9.10__seroval@1.3.2": {
-      "integrity": "sha512-/j2igE0xyNaHhj6kMfcUQn5rAVSTLbAX+CDEBm25hSNBmNiHLu2lM7Usj2kJJ5j36D67bE8wR1hBNA8hjtvsQA==",
-      "dependencies": [
-        "solid-js"
-      ]
-    },
-    "@solid-primitives/utils@6.3.2_solid-js@1.9.10__seroval@1.3.2": {
-      "integrity": "sha512-hZ/M/qr25QOCcwDPOHtGjxTD8w2mNyVAYvcfgwzBHq2RwNqHNdDNsMZYap20+ruRwW4A3Cdkczyoz0TSxLCAPQ==",
-      "dependencies": [
-        "solid-js"
-      ]
-    },
     "@swc/core-darwin-arm64@1.14.0": {
       "integrity": "sha512-uHPC8rlCt04nvYNczWzKVdgnRhxCa3ndKTBBbBpResOZsRmiwRAvByIGh599j+Oo6Z5eyTPrgY+XfJzVmXnN7Q==",
       "os": ["darwin"],
@@ -1212,8 +1161,8 @@
         "@babel/types@7.28.5"
       ]
     },
-    "@types/chroma-js@3.1.1": {
-      "integrity": "sha512-SFCr4edNkZ1bGaLzGz7rgR1bRzVX4MmMxwsIa3/Bh6ose8v+hRpneoizHv0KChdjxaXyjRtaMq7sCuZSzPomQA=="
+    "@types/chroma-js@3.1.2": {
+      "integrity": "sha512-YBTQqArPN8A0niHXCwrO1z5x++a+6l0mLBykncUpr23oIPW7L4h39s6gokdK/bDrPmSh8+TjMmrhBPnyiaWPmQ=="
     },
     "@types/estree@1.0.8": {
       "integrity": "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="
@@ -1230,8 +1179,12 @@
         "undici-types@7.16.0"
       ]
     },
-    "@types/uuid@10.0.0": {
-      "integrity": "sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ=="
+    "@types/uuid@11.0.0": {
+      "integrity": "sha512-HVyk8nj2m+jcFRNazzqyVKiZezyhDKrGUA3jlEcg/nZ6Ms+qHwocba1Y/AaVaznJTAM9xpdFSh+ptbNrhOGvZA==",
+      "dependencies": [
+        "uuid"
+      ],
+      "deprecated": true
     },
     "@types/yauzl@2.10.3": {
       "integrity": "sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==",
@@ -1587,8 +1540,8 @@
     "entities@6.0.1": {
       "integrity": "sha512-aN97NXWF6AWBTahfVOIrB/NShkzi5H7F9r1s9mD3cDj4Ko5f2qhhVoYMibXF7GlLveb/D2ioWay8lxI97Ven3g=="
     },
-    "es-toolkit@1.39.10": {
-      "integrity": "sha512-E0iGnTtbDhkeczB0T+mxmoVlT4YNweEKBLq7oaU4p11mecdsZpNWOglI4895Vh4usbQ+LsJiuLuI2L0Vdmfm2w=="
+    "es-toolkit@1.41.0": {
+      "integrity": "sha512-bDd3oRmbVgqZCJS6WmeQieOrzpl3URcWBUVDXxOELlUW2FuW+0glPOz1n0KnRie+PdyvUZcXz2sOn00c6pPRIA=="
     },
     "esbuild@0.25.11": {
       "integrity": "sha512-KohQwyzrKTQmhXDW1PjCv3Tyspn9n5GcY2RTDqeORIdIJY8yKIF7sTSopFmn/wpMPW4rdPXI0UE5LJLuq3bx0Q==",
@@ -2721,10 +2674,6 @@
       ],
       "bin": true
     },
-    "uuid@11.1.0": {
-      "integrity": "sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==",
-      "bin": true
-    },
     "uuid@13.0.0": {
       "integrity": "sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==",
       "bin": true
@@ -2908,28 +2857,7 @@
       "bridge/loader-features": {
         "dependencies": [
           "jsr:@types/gecko@*",
-          "npm:@deno/vite-plugin@^1.0.5",
-          "npm:@jsr/std__assert@^1.0.14",
-          "npm:@jsr/std__collections@^1.1.3",
-          "npm:@jsr/std__toml@^1.0.9",
-          "npm:@solid-primitives/deep@~0.3.3",
-          "npm:@types/chroma-js@^3.1.1",
-          "npm:@types/uuid@10",
-          "npm:chroma-js@^3.1.2",
-          "npm:es-toolkit@^1.39.10",
-          "npm:fp-ts@^2.16.11",
-          "npm:i18next@^25.4.2",
-          "npm:io-ts@^2.2.22",
-          "npm:pathe@^2.0.3",
-          "npm:solid-js@^1.9.9",
-          "npm:solid-styled-jsx@~0.27.1",
-          "npm:unplugin-swc@^1.5.7",
-          "npm:uuid@^11.1.0",
-          "npm:vite-plugin-istanbul@^7.1.0",
-          "npm:vite-plugin-solid@^2.11.8",
-          "npm:vite-tsconfig-paths@^5.1.4",
-          "npm:vite@*",
-          "npm:vite@^7.1.3"
+          "npm:vite@*"
         ]
       },
       "bridge/loader-modules": {
@@ -2959,22 +2887,22 @@
         "dependencies": [
           "jsr:@nora/solid-xul@*",
           "jsr:@types/gecko@*",
-          "npm:@deno/vite-plugin@^1.0.4",
-          "npm:@jsr/std__assert@^1.0.14",
-          "npm:@types/chroma-js@^3.1.1",
-          "npm:@types/uuid@10",
-          "npm:chroma-js@^3.1.1",
-          "npm:es-toolkit@^1.36.0",
+          "npm:@deno/vite-plugin@^1.0.5",
+          "npm:@jsr/std__assert@^1.0.15",
+          "npm:@types/chroma-js@^3.1.2",
+          "npm:@types/uuid@11",
+          "npm:chroma-js@^3.1.2",
+          "npm:es-toolkit@^1.41.0",
           "npm:fp-ts@^2.16.11",
-          "npm:i18next@^25.0.1",
+          "npm:i18next@^25.6.0",
           "npm:io-ts@^2.2.22",
-          "npm:rolldown-vite@latest",
-          "npm:solid-js@^1.9.5",
+          "npm:rolldown-vite@^7.1.20",
+          "npm:solid-js@^1.9.10",
           "npm:solid-styled-jsx@~0.27.1",
-          "npm:unplugin-swc@^1.5.2",
-          "npm:uuid@^11.1.0",
-          "npm:vite-plugin-istanbul@7",
-          "npm:vite-plugin-solid@^2.11.6",
+          "npm:unplugin-swc@^1.5.8",
+          "npm:uuid@13",
+          "npm:vite-plugin-istanbul@^7.2.0",
+          "npm:vite-plugin-solid@^2.11.10",
           "npm:vite-tsconfig-paths@^5.1.4",
           "npm:vite@*"
         ]

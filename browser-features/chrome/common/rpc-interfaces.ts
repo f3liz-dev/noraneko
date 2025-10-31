@@ -4,10 +4,16 @@
  * Central registry for all module RPC interfaces
  * This file contains TypeScript interfaces for all module RPC methods
  * Used for type-safe RPC calls via this.rpc
+ * 
+ * NOTE: With the new Either-based system, all RPC methods automatically return
+ * Promise<Either<Error, T>> for error-safe handling
  */
+
+import type * as E from "fp-ts/Either";
 
 /**
  * Sidebar module RPC interface
+ * All methods automatically wrapped with Either for error safety
  */
 export interface SidebarRPC {
   registerSidebarIcon(options: {
@@ -15,18 +21,19 @@ export interface SidebarRPC {
     i18nName: string;
     iconUrl: string;
     birpcMethodName: string;
-  }): Promise<void>;
-  onClicked(iconName: string): Promise<void>;
+  }): Promise<E.Either<Error, void>>;
+  onClicked(iconName: string): Promise<E.Either<Error, void>>;
 }
 
 /**
  * Sidebar Addon Panel module RPC interface
+ * All methods automatically wrapped with Either for error safety
  */
 export interface SidebarAddonPanelRPC {
-  onPanelDataUpdate(data: any): void;
-  onPanelSelectionChange(panelId: string): void;
-  onNotesIconActivated(): void;
-  onBookmarksIconActivated(): void;
+  onPanelDataUpdate(data: any): Promise<E.Either<Error, void>>;
+  onPanelSelectionChange(panelId: string): Promise<E.Either<Error, void>>;
+  onNotesIconActivated(): Promise<E.Either<Error, void>>;
+  onBookmarksIconActivated(): Promise<E.Either<Error, void>>;
 }
 
 /**
@@ -42,6 +49,10 @@ export interface ModuleRPCInterfaces {
 /**
  * Helper type to create typed RPC object based on dependencies
  * Usage: RPCDependencies<["sidebar", "other-module"]>
+ * 
+ * All methods return Either<Error, T> for error-safe handling:
+ * - Hard dependencies: Either<Error, T>
+ * - Soft dependencies: Either<Error, T | undefined>
  */
 export type RPCDependencies<T extends ReadonlyArray<keyof ModuleRPCInterfaces>> = {
   [K in T[number]]: ModuleRPCInterfaces[K];

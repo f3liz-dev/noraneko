@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 import { createBirpc } from "birpc";
+import * as E from "fp-ts/Either";
 
 /**
  * Interface for RPC channel configuration
@@ -197,6 +198,48 @@ class RPCRegistry {
   }
 
   /**
+   * Call an RPC method with Either error handling (error-safe)
+   * Returns Either<Error, T> - Left for errors, Right for success
+   * @param targetModule - Name of the target module
+   * @param method - Method name to call
+   * @param args - Arguments to pass to the method
+   * @returns Promise resolving to Either<Error, T>
+   */
+  async callEither<T = any>(
+    targetModule: string,
+    method: string,
+    ...args: any[]
+  ): Promise<E.Either<Error, T>> {
+    try {
+      const result = await this.call<T>(targetModule, method, ...args);
+      return E.right(result);
+    } catch (error) {
+      return E.left(error instanceof Error ? error : new Error(String(error)));
+    }
+  }
+
+  /**
+   * Try to call an RPC method with Either error handling (soft dependency)
+   * Returns Either<Error, T | undefined> - undefined if module not available
+   * @param targetModule - Name of the target module
+   * @param method - Method name to call
+   * @param args - Arguments to pass to the method
+   * @returns Promise resolving to Either<Error, T | undefined>
+   */
+  async tryCallEither<T = any>(
+    targetModule: string,
+    method: string,
+    ...args: any[]
+  ): Promise<E.Either<Error, T | undefined>> {
+    try {
+      const result = await this.tryCall<T>(targetModule, method, ...args);
+      return E.right(result);
+    } catch (error) {
+      return E.left(error instanceof Error ? error : new Error(String(error)));
+    }
+  }
+
+  /**
    * Process pending RPC calls for a newly registered module
    * @param moduleName - Name of the module that was just registered
    */
@@ -269,6 +312,40 @@ class RPCRegistry {
       },
     });
   }
+
+  /**
+   * Get an Either-based proxy for hard dependencies
+   * All methods return Promise<Either<Error, T>>
+   * @param targetModule - Name of the target module
+   * @returns Proxy object with Either-wrapped results
+   */
+  getEitherProxy<T extends Record<string, any>>(targetModule: string): T {
+    return new Proxy({} as T, {
+      get: (_target, prop: string) => {
+        if (typeof prop === "string") {
+          return (...args: any[]) => this.callEither(targetModule, prop, ...args);
+        }
+        return undefined;
+      },
+    });
+  }
+
+  /**
+   * Get an Either-based soft proxy for soft dependencies
+   * All methods return Promise<Either<Error, T | undefined>>
+   * @param targetModule - Name of the target module
+   * @returns Proxy object with Either-wrapped results (undefined for missing modules)
+   */
+  getSoftEitherProxy<T extends Record<string, any>>(targetModule: string): T {
+    return new Proxy({} as T, {
+      get: (_target, prop: string) => {
+        if (typeof prop === "string") {
+          return (...args: any[]) => this.tryCallEither(targetModule, prop, ...args);
+        }
+        return undefined;
+      },
+    });
+  }
 }
 
 // Export singleton instance
@@ -286,44 +363,13 @@ export function unregisterModuleRPC(moduleName: string): void {
   rpcRegistry.unregisterModule(moduleName);
 }
 
-export function callModuleRPC<T = any>(
-  targetModule: string,
-  method: string,
-  ...args: any[]
-): Promise<T> {
-  return rpcRegistry.call<T>(targetModule, method, ...args);
-}
-
-export function tryCallModuleRPC<T = any>(
-  targetModule: string,
-  method: string,
-  ...args: any[]
-): Promise<T | undefined> {
-  return rpcRegistry.tryCall<T>(targetModule, method, ...args);
-}
-
-export function getModuleProxy<T extends Record<string, any>>(
-  targetModule: string
-): T {
-  return rpcRegistry.getProxy<T>(targetModule);
-}
-
-export function getSoftModuleProxy<T extends Record<string, any>>(
-  targetModule: string
-): T {
-  return rpcRegistry.getSoftProxy<T>(targetModule);
-}
-
-export function isModuleRegistered(moduleName: string): boolean {
-  return rpcRegistry.isModuleRegistered(moduleName);
-}
-
 /**
- * Create a typed RPC proxy object for module dependencies
+ * Create a typed RPC proxy object for module dependencies (Either-based, error-safe)
  * This is used by NoraComponentBase to provide this.rpc accessor
- * @param dependencies - Array of dependency module names
+ * All methods return Either<Error, T> for safe error handling
+ * @param dependencies - Array of dependency module names (hard dependencies)
  * @param softDependencies - Array of soft dependency module names
- * @returns Object with proxies for each dependency
+ * @returns Object with Either-wrapped proxies for each dependency
  */
 export function createDependencyRPCProxies<T extends Record<string, any>>(
   dependencies: string[],
@@ -331,23 +377,72 @@ export function createDependencyRPCProxies<T extends Record<string, any>>(
 ): T {
   const rpcObject: any = {};
   
-  // Add hard dependencies (throws on error)
+  // Add hard dependencies (returns Either<Error, T>)
   for (const dep of dependencies) {
     Object.defineProperty(rpcObject, dep, {
-      get: () => rpcRegistry.getProxy(dep),
+      get: () => rpcRegistry.getEitherProxy(dep),
       enumerable: true,
       configurable: false,
     });
   }
   
-  // Add soft dependencies (returns undefined on error)
+  // Add soft dependencies (returns Either<Error, T | undefined>)
   for (const dep of softDependencies) {
     Object.defineProperty(rpcObject, dep, {
-      get: () => rpcRegistry.getSoftProxy(dep),
+      get: () => rpcRegistry.getSoftEitherProxy(dep),
       enumerable: true,
       configurable: false,
     });
   }
   
   return rpcObject as T;
+}
+
+/**
+ * @deprecated Use `this.rpc` pattern in NoraComponentBase instead
+ * This function is kept for backwards compatibility but will be removed in the future
+ */
+export function callModuleRPC<T = any>(
+  targetModule: string,
+  method: string,
+  ...args: any[]
+): Promise<T> {
+  console.warn('[RPC] callModuleRPC is deprecated. Use this.rpc pattern instead.');
+  return rpcRegistry.call<T>(targetModule, method, ...args);
+}
+
+/**
+ * @deprecated Use `this.rpc` pattern in NoraComponentBase instead
+ */
+export function tryCallModuleRPC<T = any>(
+  targetModule: string,
+  method: string,
+  ...args: any[]
+): Promise<T | undefined> {
+  console.warn('[RPC] tryCallModuleRPC is deprecated. Use this.rpc pattern instead.');
+  return rpcRegistry.tryCall<T>(targetModule, method, ...args);
+}
+
+/**
+ * @deprecated Use `this.rpc` pattern in NoraComponentBase instead
+ */
+export function getModuleProxy<T extends Record<string, any>>(
+  targetModule: string
+): T {
+  console.warn('[RPC] getModuleProxy is deprecated. Use this.rpc pattern instead.');
+  return rpcRegistry.getProxy<T>(targetModule);
+}
+
+/**
+ * @deprecated Use `this.rpc` pattern in NoraComponentBase instead
+ */
+export function getSoftModuleProxy<T extends Record<string, any>>(
+  targetModule: string
+): T {
+  console.warn('[RPC] getSoftModuleProxy is deprecated. Use this.rpc pattern instead.');
+  return rpcRegistry.getSoftProxy<T>(targetModule);
+}
+
+export function isModuleRegistered(moduleName: string): boolean {
+  return rpcRegistry.isModuleRegistered(moduleName);
 }

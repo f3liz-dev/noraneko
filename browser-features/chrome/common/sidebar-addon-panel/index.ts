@@ -5,6 +5,8 @@
 
 import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
 import type { RPCDependencies } from "../rpc-interfaces.ts";
+import * as E from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
 import { onCleanup } from "solid-js";
 import { 
   CPanelSidebar,
@@ -70,23 +72,42 @@ export default class SidebarAddonPanel extends NoraComponentBase {
 
   // Example method that demonstrates registering sidebar icons
   private async registerExampleSidebarIcons(): Promise<void> {
-    // Using this.rpc.sidebar - type-safe and clean!
-    // The proxy will gracefully handle if sidebar is not loaded (soft dependency)
-    await this.rpc.sidebar.registerSidebarIcon({
+    // Using this.rpc.sidebar with Either for error-safe handling
+    // The proxy returns Either<Error, T> - we can pattern match on the result
+    
+    // Register notes icon with Either pattern matching
+    const notesResult = await this.rpc.sidebar.registerSidebarIcon({
       name: "notes",
       i18nName: "sidebar.notes.title", 
       iconUrl: "./icons/notes.svg",
       birpcMethodName: "onNotesIconActivated"
     });
+    
+    pipe(
+      notesResult,
+      E.fold(
+        (error) => console.warn("Failed to register notes icon:", error),
+        () => console.debug("Notes icon registered successfully")
+      )
+    );
 
-    await this.rpc.sidebar.registerSidebarIcon({
+    // Register bookmarks icon
+    const bookmarksResult = await this.rpc.sidebar.registerSidebarIcon({
       name: "bookmarks",
       i18nName: "sidebar.bookmarks.title",
       iconUrl: "chrome://browser/skin/bookmark.svg", 
       birpcMethodName: "onBookmarksIconActivated"
     });
+    
+    pipe(
+      bookmarksResult,
+      E.fold(
+        (error) => console.warn("Failed to register bookmarks icon:", error),
+        () => console.debug("Bookmarks icon registered successfully")
+      )
+    );
 
-    console.debug("SidebarAddonPanel: Example sidebar icons registered");
+    console.debug("SidebarAddonPanel: Example sidebar icon registration completed");
   }
 
   // Example callback methods that would be triggered by sidebar icon activation
@@ -100,10 +121,19 @@ export default class SidebarAddonPanel extends NoraComponentBase {
     // Handle bookmarks panel activation - this would be called via RPC from sidebar module
   }
 
-  // Example method to demonstrate icon click handling
+  // Example method to demonstrate icon click handling  
   public async handleIconClick(iconName: string): Promise<void> {
     console.debug(`SidebarAddonPanel: Handling click for icon: ${iconName}`);
-    await this.rpc.sidebar.onClicked(iconName);
+    const result = await this.rpc.sidebar.onClicked(iconName);
+    
+    // Handle the Either result
+    pipe(
+      result,
+      E.fold(
+        (error) => console.error("Failed to handle icon click:", error),
+        () => console.debug("Icon click handled successfully")
+      )
+    );
   }
 
   _metadata() {

@@ -2,7 +2,6 @@
 
 import * as path from "@std/path";
 import {
-  BRANDING,
   PLATFORM,
   VERSION,
   PATHS,

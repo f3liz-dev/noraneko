@@ -50,7 +50,6 @@ async function runDev(): Promise<void> {
     }
   }
   const pipe = new ReadyPipe();
-  let readyReceived = false;
 
   pipe.on("data", (chunk: string) => {
     const s = chunk.toString().trim();
@@ -58,7 +57,6 @@ async function runDev(): Promise<void> {
       s === (DevServer as any).DEV_SERVER?.ready_string ||
       s.includes("nora-")
     ) {
-      readyReceived = true;
       logger.success("Dev servers are ready.");
       // Launch browser
       BrowserLauncher.run().catch((e: any) => {
@@ -122,7 +120,6 @@ async function runStage(): Promise<void> {
     }
   }
   const pipe = new ReadyPipe();
-  let readyReceived = false;
 
   pipe.on("data", (chunk: string) => {
     const s = chunk.toString().trim();
@@ -130,7 +127,6 @@ async function runStage(): Promise<void> {
       s === (DevServer as any).DEV_SERVER?.ready_string ||
       s.includes("nora-")
     ) {
-      readyReceived = true;
       logger.success("Dev servers are ready.");
       // Launch browser
       BrowserLauncher.run().catch((e: any) => {

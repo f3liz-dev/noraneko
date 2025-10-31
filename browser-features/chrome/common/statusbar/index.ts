@@ -37,7 +37,7 @@ function onPopupShowing(event: Event) {
       );
   }
 
-  _metadata() {
+  _metadata = () => {
     return {
       moduleName: "statusbar",
       dependencies: [],

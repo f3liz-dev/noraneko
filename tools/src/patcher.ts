@@ -3,7 +3,6 @@
 import * as path from "@std/path";
 import {
   runCommandChecked,
-  runCommand,
   Logger,
   exists,
   safeRemove,
@@ -193,7 +192,7 @@ export function createPatches(): void {
         .trim() + "\n";
 
     const patchName =
-      file.replace(/\//g, "-").replace(/\.[^\/.]+$/, "") + ".patch";
+      file.replace(/\//g, "-").replace(/\.[^/.]+$/, "") + ".patch";
     const patchPath = path.join(PATCHES_DIR, patchName);
     Deno.writeTextFileSync(patchPath, modifiedDiff);
     logger.info(`Created/Updated patch: ${patchPath}`);

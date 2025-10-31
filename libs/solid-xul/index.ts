@@ -52,7 +52,7 @@ const {
     node: JSX.Element,
     name: string,
     value: T,
-    prev?: T,
+    _prev?: T,
   ): void => {
     if (node instanceof Element) {
       const resultStyleObject = CStyleObject.decode(value);

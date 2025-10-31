@@ -46,41 +46,34 @@ export default class SidebarAddonPanel extends NoraComponentBase {
     });
   }
 
-  // RPC methods that can be called by other modules
+  // RPC methods that can be called by sidebar via registered callbacks
   private onPanelDataUpdate(data: any): void {
     // Handle panel data updates from sidebar core
     console.debug("SidebarAddonPanel: Received panel data update", data);
-    // Update UI components with new data
+    // Update UI components with new data directly
     if (this.ctx) {
-      // Trigger UI update via internal event system (not Services.obs)
-      // Using custom event on the document
-      const event = new CustomEvent("noraneko-addon-panel-internal-update", {
-        detail: { type: "panel-data-update", data }
-      });
-      document.dispatchEvent(event);
+      // Update UI directly - no custom events needed
+      // The actual UI update logic would go here
     }
   }
 
   private onPanelSelectionChange(panelId: string): void {
     // Handle panel selection changes from sidebar core
     console.debug("SidebarAddonPanel: Panel selection changed to", panelId);
-    const event = new CustomEvent("noraneko-addon-panel-internal-update", {
-      detail: { type: "panel-selection-change", panelId }
-    });
-    document.dispatchEvent(event);
+    // Update UI directly - no custom events needed
+    if (this.ctx) {
+      // The actual UI update logic would go here
+    }
   }
 
   // Example method that demonstrates registering sidebar icons
   private async registerExampleSidebarIcons(): Promise<void> {
-    // Using this.rpc.sidebar with Either for error-safe handling
-    // The proxy returns Either<Error, T> - we can pattern match on the result
-    
-    // Register notes icon with Either pattern matching
+    // Register notes icon with callback (not birpcMethodName)
     const notesResult = await this.rpc.sidebar.registerSidebarIcon({
       name: "notes",
       i18nName: "sidebar.notes.title", 
       iconUrl: "./icons/notes.svg",
-      birpcMethodName: "onNotesIconActivated"
+      callback: () => this.onNotesIconActivated(), // Direct callback
     });
     
     pipe(
@@ -91,12 +84,12 @@ export default class SidebarAddonPanel extends NoraComponentBase {
       )
     );
 
-    // Register bookmarks icon
+    // Register bookmarks icon with callback
     const bookmarksResult = await this.rpc.sidebar.registerSidebarIcon({
       name: "bookmarks",
       i18nName: "sidebar.bookmarks.title",
       iconUrl: "chrome://browser/skin/bookmark.svg", 
-      birpcMethodName: "onBookmarksIconActivated"
+      callback: () => this.onBookmarksIconActivated(), // Direct callback
     });
     
     pipe(
@@ -107,7 +100,16 @@ export default class SidebarAddonPanel extends NoraComponentBase {
       )
     );
 
-    console.debug("SidebarAddonPanel: Example sidebar icon registration completed");
+    // Register callbacks for data updates and selection changes
+    const dataCallbackResult = await this.rpc.sidebar.registerDataUpdateCallback(
+      (data: any) => this.onPanelDataUpdate(data)
+    );
+    
+    const selectionCallbackResult = await this.rpc.sidebar.registerSelectionChangeCallback(
+      (panelId: string) => this.onPanelSelectionChange(panelId)
+    );
+
+    console.debug("SidebarAddonPanel: Callbacks registered with sidebar");
   }
 
   // Example callback methods that would be triggered by sidebar icon activation
@@ -141,12 +143,9 @@ export default class SidebarAddonPanel extends NoraComponentBase {
       moduleName: "sidebar-addon-panel",
       dependencies: [],
       softDependencies: ["sidebar"], // sidebar is a soft dependency
-      // Expose RPC methods that other modules can call
+      // No RPC methods needed - callbacks are registered directly with sidebar
       rpcMethods: {
-        onPanelDataUpdate: (data: any) => this.onPanelDataUpdate(data),
-        onPanelSelectionChange: (panelId: string) => this.onPanelSelectionChange(panelId),
-        onNotesIconActivated: () => this.onNotesIconActivated(),
-        onBookmarksIconActivated: () => this.onBookmarksIconActivated(),
+        // Can keep these if other modules need to call them directly
       },
     };
   }

@@ -19,114 +19,106 @@ interface SidebarIconRegistration {
   name: string;
   i18nName: string;
   iconUrl: string;
-  birpcMethodName: string;
+  callback: () => void | Promise<void>;
 }
 
 @noraComponent(import.meta.hot)
 export default class Sidebar extends NoraComponentBase {
-  // Type-safe RPC access - Either handles both available and missing modules
-  protected rpc!: RPCDependencies<["sidebar-addon-panel"]>;
+  // No dependencies - sidebar-addon-panel will register callbacks
+  protected rpc!: RPCDependencies<[]>;
   
   private registeredIcons: Map<string, SidebarIconRegistration> = new Map();
+  private dataUpdateCallbacks: Set<(data: any) => void> = new Set();
+  private selectionChangeCallbacks: Set<(panelId: string) => void> = new Set();
 
   init(): void {
-    // Set up data watchers to notify addon panel of changes
-    this.setupDataWatchers();
-
     // Set up cleanup
     onCleanup(() => {
-      // Cleanup if needed
+      this.registeredIcons.clear();
+      this.dataUpdateCallbacks.clear();
+      this.selectionChangeCallbacks.clear();
     });
   }
 
-  // RPC method: Register a sidebar icon
+  // RPC method: Register a sidebar icon with callback
   private async registerSidebarIcon(options: {
     name: string;
     i18nName: string;
     iconUrl: string;
-    birpcMethodName: string;
+    callback: () => void | Promise<void>;
   }): Promise<void> {
-    // Register the sidebar icon and store the callback method name
+    // Register the sidebar icon with its callback
     this.registeredIcons.set(options.name, options);
     
-    console.debug(`Sidebar: Registered icon ${options.name} with callback ${options.birpcMethodName}`);
-    
-    // Dispatch custom event for UI updates (instead of Services.obs)
-    const event = new CustomEvent("noraneko-sidebar-icon-activated", {
-      detail: {
-        iconName: options.name,
-        i18nName: options.i18nName,
-        iconUrl: options.iconUrl
-      }
-    });
-    document.dispatchEvent(event);
+    console.debug(`Sidebar: Registered icon ${options.name} with callback`);
   }
 
   // RPC method: Handle icon click events
   private async onClicked(iconName: string): Promise<void> {
-    // Handle icon click events
     const iconRegistration = this.registeredIcons.get(iconName);
-    if (iconRegistration) {
-      // Trigger the registered callback method via RPC using this.rpc
-      const callbackMethod = (this.rpc["sidebar-addon-panel"] as any)[iconRegistration.birpcMethodName];
-      if (callbackMethod && typeof callbackMethod === "function") {
-        await callbackMethod();
+    if (iconRegistration && iconRegistration.callback) {
+      try {
+        await iconRegistration.callback();
+        console.debug(`Sidebar: Icon ${iconName} callback executed`);
+      } catch (error) {
+        console.error(`Sidebar: Error executing callback for icon ${iconName}:`, error);
       }
-      
-      // Dispatch custom event (instead of Services.obs)
-      const event = new CustomEvent("noraneko-sidebar-icon-clicked", {
-        detail: {
-          iconName: iconName,
-          i18nName: iconRegistration.i18nName,
-          iconUrl: iconRegistration.iconUrl
-        }
-      });
-      document.dispatchEvent(event);
+    } else {
+      console.warn(`Sidebar: No callback registered for icon ${iconName}`);
     }
-    
-    console.debug(`Sidebar: Icon ${iconName} clicked`);
   }
 
-  private setupDataWatchers(): void {
-    // Watch for data changes and notify addon panel
-    // Note: In a real implementation, you would set up reactive effects
-    // to watch the data signals and call these methods when they change
-    
-    // For now, we'll provide methods that can be called manually
-    // In the real implementation, these would be triggered by solid-js effects
+  // RPC method: Register callback for data updates
+  private registerDataUpdateCallback(callback: (data: any) => void): void {
+    this.dataUpdateCallbacks.add(callback);
+    console.debug("Sidebar: Registered data update callback");
+  }
+
+  // RPC method: Register callback for selection changes
+  private registerSelectionChangeCallback(callback: (panelId: string) => void): void {
+    this.selectionChangeCallbacks.add(callback);
+    console.debug("Sidebar: Registered selection change callback");
+  }
+
+  // RPC method: Unregister a callback
+  private unregisterDataUpdateCallback(callback: (data: any) => void): void {
+    this.dataUpdateCallbacks.delete(callback);
+  }
+
+  // RPC method: Unregister a callback
+  private unregisterSelectionChangeCallback(callback: (panelId: string) => void): void {
+    this.selectionChangeCallbacks.delete(callback);
   }
 
   // Public API methods that can be called by other components
   public async notifyDataChanged(data: any): Promise<void> {
     setPanelSidebarData(data);
-    await this.rpc["sidebar-addon-panel"].onPanelDataUpdate(data);
     
-    // Dispatch custom event (instead of Services.obs)
-    const event = new CustomEvent("noraneko-sidebar-data-changed", {
-      detail: { data }
-    });
-    document.dispatchEvent(event);
+    // Call all registered callbacks instead of dispatching events
+    for (const callback of this.dataUpdateCallbacks) {
+      try {
+        callback(data);
+      } catch (error) {
+        console.error("Sidebar: Error in data update callback:", error);
+      }
+    }
   }
 
   public async notifyConfigChanged(config: any): Promise<void> {
     setPanelSidebarConfig(config);
-    
-    // Dispatch custom event (instead of Services.obs)
-    const event = new CustomEvent("noraneko-sidebar-config-changed", {
-      detail: { config }
-    });
-    document.dispatchEvent(event);
   }
 
   public async selectPanel(panelId: string): Promise<void> {
     setSelectedPanelId(panelId);
-    await this.rpc["sidebar-addon-panel"].onPanelSelectionChange(panelId);
     
-    // Dispatch custom event (instead of Services.obs)
-    const event = new CustomEvent("noraneko-sidebar-panel-selected", {
-      detail: { panelId }
-    });
-    document.dispatchEvent(event);
+    // Call all registered callbacks instead of dispatching events
+    for (const callback of this.selectionChangeCallbacks) {
+      try {
+        callback(panelId);
+      } catch (error) {
+        console.error("Sidebar: Error in selection change callback:", error);
+      }
+    }
   }
 
   public getRegisteredIcons(): SidebarIconRegistration[] {
@@ -137,16 +129,20 @@ export default class Sidebar extends NoraComponentBase {
     return {
       moduleName: "sidebar",
       dependencies: [],
-      softDependencies: ["sidebar-addon-panel"],
+      softDependencies: [], // No dependencies - other modules register callbacks with us
       // Expose RPC methods that other modules can call
       rpcMethods: {
         registerSidebarIcon: (options: {
           name: string;
           i18nName: string;
           iconUrl: string;
-          birpcMethodName: string;
+          callback: () => void | Promise<void>;
         }) => this.registerSidebarIcon(options),
         onClicked: (iconName: string) => this.onClicked(iconName),
+        registerDataUpdateCallback: (callback: (data: any) => void) => this.registerDataUpdateCallback(callback),
+        registerSelectionChangeCallback: (callback: (panelId: string) => void) => this.registerSelectionChangeCallback(callback),
+        unregisterDataUpdateCallback: (callback: (data: any) => void) => this.unregisterDataUpdateCallback(callback),
+        unregisterSelectionChangeCallback: (callback: (panelId: string) => void) => this.unregisterSelectionChangeCallback(callback),
       },
     };
   }

@@ -186,6 +186,14 @@ export default class SidebarAddonPanel extends NoraComponentBase {
     console.debug(`SidebarAddonPanel: Handling click for icon: ${iconName}`);
     await this.onClicked(iconName);
   }
+
+  _metadata() {
+    return {
+      moduleName: "sidebar-addon-panel",
+      dependencies: [],
+      softDependencies: [],
+    };
+  }
 }
 
 /* Re-export UI components for backward compatibility */

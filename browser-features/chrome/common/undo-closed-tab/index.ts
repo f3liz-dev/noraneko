@@ -52,4 +52,12 @@ export default class UndoClosedTab extends NoraComponentBase {
       },
     );
   }
+
+  _metadata() {
+    return {
+      moduleName: "undo-closed-tab",
+      dependencies: [],
+      softDependencies: [],
+    };
+  }
 }

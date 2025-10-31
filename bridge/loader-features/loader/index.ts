@@ -4,6 +4,7 @@ import { initI18NForBrowserChrome } from "#i18n/config-browser-chrome.ts";
 
 import { MODULES, MODULES_KEYS } from "./modules.ts";
 import {
+  onModuleLoaded,
   _registerModuleLoadState,
   _rejectOtherLoadStates,
 } from "./modules-hooks.ts";
@@ -59,8 +60,22 @@ async function setPrefFeatures(all_features_keys: typeof MODULES_KEYS) {
   );
 }
 
-async function loadEnabledModules(enabled_features: typeof MODULES_KEYS) {
-  const modules: Array<{ init?: typeof Function; name: string }> = [];
+interface ModuleMetadata {
+  moduleName: string;
+  dependencies: string[];
+  softDependencies: string[];
+}
+
+interface LoadedModule {
+  name: string;
+  metadata: ModuleMetadata;
+  init?: typeof Function;
+  initBeforeSessionStoreInit?: typeof Function;
+  default?: typeof Function;
+}
+
+async function loadEnabledModules(enabled_features: typeof MODULES_KEYS): Promise<LoadedModule[]> {
+  const modules: LoadedModule[] = [];
 
   const loadModulePromises = Object.entries(MODULES).flatMap(
     ([categoryKey, categoryValue]) =>
@@ -72,16 +87,21 @@ async function loadEnabledModules(enabled_features: typeof MODULES_KEYS) {
           ].includes(moduleName)
         ) {
           try {
-            const module = await categoryValue[moduleName]();
-            modules.push(
-              Object.assign(
-                { name: moduleName },
-                module as {
-                  init?: typeof Function;
-                  initBeforeSessionStoreInit?: typeof Function;
-                },
-              ),
-            );
+            const moduleExports = await categoryValue[moduleName]();
+            const module: LoadedModule = {
+              name: moduleName,
+              metadata: (moduleExports as any)._metadata?.() || {
+                moduleName,
+                dependencies: [],
+                softDependencies: [],
+              },
+              ...(moduleExports as {
+                init?: typeof Function;
+                initBeforeSessionStoreInit?: typeof Function;
+                default?: typeof Function;
+              }),
+            };
+            modules.push(module);
           } catch (e) {
             console.error(`[noraneko] Failed to load module ${moduleName}:`, e);
           }
@@ -93,15 +113,14 @@ async function loadEnabledModules(enabled_features: typeof MODULES_KEYS) {
   return modules;
 }
 
-async function initializeModules(
-  modules: Array<{
-    init?: typeof Function;
-    initBeforeSessionStoreInit?: typeof Function;
-    name: string;
-    default?: typeof Function;
-  }>,
-) {
-  for (const module of modules) {
+async function initializeModules(modules: LoadedModule[]) {
+  // Validate dependencies
+  validateDependencies(modules);
+  
+  // Sort modules by dependencies
+  const sortedModules = sortModulesByDependencies(modules);
+
+  for (const module of sortedModules) {
     try {
       await module?.initBeforeSessionStoreInit?.();
     } catch (e) {
@@ -114,8 +133,13 @@ async function initializeModules(
   // @ts-expect-error SessionStore type not defined
   await SessionStore.promiseInitialized;
 
-  for (const module of modules) {
+  for (const module of sortedModules) {
     try {
+      // Wait for hard dependencies to load
+      for (const dep of module.metadata.dependencies) {
+        await onModuleLoaded(dep);
+      }
+
       if (module?.init) {
         await module.init();
       }
@@ -130,4 +154,67 @@ async function initializeModules(
   }
   _registerModuleLoadState("__init_all__", true);
   await _rejectOtherLoadStates();
+}
+
+function validateDependencies(modules: LoadedModule[]): void {
+  const moduleNames = new Set(modules.map(m => m.name));
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+  const moduleMap = new Map(modules.map(m => [m.name, m]));
+
+  const checkCircular = (name: string, deps: string[]): void => {
+    if (visiting.has(name)) {
+      throw new Error(`Circular dependency detected: ${name}`);
+    }
+    if (visited.has(name)) return;
+
+    visiting.add(name);
+    for (const dep of deps) {
+      const depModule = moduleMap.get(dep);
+      if (depModule) {
+        checkCircular(dep, depModule.metadata.dependencies);
+      }
+    }
+    visiting.delete(name);
+    visited.add(name);
+  };
+
+  for (const module of modules) {
+    // Check hard dependencies exist
+    for (const dep of module.metadata.dependencies) {
+      if (!moduleNames.has(dep)) {
+        throw new Error(`Missing dependency: ${dep} required by ${module.name}`);
+      }
+    }
+    
+    // Check for circular dependencies
+    checkCircular(module.name, module.metadata.dependencies);
+  }
+}
+
+function sortModulesByDependencies(modules: LoadedModule[]): LoadedModule[] {
+  const sorted: LoadedModule[] = [];
+  const processed = new Set<string>();
+  const moduleMap = new Map(modules.map(m => [m.name, m]));
+
+  const process = (module: LoadedModule): void => {
+    if (processed.has(module.name)) return;
+
+    // Process dependencies first
+    for (const depName of module.metadata.dependencies) {
+      const depModule = moduleMap.get(depName);
+      if (depModule && !processed.has(depName)) {
+        process(depModule);
+      }
+    }
+
+    sorted.push(module);
+    processed.add(module.name);
+  };
+
+  for (const module of modules) {
+    process(module);
+  }
+
+  return sorted;
 }

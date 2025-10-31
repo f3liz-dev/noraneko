@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
 
-
 const ovrride_modules = import.meta.glob("./modules/*/index.ts");
 const modules = {
   override: {} as Record<string, () => Promise<unknown>>,

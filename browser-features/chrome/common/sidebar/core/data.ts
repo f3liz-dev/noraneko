@@ -42,7 +42,10 @@ function createJsonPrefSignal<T>(
 ): [Accessor<T>, Setter<T>] {
   const readFromPref = () => {
     try {
-      const raw = Services.prefs.getStringPref(prefName, writeTransform(null as unknown as T));
+      const raw = Services.prefs.getStringPref(
+        prefName,
+        writeTransform(null as unknown as T),
+      );
       return readTransform(raw);
     } catch (e) {
       console.error(`Failed to read pref ${prefName}:`, e);
@@ -82,8 +85,7 @@ function createBoolPrefSignal(
   prefName: string,
   defaultValue: boolean,
 ): [Accessor<boolean>, Setter<boolean>] {
-  const read = () =>
-    Services.prefs.getBoolPref(prefName, defaultValue);
+  const read = () => Services.prefs.getBoolPref(prefName, defaultValue);
 
   const [signal, setSignal] = createSignal<boolean>(read());
 

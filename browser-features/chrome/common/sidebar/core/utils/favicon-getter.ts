@@ -14,9 +14,7 @@ const { PlacesUtils } = ChromeUtils.importESModule(
 const DEFAULT_FAVICON = "chrome://devtools/skin/images/globe.svg";
 
 const gFavicons = PlacesUtils.favicons as {
-  getFaviconForPage: (
-    uri: nsIURI,
-  ) => Promise<{ uri: nsIURI }>;
+  getFaviconForPage: (uri: nsIURI) => Promise<{ uri: nsIURI }>;
 };
 
 export async function getFaviconURLForPanel(panel: Panel): Promise<string> {
@@ -26,7 +24,7 @@ export async function getFaviconURLForPanel(panel: Panel): Promise<string> {
     // Only attempt Places favicon lookup for regular web URLs
     if (
       panel.type !== "web" ||
-      !url.startsWith("http://") && !url.startsWith("https://")
+      (!url.startsWith("http://") && !url.startsWith("https://"))
     ) {
       return getFallbackFavicon(panel);
     }
@@ -61,7 +59,7 @@ function getFallbackFavicon(panel: Panel): string {
     case "static":
       return (
         STATIC_PANEL_DATA[panel.url as keyof typeof STATIC_PANEL_DATA].icon ??
-          DEFAULT_FAVICON
+        DEFAULT_FAVICON
       );
     case "extension":
       return getFaviconFromExtension(panel.extensionId ?? "");

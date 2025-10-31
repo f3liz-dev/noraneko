@@ -46,7 +46,7 @@ export class ModuleA extends NoraComponentBase {
 
   private async performAction(action: string): Promise<string> {
     console.log("ModuleA: performAction called with", action);
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     return `Performed: ${action}`;
   }
 }
@@ -86,12 +86,12 @@ export class ModuleB extends NoraComponentBase {
 
   private async demonstrateRPCCalls() {
     console.log("=== Simplified RPC with Either ===");
-    
+
     // All calls return Either<Error, T | undefined>
     // No distinction needed - Either handles everything!
-    
+
     const dataResult = await this.rpc["module-a"].getData();
-    
+
     pipe(
       dataResult,
       E.fold(
@@ -102,8 +102,8 @@ export class ModuleB extends NoraComponentBase {
           } else {
             console.log("ModuleB: Received data from ModuleA:", data);
           }
-        }
-      )
+        },
+      ),
     );
 
     // All the same pattern - clean and simple!
@@ -112,17 +112,17 @@ export class ModuleB extends NoraComponentBase {
       setResult,
       E.fold(
         (error) => console.error("Failed to set data:", error),
-        () => console.log("Data set successfully")
-      )
+        () => console.log("Data set successfully"),
+      ),
     );
-    
+
     const actionResult = await this.rpc["module-a"].performAction("test");
     pipe(
       actionResult,
       E.fold(
         (error) => console.error("Failed to perform action:", error),
-        (result) => console.log("Action result:", result || "No result")
-      )
+        (result) => console.log("Action result:", result || "No result"),
+      ),
     );
   }
 
@@ -140,14 +140,14 @@ declare global {
 
 /**
  * Benefits of Simplified RPC:
- * 
+ *
  * 1. ✅ **Real RPC Instances**: Direct access to birpc, not proxies
  * 2. ✅ **Single Type**: RPCDependencies for all - Either handles availability
  * 3. ✅ **Clean API**: Only this.rpc pattern, all helpers removed
  * 4. ✅ **Error Safety**: Either<Error, T | undefined> for all cases
  * 5. ✅ **Type Inference**: Types extracted from rpcMethods automatically
  * 6. ✅ **Simple**: No complex proxy chains, no hard/soft distinction
- * 
+ *
  * Usage:
  * 1. Define rpcMethods in _metadata()
  * 2. Register module in FeatureModuleRegistry

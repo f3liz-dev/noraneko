@@ -4,7 +4,6 @@ import { defineConfig } from "vite";
 import path from "node:path";
 import solidPlugin from "vite-plugin-solid";
 import istanbulPlugin from "vite-plugin-istanbul";
-import deno from "@deno/vite-plugin";
 import swc from "unplugin-swc";
 import { genJarmnPlugin } from "../../libs/vite-plugin-gen-jarmn/plugin.ts";
 
@@ -81,7 +80,7 @@ export default defineConfig({
       name: "noraneko_component_hmr_support",
       enforce: "pre",
       apply: "serve",
-      transform(code, id) {
+      transform(code, _id) {
         if (
           code.includes("\n@noraComponent") &&
           !code.includes("//@nora-only-dispose")

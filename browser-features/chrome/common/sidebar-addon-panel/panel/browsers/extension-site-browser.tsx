@@ -5,7 +5,7 @@
 
 import type { Panel } from "../../../sidebar/core/utils/type.ts";
 
-export function ExtensionSiteBrowser({ id, type, url }: Panel) {
+export function ExtensionSiteBrowser({ id, type: _type, url: _url }: Panel) {
   return (
     <xul:browser
       id={`sidebar-panel-${id}`}

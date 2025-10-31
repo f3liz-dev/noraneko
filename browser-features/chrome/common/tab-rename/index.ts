@@ -85,7 +85,8 @@ export function showTabRenameInput(tab: XULElement): void {
   // Always use the original tab title as the placeholder. If we have a saved
   // original title (the label at the time the tab was first renamed), use
   // that. Otherwise fall back to the current tab label attribute.
-  const placeholder = tabRenameManager.getOriginalTitle(tab) || tab.getAttribute("label") || "";
+  const placeholder =
+    tabRenameManager.getOriginalTitle(tab) || tab.getAttribute("label") || "";
 
   // Create input element
   const input = document!.createElement("input");

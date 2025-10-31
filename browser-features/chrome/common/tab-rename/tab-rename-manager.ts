@@ -84,7 +84,11 @@ export class TabRenameManager {
    */
   getOriginalTitle(tab: XULElement): string | undefined {
     const tabId = this.getTabId(tab);
-    return this.renamedTabs().get(tabId)?.originalTitle || tab.getAttribute("label") || undefined;
+    return (
+      this.renamedTabs().get(tabId)?.originalTitle ||
+      tab.getAttribute("label") ||
+      undefined
+    );
   }
 
   applyTabName(tab: XULElement): void {
@@ -96,14 +100,20 @@ export class TabRenameManager {
       tab.setAttribute("data-customlabel", "");
       try {
         const quoted = JSON.stringify(customName);
-        (tab as unknown as HTMLElement).style.setProperty("--customlabel", quoted);
+        (tab as unknown as HTMLElement).style.setProperty(
+          "--customlabel",
+          quoted,
+        );
       } catch {
         // Fallback: set raw value (may break if contains quotes)
-        (tab as unknown as HTMLElement).style.setProperty("--customlabel", customName);
+        (tab as unknown as HTMLElement).style.setProperty(
+          "--customlabel",
+          customName,
+        );
       }
     } else {
       tab.removeAttribute("data-customlabel");
-  (tab as unknown as HTMLElement).style.removeProperty("--customlabel");
+      (tab as unknown as HTMLElement).style.removeProperty("--customlabel");
     }
   }
 
@@ -115,8 +125,8 @@ export class TabRenameManager {
       return newMap;
     });
     this.saveToPrefs();
-  tab.removeAttribute("data-customlabel");
-  (tab as unknown as HTMLElement).style.removeProperty("--customlabel");
+    tab.removeAttribute("data-customlabel");
+    (tab as unknown as HTMLElement).style.removeProperty("--customlabel");
   }
 
   applyAllTabNames(): void {

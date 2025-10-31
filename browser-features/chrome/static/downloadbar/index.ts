@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
 
-
 import { createRootHMR, render } from "@nora/solid-xul";
 import { DonwloadBar } from "./downloadbar";
 import { DownloadBarManager } from "./downloadbar-manager";

@@ -58,7 +58,7 @@ declare global {
   /**
    * Global registry of feature modules
    * Modules augment this interface to register their class types
-   * 
+   *
    * Example:
    * ```typescript
    * declare global {
@@ -79,9 +79,7 @@ type AllFeatureClasses = FeatureModuleRegistry[keyof FeatureModuleRegistry];
 
 // Generate map from module name to class using metadata
 type FeatureModuleClassMap = {
-  [K in AllFeatureClasses as ExtractModuleName<
-    InstanceType<K>
-  >]: K;
+  [K in AllFeatureClasses as ExtractModuleName<InstanceType<K>>]: K;
 };
 
 // Extract RPC methods for each module by module name
@@ -99,7 +97,7 @@ type FeatureRpcMethods = {
  */
 export type InferredRPCDependencies<
   TDeps extends readonly (keyof FeatureRpcMethods)[],
-  TSoftDeps extends readonly (keyof FeatureRpcMethods)[]
+  TSoftDeps extends readonly (keyof FeatureRpcMethods)[],
 > = {
   [K in TDeps[number]]: RPCMethodsToEither<FeatureRpcMethods[K]>;
 } & {
@@ -109,13 +107,13 @@ export type InferredRPCDependencies<
 /**
  * Helper type to get RPC type for a specific module
  */
-export type ModuleRPCType<TModuleName extends keyof FeatureRpcMethods> = 
+export type ModuleRPCType<TModuleName extends keyof FeatureRpcMethods> =
   RPCMethodsToEither<FeatureRpcMethods[TModuleName]>;
 
 /**
  * Helper type to get soft RPC type for a specific module
  */
-export type SoftModuleRPCType<TModuleName extends keyof FeatureRpcMethods> = 
+export type SoftModuleRPCType<TModuleName extends keyof FeatureRpcMethods> =
   RPCMethodsToSoftEither<FeatureRpcMethods[TModuleName]>;
 
 // Re-export for convenience

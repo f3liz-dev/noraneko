@@ -6,7 +6,7 @@
 import type { Panel } from "../../../sidebar/core/utils/type.ts";
 import { STATIC_PANEL_DATA } from "../../../sidebar/core/static-panels.ts";
 
-export function ChromeSiteBrowser({ id, type, url }: Panel) {
+export function ChromeSiteBrowser({ id, type: _type, url }: Panel) {
   const panel = STATIC_PANEL_DATA[url as keyof typeof STATIC_PANEL_DATA];
   return (
     <xul:browser

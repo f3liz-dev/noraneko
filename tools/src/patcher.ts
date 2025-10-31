@@ -1,13 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 import * as path from "@std/path";
-import {
-  runCommandChecked,
-  runCommand,
-  Logger,
-  exists,
-  safeRemove,
-} from "./utils.ts";
+import { runCommandChecked, Logger, exists, safeRemove } from "./utils.ts";
 import { BIN_DIR } from "./defines.ts";
 
 const logger = new Logger("patcher");
@@ -193,7 +187,7 @@ export function createPatches(): void {
         .trim() + "\n";
 
     const patchName =
-      file.replace(/\//g, "-").replace(/\.[^\/.]+$/, "") + ".patch";
+      file.replace(/\//g, "-").replace(/\.[^/.]+$/, "") + ".patch";
     const patchPath = path.join(PATCHES_DIR, patchName);
     Deno.writeTextFileSync(patchPath, modifiedDiff);
     logger.info(`Created/Updated patch: ${patchPath}`);

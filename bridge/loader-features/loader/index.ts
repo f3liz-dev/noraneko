@@ -136,6 +136,8 @@ async function initializeModules(modules: LoadedModule[]) {
   for (const module of sortedModules) {
     try {
       // Wait for hard dependencies to load
+      // Note: Due to topological sorting, dependencies come before dependents,
+      // so this typically resolves immediately unless a dependency is still initializing
       for (const dep of module.metadata.dependencies) {
         await onModuleLoaded(dep);
       }
@@ -162,17 +164,19 @@ function validateDependencies(modules: LoadedModule[]): void {
   const visiting = new Set<string>();
   const moduleMap = new Map(modules.map(m => [m.name, m]));
 
-  const checkCircular = (name: string, deps: string[]): void => {
+  const checkCircular = (name: string, deps: string[], path: string[] = []): void => {
     if (visiting.has(name)) {
-      throw new Error(`Circular dependency detected: ${name}`);
+      const cycle = [...path, name].join(' -> ');
+      throw new Error(`Circular dependency detected: ${cycle}`);
     }
     if (visited.has(name)) return;
 
     visiting.add(name);
+    const newPath = [...path, name];
     for (const dep of deps) {
       const depModule = moduleMap.get(dep);
       if (depModule) {
-        checkCircular(dep, depModule.metadata.dependencies);
+        checkCircular(dep, depModule.metadata.dependencies, newPath);
       }
     }
     visiting.delete(name);

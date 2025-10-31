@@ -8,6 +8,7 @@ import {
   _registerModuleLoadState,
   _rejectOtherLoadStates,
 } from "./modules-hooks.ts";
+import { registerModuleRPC } from "./rpc-registry.ts";
 
 console.log("[noraneko] Initializing scripts...");
 
@@ -64,6 +65,7 @@ interface ModuleMetadata {
   moduleName: string;
   dependencies: string[];
   softDependencies: string[];
+  rpcMethods?: Record<string, (...args: any[]) => any>;
 }
 
 interface LoadedModule {
@@ -72,6 +74,7 @@ interface LoadedModule {
   init?: typeof Function;
   initBeforeSessionStoreInit?: typeof Function;
   default?: typeof Function;
+  rpcMethods?: Record<string, (...args: any[]) => any>;
 }
 
 async function loadEnabledModules(enabled_features: typeof MODULES_KEYS): Promise<LoadedModule[]> {
@@ -88,18 +91,20 @@ async function loadEnabledModules(enabled_features: typeof MODULES_KEYS): Promis
         ) {
           try {
             const moduleExports = await categoryValue[moduleName]();
+            const metadata = (moduleExports as any)._metadata?.() || {
+              moduleName,
+              dependencies: [],
+              softDependencies: [],
+            };
             const module: LoadedModule = {
               name: moduleName,
-              metadata: (moduleExports as any)._metadata?.() || {
-                moduleName,
-                dependencies: [],
-                softDependencies: [],
-              },
+              metadata,
               ...(moduleExports as {
                 init?: typeof Function;
                 initBeforeSessionStoreInit?: typeof Function;
                 default?: typeof Function;
               }),
+              rpcMethods: metadata.rpcMethods,
             };
             modules.push(module);
           } catch (e) {
@@ -119,6 +124,18 @@ async function initializeModules(modules: LoadedModule[]) {
   
   // Sort modules by dependencies
   const sortedModules = sortModulesByDependencies(modules);
+
+  // Register RPC methods for all modules first (before initialization)
+  for (const module of sortedModules) {
+    if (module.rpcMethods) {
+      try {
+        registerModuleRPC(module.name, module.rpcMethods);
+        console.debug(`[noraneko] Registered RPC methods for module ${module.name}`);
+      } catch (e) {
+        console.error(`[noraneko] Failed to register RPC methods for module ${module.name}:`, e);
+      }
+    }
+  }
 
   for (const module of sortedModules) {
     try {

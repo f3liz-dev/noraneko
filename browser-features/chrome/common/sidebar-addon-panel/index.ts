@@ -3,8 +3,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { createBirpc } from "birpc";
 import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
+import type { RPCDependencies } from "../rpc-interfaces.ts";
+import * as E from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
 import { onCleanup } from "solid-js";
 import { 
   CPanelSidebar,
@@ -16,26 +18,11 @@ import {
 import { WebsitePanelWindowChild } from "./panel/website-panel-window-child";
 import { migratePanelSidebarData } from "./data/migration.ts";
 
-// Define communication interfaces for sidebar addon panel
-interface SidebarAddonPanelServerFunctions {
-  onPanelDataUpdate(data: any): void;
-  onPanelSelectionChange(panelId: string): void;
-}
-
-interface SidebarAddonPanelClientFunctions {
-  registerSidebarIcon(options: {
-    name: string;
-    i18nName: string;
-    iconUrl: string;
-    birpcMethodName: string;
-  }): Promise<void>;
-  onClicked(iconName: string): Promise<void>;
-}
-
 @noraComponent(import.meta.hot)
 export default class SidebarAddonPanel extends NoraComponentBase {
-  private rpc: ReturnType<typeof createBirpc<SidebarAddonPanelServerFunctions, SidebarAddonPanelClientFunctions>> | null = null;
-  private observer: nsIObserver | null = null;
+  // Type-safe RPC access - Either handles both available and missing modules
+  protected rpc!: RPCDependencies<["sidebar"]>;
+  
   private ctx: CPanelSidebar | null = null;
 
   init(): void {
@@ -50,149 +37,124 @@ export default class SidebarAddonPanel extends NoraComponentBase {
     PanelSidebarAddModal.getInstance();
     PanelSidebarFloating.getInstance();
 
-    // Set up birpc communication with sidebar core
-    this.setupBirpcCommunication();
-
     // Register example sidebar icons (demonstrating the usage)
     this.registerExampleSidebarIcons();
-  }
-
-  private setupBirpcCommunication(): void {
-    const serverFunctions: SidebarAddonPanelServerFunctions = {
-      onPanelDataUpdate: (data: any) => {
-        // Handle panel data updates from sidebar core
-        console.debug("SidebarAddonPanel: Received panel data update", data);
-        // Update UI components with new data
-        if (this.ctx) {
-          // Trigger UI update
-          Services.obs.notifyObservers(
-            { type: "panel-data-update", data } as nsISupports,
-            "noraneko-addon-panel-internal-update"
-          );
-        }
-      },
-      onPanelSelectionChange: (panelId: string) => {
-        // Handle panel selection changes from sidebar core
-        console.debug("SidebarAddonPanel: Panel selection changed to", panelId);
-        Services.obs.notifyObservers(
-          { type: "panel-selection-change", panelId } as nsISupports,
-          "noraneko-addon-panel-internal-update"
-        );
-      },
-    };
-
-    // Create birpc instance for communication with sidebar core
-    this.rpc = createBirpc<SidebarAddonPanelServerFunctions, SidebarAddonPanelClientFunctions>(
-      serverFunctions,
-      {
-        post: (data) => {
-          // Send RPC messages to sidebar core via Services.obs
-          Services.obs.notifyObservers(
-            { type: "rpc-request", data: JSON.stringify(data) } as nsISupports,
-            "noraneko-sidebar-addon-panel-rpc"
-          );
-        },
-        on: (fn) => {
-          // Create observer to receive RPC responses from sidebar core
-          this.observer = (subject: nsISupports, topic: string, data: string) => {
-            if (topic === "noraneko-sidebar-addon-panel-rpc-response") {
-              const msgData = (subject as any).data;
-              if (msgData) {
-                try {
-                  fn(JSON.parse(msgData));
-                } catch (e) {
-                  console.error("SidebarAddonPanel: Failed to parse RPC response:", e);
-                }
-              }
-            }
-          };
-
-          Services.obs.addObserver(this.observer, "noraneko-sidebar-addon-panel-rpc-response", false);
-        },
-        serialize: (v) => JSON.stringify(v),
-        deserialize: (v) => JSON.parse(v),
-      }
-    );
 
     // Set up cleanup
     onCleanup(() => {
-      if (this.observer) {
-        Services.obs.removeObserver(this.observer, "noraneko-sidebar-addon-panel-rpc-response");
-        this.observer = null;
-      }
-      this.rpc = null;
       this.ctx = null;
     });
   }
 
-  // Public API methods for requesting data from sidebar core
-  public async registerSidebarIcon(options: {
-    name: string;
-    i18nName: string;
-    iconUrl: string;
-    birpcMethodName: string;
-  }): Promise<void> {
-    if (this.rpc) {
-      await this.rpc.registerSidebarIcon(options);
+  // RPC methods that can be called by sidebar via registered callbacks
+  private onPanelDataUpdate(data: any): void {
+    // Handle panel data updates from sidebar core
+    console.debug("SidebarAddonPanel: Received panel data update", data);
+    // Update UI components with new data directly
+    if (this.ctx) {
+      // Update UI directly - no custom events needed
+      // The actual UI update logic would go here
     }
   }
 
-  public async onClicked(iconName: string): Promise<void> {
-    if (this.rpc) {
-      await this.rpc.onClicked(iconName);
+  private onPanelSelectionChange(panelId: string): void {
+    // Handle panel selection changes from sidebar core
+    console.debug("SidebarAddonPanel: Panel selection changed to", panelId);
+    // Update UI directly - no custom events needed
+    if (this.ctx) {
+      // The actual UI update logic would go here
     }
   }
 
   // Example method that demonstrates registering sidebar icons
   private async registerExampleSidebarIcons(): Promise<void> {
-    // Wait for rpc to be ready
-    if (!this.rpc) {
-      console.warn("SidebarAddonPanel: RPC not ready, cannot register icons");
-      return;
-    }
-
-    // Register a notes icon
-    await this.registerSidebarIcon({
+    // Register notes icon with callback (not birpcMethodName)
+    const notesResult = await this.rpc.sidebar.registerSidebarIcon({
       name: "notes",
       i18nName: "sidebar.notes.title", 
       iconUrl: "./icons/notes.svg",
-      birpcMethodName: "onNotesIconActivated"
+      callback: () => this.onNotesIconActivated(), // Direct callback
     });
+    
+    pipe(
+      notesResult,
+      E.fold(
+        (error) => console.warn("Failed to register notes icon:", error),
+        () => console.debug("Notes icon registered successfully")
+      )
+    );
 
-    // Register a bookmark icon
-    await this.registerSidebarIcon({
+    // Register bookmarks icon with callback
+    const bookmarksResult = await this.rpc.sidebar.registerSidebarIcon({
       name: "bookmarks",
       i18nName: "sidebar.bookmarks.title",
       iconUrl: "chrome://browser/skin/bookmark.svg", 
-      birpcMethodName: "onBookmarksIconActivated"
+      callback: () => this.onBookmarksIconActivated(), // Direct callback
     });
+    
+    pipe(
+      bookmarksResult,
+      E.fold(
+        (error) => console.warn("Failed to register bookmarks icon:", error),
+        () => console.debug("Bookmarks icon registered successfully")
+      )
+    );
 
-    console.debug("SidebarAddonPanel: Example sidebar icons registered");
+    // Register callbacks for data updates and selection changes
+    const dataCallbackResult = await this.rpc.sidebar.registerDataUpdateCallback(
+      (data: any) => this.onPanelDataUpdate(data)
+    );
+    
+    const selectionCallbackResult = await this.rpc.sidebar.registerSelectionChangeCallback(
+      (panelId: string) => this.onPanelSelectionChange(panelId)
+    );
+
+    console.debug("SidebarAddonPanel: Callbacks registered with sidebar");
   }
 
   // Example callback methods that would be triggered by sidebar icon activation
-  public onNotesIconActivated(): void {
+  private onNotesIconActivated(): void {
     console.debug("SidebarAddonPanel: Notes icon was activated");
-    // Handle notes panel activation - this would be called via onClicked("notes")
+    // Handle notes panel activation - this would be called via RPC from sidebar module
   }
 
-  public onBookmarksIconActivated(): void {
+  private onBookmarksIconActivated(): void {
     console.debug("SidebarAddonPanel: Bookmarks icon was activated");
-    // Handle bookmarks panel activation - this would be called via onClicked("bookmarks")
+    // Handle bookmarks panel activation - this would be called via RPC from sidebar module
   }
 
-  // Example method to demonstrate icon click handling
+  // Example method to demonstrate icon click handling  
   public async handleIconClick(iconName: string): Promise<void> {
     console.debug(`SidebarAddonPanel: Handling click for icon: ${iconName}`);
-    await this.onClicked(iconName);
+    const result = await this.rpc.sidebar.onClicked(iconName);
+    
+    // Handle the Either result
+    pipe(
+      result,
+      E.fold(
+        (error) => console.error("Failed to handle icon click:", error),
+        () => console.debug("Icon click handled successfully")
+      )
+    );
   }
 
   _metadata() {
     return {
       moduleName: "sidebar-addon-panel",
       dependencies: [],
-      softDependencies: [],
+      softDependencies: ["sidebar"], // sidebar is a soft dependency
+      // No RPC methods needed - callbacks are registered directly with sidebar
+      rpcMethods: {
+        // Can keep these if other modules need to call them directly
+      },
     };
+  }
+}
+
+// Register this module in the global registry for automatic type inference
+declare global {
+  interface FeatureModuleRegistry {
+    SidebarAddonPanel: typeof SidebarAddonPanel;
   }
 }
 

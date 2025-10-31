@@ -5,6 +5,7 @@
     "@jsr/std__assert": "npm:@jsr/std__assert@^1.0.15",
     "@types/uuid": "npm:@types/uuid@^11.0.0",
 
+    "birpc": "npm:birpc@^2.3.0",
     "es-toolkit": "npm:es-toolkit@^1.41.0",
     "fp-ts": "npm:fp-ts@^2.16.11",
     "i18next": "npm:i18next@^25.6.0",

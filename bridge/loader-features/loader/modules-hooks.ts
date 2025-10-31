@@ -75,3 +75,15 @@ export function _registerModuleLoadState(module: string, isLoaded: boolean) {
 export function _rejectOtherLoadStates() {
   return ModuleLib.getInstance()._rejectOtherLoadStates();
 }
+
+// Re-export RPC registry functions for convenient access
+export {
+  registerModuleRPC,
+  unregisterModuleRPC,
+  callModuleRPC,
+  tryCallModuleRPC,
+  getModuleProxy,
+  getSoftModuleProxy,
+  isModuleRegistered,
+  createDependencyRPCProxies,
+} from "./rpc-registry.ts";

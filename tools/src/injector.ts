@@ -80,7 +80,7 @@ export function run(mode: string, dirName = "noraneko-devdir"): void {
   createManifest(mode, dirPath);
 
   const mounts: Array<[string, string]> = [
-    ["content", "bridge/loader-features/_dist"],
+    ["content", "browser-features/chrome/_dist"],
     ["startup", "bridge/startup/_dist"],
     ["skin", "browser-features/skin"],
     ["resource", "bridge/loader-modules/_dist"],

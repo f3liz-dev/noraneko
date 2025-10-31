@@ -80,10 +80,6 @@ export function _rejectOtherLoadStates() {
 export {
   registerModuleRPC,
   unregisterModuleRPC,
-  callModuleRPC,
-  tryCallModuleRPC,
-  getModuleProxy,
-  getSoftModuleProxy,
   isModuleRegistered,
   createDependencyRPCProxies,
 } from "./rpc-registry.ts";

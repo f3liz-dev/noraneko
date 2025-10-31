@@ -262,7 +262,7 @@ jobs:
       - name: Package noraneko
         if: ${{ inputs.platform == 'Linux-x86_64' }}
         run: |
-          ./mach repackage deb --input "$(echo obj-*/dist/$INSTALLER_PATH)" --output ~/noraneko-installer/noraneko.deb --arch x86_64 --version "0.2.0" --build-number 1 --templates browser/installer/linux/app/debian --release-product firefox --release-type release
+          ./mach repackage deb --input "$(echo obj-*/dist/$INSTALLER_PATH)" --output ~/noraneko-installer/noraneko.deb --arch x86_64 --version "0.2.0" --build-number 1 --templates browser/installer/linux/app/debian --release-product firefox --release-type release --product noraneko
 
       - name: Rename and move installer
         run: |

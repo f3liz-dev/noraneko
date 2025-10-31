@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
-import type { RPCDependenciesWithSoft } from "../rpc-interfaces.ts";
+import type { RPCDependencies } from "../rpc-interfaces.ts";
 import { onCleanup } from "solid-js";
 import {
   panelSidebarData,
@@ -24,8 +24,8 @@ interface SidebarIconRegistration {
 
 @noraComponent(import.meta.hot)
 export default class Sidebar extends NoraComponentBase {
-  // Type-safe RPC access to dependencies (sidebar-addon-panel is soft dependency)
-  protected rpc!: RPCDependenciesWithSoft<[], ["sidebar-addon-panel"]>;
+  // Type-safe RPC access - Either handles both available and missing modules
+  protected rpc!: RPCDependencies<["sidebar-addon-panel"]>;
   
   private registeredIcons: Map<string, SidebarIconRegistration> = new Map();
 

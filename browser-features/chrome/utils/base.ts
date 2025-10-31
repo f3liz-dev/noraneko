@@ -78,13 +78,14 @@ export abstract class NoraComponentBase {
   
   /**
    * Internal method to create RPC proxies for dependencies
-   * Override this if you need custom RPC proxy creation
+   * Combines both hard and soft dependencies - Either handles both the same way
    */
   protected _createRPCProxies(metadata: ReturnType<typeof this._metadata>): any {
-    return createDependencyRPCProxies(
-      metadata.dependencies || [],
-      metadata.softDependencies || []
-    );
+    const allDeps = [
+      ...(metadata.dependencies || []),
+      ...(metadata.softDependencies || [])
+    ];
+    return createDependencyRPCProxies(allDeps);
   }
   
   abstract init(): void;

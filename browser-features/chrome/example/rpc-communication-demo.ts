@@ -1,23 +1,20 @@
 // SPDX-License-Identifier: MPL-2.0
-// This file demonstrates how to use the RPC registry for inter-module communication
-// with automatic type inference
+// This file demonstrates the simplified RPC system with automatic type inference
 
 import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
-import type { RPCDependenciesWithSoft } from "#features-chrome/common/rpc-interfaces.ts";
+import type { RPCDependencies } from "#features-chrome/common/rpc-interfaces.ts";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 
 /**
  * Example Module A - Provider
- * This module exposes RPC methods that other modules can call
- * Types are automatically inferred - no manual interface needed!
+ * Exposes RPC methods with automatic type inference
  */
 @noraComponent(import.meta.hot)
 export class ModuleA extends NoraComponentBase {
   // No dependencies
-  protected rpc!: RPCDependenciesWithSoft<[], []>;
+  protected rpc!: RPCDependencies<[]>;
 
-  // Private state
   private data = "initial value";
 
   init() {
@@ -29,7 +26,6 @@ export class ModuleA extends NoraComponentBase {
       moduleName: "module-a",
       dependencies: [],
       softDependencies: [],
-      // Define RPC methods - types are automatically inferred!
       rpcMethods: {
         getData: () => this.getData(),
         setData: (value: string) => this.setData(value),
@@ -38,7 +34,6 @@ export class ModuleA extends NoraComponentBase {
     } as const;
   }
 
-  // RPC-exposed methods
   private getData(): string {
     console.log("ModuleA: getData called");
     return this.data;
@@ -65,14 +60,13 @@ declare global {
 
 /**
  * Example Module B - Consumer
- * This module calls RPC methods on Module A
- * Types are automatically inferred from ModuleA's metadata!
+ * Uses simplified RPC with Either for error handling
  */
 @noraComponent(import.meta.hot)
 export class ModuleB extends NoraComponentBase {
-  // Type-safe RPC access - types automatically inferred from module-a!
-  // No manual interface declaration needed
-  protected rpc!: RPCDependenciesWithSoft<[], ["module-a"]>;
+  // Simplified: no distinction between hard and soft dependencies
+  // Either handles both available and missing modules
+  protected rpc!: RPCDependencies<["module-a"]>;
 
   init() {
     console.log("ModuleB initialized");
@@ -91,12 +85,11 @@ export class ModuleB extends NoraComponentBase {
   }
 
   private async demonstrateRPCCalls() {
-    console.log("=== Demonstrating automatic type inference with Either ===");
+    console.log("=== Simplified RPC with Either ===");
     
-    // All types are automatically inferred!
-    // IDE autocomplete works perfectly
+    // All calls return Either<Error, T | undefined>
+    // No distinction needed - Either handles everything!
     
-    // Call getData - returns Either<Error, string | undefined> (soft dependency)
     const dataResult = await this.rpc["module-a"].getData();
     
     pipe(
@@ -113,9 +106,8 @@ export class ModuleB extends NoraComponentBase {
       )
     );
 
-    // Call setData - types inferred automatically!
+    // All the same pattern - clean and simple!
     const setResult = await this.rpc["module-a"].setData("new value");
-    
     pipe(
       setResult,
       E.fold(
@@ -124,9 +116,7 @@ export class ModuleB extends NoraComponentBase {
       )
     );
     
-    // Call performAction - return type automatically inferred as string
     const actionResult = await this.rpc["module-a"].performAction("test");
-    
     pipe(
       actionResult,
       E.fold(
@@ -149,22 +139,18 @@ declare global {
 }
 
 /**
- * Key Benefits of Automatic Type Inference:
+ * Benefits of Simplified RPC:
  * 
- * 1. ✅ **No Manual Interface Declarations**: Types extracted from rpcMethods
- * 2. ✅ **Type Safety**: Full TypeScript checking on method signatures
- * 3. ✅ **IDE Autocomplete**: Works perfectly with inferred types
- * 4. ✅ **Error Safety**: Either<Error, T> for all RPC calls
- * 5. ✅ **DRY**: Single source of truth (the rpcMethods object)
- * 6. ✅ **Refactoring Safe**: Change rpcMethods, types update automatically
+ * 1. ✅ **Real RPC Instances**: Direct access to birpc, not proxies
+ * 2. ✅ **Single Type**: RPCDependencies for all - Either handles availability
+ * 3. ✅ **Clean API**: Only this.rpc pattern, all helpers removed
+ * 4. ✅ **Error Safety**: Either<Error, T | undefined> for all cases
+ * 5. ✅ **Type Inference**: Types extracted from rpcMethods automatically
+ * 6. ✅ **Simple**: No complex proxy chains, no hard/soft distinction
  * 
- * How it works:
- * 
- * 1. Module defines rpcMethods in _metadata()
- * 2. Module registers in FeatureModuleRegistry via declaration merging
- * 3. TypeScript extracts types from rpcMethods automatically
- * 4. RPCDependencies type creates typed proxy based on module name
- * 5. All wrapped with Either for error safety
- * 
- * No .d.ts generation needed - pure TypeScript type system!
+ * Usage:
+ * 1. Define rpcMethods in _metadata()
+ * 2. Register module in FeatureModuleRegistry
+ * 3. Use this.rpc.moduleName.method()
+ * 4. Handle result with Either fold
  */

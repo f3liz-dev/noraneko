@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MPL-2.0
 
 /**
- * RPC type definitions - now using automatic type inference!
+ * RPC type definitions with automatic type inference
  * 
  * Types are automatically inferred from module metadata via declaration merging.
  * See features-rpc.d.ts for the inference system.
  * 
  * All RPC methods automatically return Either<Error, T> for error safety.
+ * Both hard and soft dependencies use Either - no distinction needed!
  */
 
 import type { InferredRPCDependencies, FeatureRpcMethods } from "./features-rpc.d.ts";
@@ -19,20 +20,15 @@ import type { InferredRPCDependencies, FeatureRpcMethods } from "./features-rpc.
  * No manual interface declarations needed.
  * 
  * All methods return Either<Error, T> for error-safe handling:
- * - Hard dependencies: Either<Error, T>
- * - Soft dependencies: Either<Error, T | undefined>
+ * - Available modules: Either<Error, T>
+ * - Missing modules: Either<Error, undefined>
+ * 
+ * No distinction between hard and soft dependencies - Either handles both!
  */
 export type RPCDependencies<T extends readonly (keyof FeatureRpcMethods)[]> = 
-  InferredRPCDependencies<T, []>;
-
-/**
- * Helper type with separate hard and soft dependencies
- */
-export type RPCDependenciesWithSoft<
-  THard extends readonly (keyof FeatureRpcMethods)[],
-  TSoft extends readonly (keyof FeatureRpcMethods)[]
-> = InferredRPCDependencies<THard, TSoft>;
+  InferredRPCDependencies<T, T>;
 
 // Re-export for convenience
 export type { FeatureRpcMethods, InferredRPCDependencies };
+
 

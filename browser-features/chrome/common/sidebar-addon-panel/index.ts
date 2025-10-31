@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
-import type { RPCDependenciesWithSoft } from "../rpc-interfaces.ts";
+import type { RPCDependencies } from "../rpc-interfaces.ts";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import { onCleanup } from "solid-js";
@@ -20,8 +20,8 @@ import { migratePanelSidebarData } from "./data/migration.ts";
 
 @noraComponent(import.meta.hot)
 export default class SidebarAddonPanel extends NoraComponentBase {
-  // Type-safe RPC access to dependencies (sidebar is soft dependency)
-  protected rpc!: RPCDependenciesWithSoft<[], ["sidebar"]>;
+  // Type-safe RPC access - Either handles both available and missing modules
+  protected rpc!: RPCDependencies<["sidebar"]>;
   
   private ctx: CPanelSidebar | null = null;
 

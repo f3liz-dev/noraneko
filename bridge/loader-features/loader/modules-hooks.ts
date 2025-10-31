@@ -85,4 +85,5 @@ export {
   getModuleProxy,
   getSoftModuleProxy,
   isModuleRegistered,
+  createDependencyRPCProxies,
 } from "./rpc-registry.ts";

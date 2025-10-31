@@ -4,11 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
-import {
-  registerModuleRPC,
-  getModuleProxy,
-  getSoftModuleProxy,
-} from "#bridge-loader-features/loader/modules-hooks.ts";
+import type { RPCDependencies } from "../rpc-interfaces.ts";
 import { onCleanup } from "solid-js";
 import {
   panelSidebarData,
@@ -19,23 +15,6 @@ import {
   setSelectedPanelId,
 } from "./core/data.ts";
 
-// Define communication interfaces for sidebar core
-interface SidebarRPCInterface {
-  registerSidebarIcon(options: {
-    name: string;
-    i18nName: string;
-    iconUrl: string;
-    birpcMethodName: string;
-  }): Promise<void>;
-  onClicked(iconName: string): Promise<void>;
-}
-
-interface SidebarAddonPanelRPCInterface {
-  onPanelDataUpdate(data: any): void;
-  onPanelSelectionChange(panelId: string): void;
-  [key: string]: any; // Dynamic callback methods
-}
-
 interface SidebarIconRegistration {
   name: string;
   i18nName: string;
@@ -45,19 +24,18 @@ interface SidebarIconRegistration {
 
 @noraComponent(import.meta.hot)
 export default class Sidebar extends NoraComponentBase {
+  // Type-safe RPC access to dependencies
+  protected rpc!: RPCDependencies<["sidebar-addon-panel"]>;
+  
   private registeredIcons: Map<string, SidebarIconRegistration> = new Map();
-  private addonPanelProxy: SidebarAddonPanelRPCInterface | null = null;
 
   init(): void {
-    // Get a soft proxy to the addon panel module
-    this.addonPanelProxy = getSoftModuleProxy<SidebarAddonPanelRPCInterface>("sidebar-addon-panel");
-
     // Set up data watchers to notify addon panel of changes
     this.setupDataWatchers();
 
     // Set up cleanup
     onCleanup(() => {
-      this.addonPanelProxy = null;
+      // Cleanup if needed
     });
   }
 
@@ -88,9 +66,9 @@ export default class Sidebar extends NoraComponentBase {
   private async onClicked(iconName: string): Promise<void> {
     // Handle icon click events
     const iconRegistration = this.registeredIcons.get(iconName);
-    if (iconRegistration && this.addonPanelProxy) {
-      // Trigger the registered callback method via RPC
-      const callbackMethod = this.addonPanelProxy[iconRegistration.birpcMethodName];
+    if (iconRegistration) {
+      // Trigger the registered callback method via RPC using this.rpc
+      const callbackMethod = (this.rpc["sidebar-addon-panel"] as any)[iconRegistration.birpcMethodName];
       if (callbackMethod && typeof callbackMethod === "function") {
         await callbackMethod();
       }
@@ -121,9 +99,7 @@ export default class Sidebar extends NoraComponentBase {
   // Public API methods that can be called by other components
   public async notifyDataChanged(data: any): Promise<void> {
     setPanelSidebarData(data);
-    if (this.addonPanelProxy) {
-      await this.addonPanelProxy.onPanelDataUpdate(data);
-    }
+    await this.rpc["sidebar-addon-panel"].onPanelDataUpdate(data);
     
     // Dispatch custom event (instead of Services.obs)
     const event = new CustomEvent("noraneko-sidebar-data-changed", {
@@ -144,9 +120,7 @@ export default class Sidebar extends NoraComponentBase {
 
   public async selectPanel(panelId: string): Promise<void> {
     setSelectedPanelId(panelId);
-    if (this.addonPanelProxy) {
-      await this.addonPanelProxy.onPanelSelectionChange(panelId);
-    }
+    await this.rpc["sidebar-addon-panel"].onPanelSelectionChange(panelId);
     
     // Dispatch custom event (instead of Services.obs)
     const event = new CustomEvent("noraneko-sidebar-panel-selected", {

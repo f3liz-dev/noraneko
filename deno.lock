@@ -2858,6 +2858,7 @@
       "bridge/loader-features": {
         "dependencies": [
           "jsr:@types/gecko@*",
+          "npm:birpc@^2.3.0",
           "npm:vite@*"
         ]
       },
@@ -2892,6 +2893,7 @@
           "npm:@jsr/std__assert@^1.0.15",
           "npm:@types/chroma-js@^3.1.2",
           "npm:@types/uuid@11",
+          "npm:birpc@^2.3.0",
           "npm:chroma-js@^3.1.2",
           "npm:es-toolkit@^1.41.0",
           "npm:fp-ts@^2.16.11",

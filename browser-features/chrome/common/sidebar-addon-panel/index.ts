@@ -4,11 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
-import {
-  registerModuleRPC,
-  getModuleProxy,
-  getSoftModuleProxy,
-} from "#bridge-loader-features/loader/modules-hooks.ts";
+import type { RPCDependencies } from "../rpc-interfaces.ts";
 import { onCleanup } from "solid-js";
 import { 
   CPanelSidebar,
@@ -20,28 +16,12 @@ import {
 import { WebsitePanelWindowChild } from "./panel/website-panel-window-child";
 import { migratePanelSidebarData } from "./data/migration.ts";
 
-// Define communication interfaces for sidebar addon panel
-interface SidebarAddonPanelRPCInterface {
-  onPanelDataUpdate(data: any): void;
-  onPanelSelectionChange(panelId: string): void;
-  onNotesIconActivated(): void;
-  onBookmarksIconActivated(): void;
-}
-
-interface SidebarRPCInterface {
-  registerSidebarIcon(options: {
-    name: string;
-    i18nName: string;
-    iconUrl: string;
-    birpcMethodName: string;
-  }): Promise<void>;
-  onClicked(iconName: string): Promise<void>;
-}
-
 @noraComponent(import.meta.hot)
 export default class SidebarAddonPanel extends NoraComponentBase {
+  // Type-safe RPC access to dependencies
+  protected rpc!: RPCDependencies<["sidebar"]>;
+  
   private ctx: CPanelSidebar | null = null;
-  private sidebarProxy: SidebarRPCInterface | null = null;
 
   init(): void {
     // Run data migration first
@@ -55,16 +35,11 @@ export default class SidebarAddonPanel extends NoraComponentBase {
     PanelSidebarAddModal.getInstance();
     PanelSidebarFloating.getInstance();
 
-    // Set up RPC communication - get a soft proxy to sidebar module
-    // Using soft proxy means we won't throw errors if sidebar module is not loaded
-    this.sidebarProxy = getSoftModuleProxy<SidebarRPCInterface>("sidebar");
-
     // Register example sidebar icons (demonstrating the usage)
     this.registerExampleSidebarIcons();
 
     // Set up cleanup
     onCleanup(() => {
-      this.sidebarProxy = null;
       this.ctx = null;
     });
   }
@@ -95,22 +70,16 @@ export default class SidebarAddonPanel extends NoraComponentBase {
 
   // Example method that demonstrates registering sidebar icons
   private async registerExampleSidebarIcons(): Promise<void> {
-    if (!this.sidebarProxy) {
-      console.warn("SidebarAddonPanel: Sidebar module not available, cannot register icons");
-      return;
-    }
-
-    // Register a notes icon
-    // Using soft proxy, this will silently fail if sidebar module is not loaded
-    await this.sidebarProxy.registerSidebarIcon({
+    // Using this.rpc.sidebar - type-safe and clean!
+    // The proxy will gracefully handle if sidebar is not loaded (soft dependency)
+    await this.rpc.sidebar.registerSidebarIcon({
       name: "notes",
       i18nName: "sidebar.notes.title", 
       iconUrl: "./icons/notes.svg",
       birpcMethodName: "onNotesIconActivated"
     });
 
-    // Register a bookmark icon
-    await this.sidebarProxy.registerSidebarIcon({
+    await this.rpc.sidebar.registerSidebarIcon({
       name: "bookmarks",
       i18nName: "sidebar.bookmarks.title",
       iconUrl: "chrome://browser/skin/bookmark.svg", 
@@ -134,9 +103,7 @@ export default class SidebarAddonPanel extends NoraComponentBase {
   // Example method to demonstrate icon click handling
   public async handleIconClick(iconName: string): Promise<void> {
     console.debug(`SidebarAddonPanel: Handling click for icon: ${iconName}`);
-    if (this.sidebarProxy) {
-      await this.sidebarProxy.onClicked(iconName);
-    }
+    await this.rpc.sidebar.onClicked(iconName);
   }
 
   _metadata() {

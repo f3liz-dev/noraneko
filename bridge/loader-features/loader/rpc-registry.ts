@@ -317,3 +317,37 @@ export function getSoftModuleProxy<T extends Record<string, any>>(
 export function isModuleRegistered(moduleName: string): boolean {
   return rpcRegistry.isModuleRegistered(moduleName);
 }
+
+/**
+ * Create a typed RPC proxy object for module dependencies
+ * This is used by NoraComponentBase to provide this.rpc accessor
+ * @param dependencies - Array of dependency module names
+ * @param softDependencies - Array of soft dependency module names
+ * @returns Object with proxies for each dependency
+ */
+export function createDependencyRPCProxies<T extends Record<string, any>>(
+  dependencies: string[],
+  softDependencies: string[]
+): T {
+  const rpcObject: any = {};
+  
+  // Add hard dependencies (throws on error)
+  for (const dep of dependencies) {
+    Object.defineProperty(rpcObject, dep, {
+      get: () => rpcRegistry.getProxy(dep),
+      enumerable: true,
+      configurable: false,
+    });
+  }
+  
+  // Add soft dependencies (returns undefined on error)
+  for (const dep of softDependencies) {
+    Object.defineProperty(rpcObject, dep, {
+      get: () => rpcRegistry.getSoftProxy(dep),
+      enumerable: true,
+      configurable: false,
+    });
+  }
+  
+  return rpcObject as T;
+}

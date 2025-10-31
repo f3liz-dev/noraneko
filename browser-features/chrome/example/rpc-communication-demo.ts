@@ -1,19 +1,21 @@
 // SPDX-License-Identifier: MPL-2.0
 // This file demonstrates how to use the RPC registry for inter-module communication
 
-import {
-  registerModuleRPC,
-  callModuleRPC,
-  tryCallModuleRPC,
-  getModuleProxy,
-  getSoftModuleProxy,
-} from "#bridge-loader-features/loader/modules-hooks.ts";
+import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
+import type { RPCDependencies } from "#features-chrome/common/rpc-interfaces.ts";
 
 /**
  * Example Module A - Provider
  * This module exposes RPC methods that other modules can call
  */
-export class ModuleA {
+@noraComponent(import.meta.hot)
+export class ModuleA extends NoraComponentBase {
+  // Type-safe RPC access (this module has no dependencies)
+  protected rpc!: RPCDependencies<[]>;
+
+  // Private state
+  private data = "initial value";
+
   init() {
     console.log("ModuleA initialized");
   }
@@ -31,9 +33,6 @@ export class ModuleA {
       },
     };
   }
-
-  // Private state
-  private data = "initial value";
 
   // RPC-exposed methods
   private getData(): string {
@@ -55,10 +54,15 @@ export class ModuleA {
 }
 
 /**
- * Example Module B - Consumer
- * This module calls RPC methods on Module A
+ * Example Module B - Consumer (NEW PATTERN)
+ * This module calls RPC methods on Module A using this.rpc
  */
-export class ModuleB {
+@noraComponent(import.meta.hot)
+export class ModuleB extends NoraComponentBase {
+  // Type-safe RPC access to module-a
+  // Since module-a is in softDependencies, calls will return undefined if not available
+  protected rpc!: RPCDependencies<["module-a"]>;
+
   init() {
     console.log("ModuleB initialized");
     this.demonstrateRPCCalls();
@@ -77,44 +81,29 @@ export class ModuleB {
   }
 
   private async demonstrateRPCCalls() {
-    // Method 1: Direct call using callModuleRPC
-    // This will throw if the module is not available
-    try {
-      const data = await callModuleRPC<string>("module-a", "getData");
+    // NEW PATTERN: Clean, type-safe RPC calls via this.rpc
+    // IDE autocomplete will work here!
+    
+    console.log("=== Demonstrating new this.rpc pattern ===");
+    
+    // Call getData - type-safe, returns string | undefined
+    const data = await this.rpc["module-a"].getData();
+    if (data) {
       console.log("ModuleB: Received data from ModuleA:", data);
-    } catch (e) {
-      console.error("ModuleB: Failed to call ModuleA (this is expected if ModuleA is not loaded):", e);
-    }
-
-    // Method 2: Safe call using tryCallModuleRPC
-    // This will return undefined if the module is not available (no exception thrown)
-    const result = await tryCallModuleRPC<string>("module-a", "performAction", "test-action");
-    if (result) {
-      console.log("ModuleB: Action result:", result);
     } else {
       console.log("ModuleB: ModuleA not available, continuing without it");
     }
 
-    // Method 3: Using a proxy for cleaner syntax
-    interface ModuleAInterface {
-      getData(): Promise<string>;
-      setData(value: string): Promise<void>;
-      performAction(action: string): Promise<string>;
-    }
-
-    const moduleA = getModuleProxy<ModuleAInterface>("module-a");
-    try {
-      await moduleA.setData("new value from ModuleB");
-      const updatedData = await moduleA.getData();
-      console.log("ModuleB: Updated data:", updatedData);
-    } catch (e) {
-      console.error("ModuleB: Proxy call failed:", e);
-    }
-
-    // Method 4: Using a soft proxy (doesn't throw on errors)
-    const moduleASoft = getSoftModuleProxy<ModuleAInterface>("module-a");
-    const softResult = await moduleASoft.performAction("soft-call-action");
-    console.log("ModuleB: Soft call result:", softResult || "No result (module not available)");
+    // Call setData
+    await this.rpc["module-a"].setData("new value from ModuleB");
+    
+    // Call performAction
+    const result = await this.rpc["module-a"].performAction("test-action");
+    console.log("ModuleB: Action result:", result || "No result (module not available)");
+    
+    // Get updated data
+    const updatedData = await this.rpc["module-a"].getData();
+    console.log("ModuleB: Updated data:", updatedData || "No data");
   }
 
   private notifyModuleB(message: string): void {
@@ -126,7 +115,10 @@ export class ModuleB {
  * Example Module C - No Dependencies
  * This module demonstrates a module that doesn't use RPC at all
  */
-export class ModuleC {
+@noraComponent(import.meta.hot)
+export class ModuleC extends NoraComponentBase {
+  protected rpc!: RPCDependencies<[]>;
+
   init() {
     console.log("ModuleC initialized - this module works independently");
   }
@@ -142,29 +134,27 @@ export class ModuleC {
 }
 
 /**
- * Best Practices:
+ * Key Benefits of the new this.rpc pattern:
  * 
- * 1. Use tryCallModuleRPC or getSoftModuleProxy for soft dependencies
- *    - These won't throw exceptions if the target module is missing
- *    - Perfect for optional features
+ * 1. ✅ Clean syntax: `this.rpc.sidebar.registerIcon(...)` 
+ *    vs old: `getSoftModuleProxy<SidebarRPC>("sidebar").registerIcon(...)`
  * 
- * 2. Use callModuleRPC or getModuleProxy for hard dependencies
- *    - These will throw if the target module is not available
- *    - Use with modules listed in the "dependencies" array
+ * 2. ✅ Type-safe: IDE autocomplete works automatically
+ *    Just declare: `protected rpc!: RPCDependencies<["sidebar", "other"]>`
  * 
- * 3. Define RPC methods in _metadata().rpcMethods
- *    - This makes it clear what the module exposes
- *    - The loader will automatically register these methods
+ * 3. ✅ Automatic setup: RPC proxies created in NoraComponentBase constructor
+ *    based on dependencies/softDependencies in metadata
  * 
- * 4. Avoid Services.obs for module-to-module communication
- *    - Use the RPC system instead
- *    - Services.obs should only be used for browser-internal events
+ * 4. ✅ Consistent pattern: All modules use the same `this.rpc.moduleName.method()` pattern
  * 
- * 5. Don't import other modules directly
- *    - Use RPC calls instead of direct imports
- *    - This prevents tight coupling and circular dependencies
+ * 5. ✅ Still graceful: Soft dependencies return undefined if module not loaded
+ *    Hard dependencies throw errors if module not available
  * 
- * 6. Handle missing modules gracefully
- *    - Always consider that a soft dependency might not be loaded
- *    - Provide fallback behavior when optional modules are missing
+ * To add a new module with RPC:
+ * 
+ * 1. Add its RPC interface to common/rpc-interfaces.ts
+ * 2. Update ModuleRPCInterfaces mapping
+ * 3. Declare `protected rpc!: RPCDependencies<["dependency-name"]>` in your class
+ * 4. Use `this.rpc["dependency-name"].method()` to call RPC methods
+ * 5. Add softDependencies or dependencies in _metadata()
  */

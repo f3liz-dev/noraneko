@@ -5,6 +5,7 @@ import { kebabCase } from "es-toolkit/string";
 import type { ClassDecorator } from "./decorator";
 import { createRootHMR } from "@nora/solid-xul";
 import { onCleanup } from "solid-js";
+import { createDependencyRPCProxies } from "#bridge-loader-features/loader/modules-hooks.ts";
 
 // U+2063 before `@` needed
 //https://github.com/microsoft/TypeScript/issues/47679
@@ -37,8 +38,21 @@ let _NoraComponentBase_viteHotContext = new Map<
   string,
   ViteHotContext | undefined
 >();
+
+/**
+ * Base class for all Noraneko components
+ * Provides RPC access to dependencies via this.rpc
+ */
 export abstract class NoraComponentBase {
   logger: ConsoleInstance;
+  
+  /**
+   * RPC proxy object for calling methods on dependency modules
+   * Access dependencies like: this.rpc.sidebar.registerIcon(...)
+   * Type-safe based on module metadata
+   */
+  protected rpc: any;
+  
   constructor() {
     // support HMR
     const hot = _NoraComponentBase_viteHotContext.get(this.constructor.name);
@@ -47,6 +61,10 @@ export abstract class NoraComponentBase {
       prefix: `nora@${kebabCase(this.constructor.name)}`,
     });
     this.logger = _console;
+
+    // Initialize RPC proxies based on metadata
+    const metadata = this._metadata();
+    this.rpc = this._createRPCProxies(metadata);
 
     // Run init with solid-js HMR support
     createRootHMR(() => {
@@ -57,6 +75,18 @@ export abstract class NoraComponentBase {
       });
     }, hot);
   }
+  
+  /**
+   * Internal method to create RPC proxies for dependencies
+   * Override this if you need custom RPC proxy creation
+   */
+  protected _createRPCProxies(metadata: ReturnType<typeof this._metadata>): any {
+    return createDependencyRPCProxies(
+      metadata.dependencies || [],
+      metadata.softDependencies || []
+    );
+  }
+  
   abstract init(): void;
   
   /**

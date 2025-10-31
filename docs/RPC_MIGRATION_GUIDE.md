@@ -4,6 +4,47 @@
 
 This guide explains how to migrate modules from using direct dependencies (imports, `Services.obs`, global variables) to using the RPC (Remote Procedure Call) registry for inter-module communication.
 
+## NEW: Type-Safe this.rpc Pattern (Recommended)
+
+The recommended way to use RPC is via the type-safe `this.rpc` pattern in NoraComponentBase:
+
+```typescript
+import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
+import type { RPCDependencies } from "../rpc-interfaces.ts";
+
+@noraComponent(import.meta.hot)
+export default class MyModule extends NoraComponentBase {
+  // Declare type-safe RPC access to dependencies
+  protected rpc!: RPCDependencies<["sidebar", "other-module"]>;
+
+  init() {
+    // Call RPC methods with full IDE autocomplete support!
+    await this.rpc.sidebar.registerSidebarIcon({...});
+    
+    // Returns undefined if module not loaded (soft dependency)
+    const result = await this.rpc["other-module"].getData();
+  }
+
+  _metadata() {
+    return {
+      moduleName: "my-module",
+      dependencies: [],
+      softDependencies: ["sidebar", "other-module"],
+      rpcMethods: {
+        myMethod: (arg: string) => this.myMethod(arg),
+      },
+    };
+  }
+}
+```
+
+**Benefits:**
+- ✅ Clean syntax: `this.rpc.sidebar.method()`
+- ✅ IDE autocomplete works automatically
+- ✅ Type-safe based on module interfaces
+- ✅ No manual proxy creation needed
+- ✅ Consistent pattern across all modules
+
 ## Why Migrate?
 
 **Before (Problems):**
@@ -54,7 +95,25 @@ _metadata() {
 
 ## Migration Steps
 
-### Step 1: Remove Direct Imports
+### Step 1: Add RPC Interface (if needed)
+
+First, if your dependency module doesn't have an RPC interface defined, add it to `common/rpc-interfaces.ts`:
+
+```typescript
+export interface MyModuleRPC {
+  doSomething(): Promise<void>;
+  getData(): Promise<string>;
+}
+
+// Add to ModuleRPCInterfaces mapping
+export interface ModuleRPCInterfaces {
+  "my-module": MyModuleRPC;
+  "sidebar": SidebarRPC;
+  // ... other modules
+}
+```
+
+### Step 2: Use this.rpc Pattern (NEW - Recommended)
 
 **Before:**
 ```typescript
@@ -70,23 +129,29 @@ class MyModule {
 
 **After:**
 ```typescript
-import { getSoftModuleProxy } from "#bridge-loader-features/loader/modules-hooks.ts";
+import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
+import type { RPCDependencies } from "../rpc-interfaces.ts";
 
-interface OtherModuleRPC {
-  doSomething(): Promise<void>;
-}
-
-class MyModule {
-  private otherModule: OtherModuleRPC | null = null;
+@noraComponent(import.meta.hot)
+export default class MyModule extends NoraComponentBase {
+  protected rpc!: RPCDependencies<["other-module"]>;
 
   init() {
-    this.otherModule = getSoftModuleProxy<OtherModuleRPC>("other-module");
-    await this.otherModule.doSomething();
+    // Clean, type-safe RPC call with IDE autocomplete!
+    await this.rpc["other-module"].doSomething();
+  }
+
+  _metadata() {
+    return {
+      moduleName: "my-module",
+      dependencies: [],
+      softDependencies: ["other-module"],
+    };
   }
 }
 ```
 
-### Step 2: Remove Services.obs Usage
+### Step 3: Remove Services.obs Usage
 
 **Before:**
 ```typescript
@@ -106,7 +171,7 @@ Services.obs.addObserver(observer, "my-custom-topic", false);
 **After:**
 ```typescript
 // Use RPC calls instead
-await callModuleRPC("target-module", "handleData", "hello");
+await this.rpc["target-module"].handleData("hello");
 
 // Or for broadcasting events, use DOM custom events
 const event = new CustomEvent("my-custom-event", {
@@ -115,7 +180,7 @@ const event = new CustomEvent("my-custom-event", {
 document.dispatchEvent(event);
 ```
 
-### Step 3: Define RPC Interface
+### Step 4: Define RPC Methods in Metadata
 
 Add RPC methods to your module's metadata:
 

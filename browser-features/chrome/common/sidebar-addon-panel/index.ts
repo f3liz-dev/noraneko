@@ -150,7 +150,7 @@ export default class SidebarAddonPanel extends NoraComponentBase {
         onPanelSelectionChange: (panelId: string) => this.onPanelSelectionChange(panelId),
         onNotesIconActivated: () => this.onNotesIconActivated(),
         onBookmarksIconActivated: () => this.onBookmarksIconActivated(),
-      } as SidebarAddonPanelRPCInterface,
+      },
     };
   }
 }

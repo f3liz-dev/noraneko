@@ -20,6 +20,7 @@ interface RPCChannelConfig {
  */
 class RPCRegistry {
   private static instance: RPCRegistry | null = null;
+  private static readonly DEFAULT_TIMEOUT_MS = 5000;
   
   // Map of module name to their RPC instances
   private modules: Map<string, any> = new Map();
@@ -133,7 +134,7 @@ class RPCRegistry {
           const pending = this.pendingCalls.get(targetModule);
           if (pending) {
             const callIndex = pending.findIndex(
-              c => c.method === method && c.args === args && c.resolve === resolve
+              c => c.resolve === resolve
             );
             if (callIndex !== -1) {
               pending.splice(callIndex, 1);
@@ -144,7 +145,7 @@ class RPCRegistry {
               );
             }
           }
-        }, 5000); // 5 second timeout
+        }, RPCRegistry.DEFAULT_TIMEOUT_MS);
       });
     }
 

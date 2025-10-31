@@ -173,7 +173,7 @@ export default class Sidebar extends NoraComponentBase {
           birpcMethodName: string;
         }) => this.registerSidebarIcon(options),
         onClicked: (iconName: string) => this.onClicked(iconName),
-      } as SidebarRPCInterface,
+      },
     };
   }
 }

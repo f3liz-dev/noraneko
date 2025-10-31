@@ -11,7 +11,7 @@ export async function run(writer: any): Promise<void> {
   logger.info("Starting Vite dev servers...");
 
   const servers = [
-    { name: "main", path: path.join(PROJECT_ROOT, "bridge/loader-features") },
+    { name: "main", path: path.join(PROJECT_ROOT, "browser-features/chrome") },
     { name: "designs", path: path.join(PROJECT_ROOT, "browser-features/skin") },
     // { name: "settings", path: path.join(PROJECT_ROOT, "src/ui/settings") },
   ];
@@ -126,7 +126,7 @@ export function shutdown(): void {
 export function getPortFor(serverName: string): number {
   switch (serverName) {
     case "main":
-      return 5173;
+      return 5181;
     case "designs":
       return 5174;
     case "settings":

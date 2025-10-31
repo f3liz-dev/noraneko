@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
 
-
 import { render } from "@nora/solid-xul";
 import { ContextMenu } from "./context-menu";
 import { StatusBarElem } from "./statusbar";
@@ -43,5 +42,5 @@ function onPopupShowing(event: Event) {
       dependencies: [],
       softDependencies: [],
     };
-  }
+  };
 }

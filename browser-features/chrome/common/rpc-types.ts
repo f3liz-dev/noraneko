@@ -10,7 +10,9 @@ import type * as E from "fp-ts/Either";
 /**
  * Extract the type of rpcMethods from a module's metadata
  */
-export type ExtractRPCMethods<T> = T extends { _metadata(): { rpcMethods: infer R } }
+export type ExtractRPCMethods<T> = T extends {
+  _metadata(): { rpcMethods: infer R };
+}
   ? R
   : never;
 
@@ -54,7 +56,7 @@ export interface ModuleRPCRegistry {
  */
 export type InferredRPCDependencies<
   TDeps extends readonly string[],
-  TSoftDeps extends readonly string[]
+  TSoftDeps extends readonly string[],
 > = {
   [K in TDeps[number]]: K extends keyof ModuleRPCRegistry
     ? RPCMethodsToEither<ModuleRPCRegistry[K]>
@@ -80,9 +82,9 @@ export interface ModuleMetadataWithRPC<TName extends string, TRPCMethods> {
  */
 export function defineModuleMetadata<
   TName extends string,
-  TRPCMethods extends Record<string, (...args: any[]) => any>
+  TRPCMethods extends Record<string, (...args: any[]) => any>,
 >(
-  metadata: ModuleMetadataWithRPC<TName, TRPCMethods>
+  metadata: ModuleMetadataWithRPC<TName, TRPCMethods>,
 ): ModuleMetadataWithRPC<TName, TRPCMethods> {
   return metadata;
 }

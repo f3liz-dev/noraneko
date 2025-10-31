@@ -45,14 +45,14 @@ let _NoraComponentBase_viteHotContext = new Map<
  */
 export abstract class NoraComponentBase {
   logger: ConsoleInstance;
-  
+
   /**
    * RPC proxy object for calling methods on dependency modules
    * Access dependencies like: this.rpc.sidebar.registerIcon(...)
    * Type-safe based on module metadata
    */
   protected rpc: any;
-  
+
   constructor() {
     // support HMR
     const hot = _NoraComponentBase_viteHotContext.get(this.constructor.name);
@@ -75,21 +75,23 @@ export abstract class NoraComponentBase {
       });
     }, hot);
   }
-  
+
   /**
    * Internal method to create RPC proxies for dependencies
    * Combines both hard and soft dependencies - Either handles both the same way
    */
-  protected _createRPCProxies(metadata: ReturnType<typeof this._metadata>): any {
+  protected _createRPCProxies(
+    metadata: ReturnType<typeof this._metadata>,
+  ): any {
     const allDeps = [
       ...(metadata.dependencies || []),
-      ...(metadata.softDependencies || [])
+      ...(metadata.softDependencies || []),
     ];
     return createDependencyRPCProxies(allDeps);
   }
-  
+
   abstract init(): void;
-  
+
   /**
    * Return module metadata for dependency management and internal RPC
    */

@@ -19,7 +19,10 @@ export { PanelSidebarButton as SidebarPanelButton } from "./components/sidebar-p
 export { SidebarSelectbox } from "./components/sidebar-selectbox.tsx";
 export { SidebarSplitter } from "./components/sidebar-splitter.tsx";
 /* The sidebar file exports PanelSidebarElem; re-export it once and provide a Sidebar alias. */
-export { PanelSidebarElem, PanelSidebarElem as Sidebar } from "./components/sidebar.tsx";
+export {
+  PanelSidebarElem,
+  PanelSidebarElem as Sidebar,
+} from "./components/sidebar.tsx";
 
 /* Browsers (moved under sidebar/panel/browsers) */
 export { ChromeSiteBrowser } from "../panel/browsers/chrome-site-browser.tsx";

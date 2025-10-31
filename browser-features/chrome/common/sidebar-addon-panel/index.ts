@@ -8,7 +8,7 @@ import type { RPCDependencies } from "../rpc-interfaces.ts";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import { onCleanup } from "solid-js";
-import { 
+import {
   CPanelSidebar,
   PanelSidebarElem,
   SidebarContextMenuElem,
@@ -22,7 +22,7 @@ import { migratePanelSidebarData } from "./data/migration.ts";
 export default class SidebarAddonPanel extends NoraComponentBase {
   // Type-safe RPC access - Either handles both available and missing modules
   protected rpc!: RPCDependencies<["sidebar"]>;
-  
+
   private ctx: CPanelSidebar | null = null;
 
   init(): void {
@@ -71,43 +71,45 @@ export default class SidebarAddonPanel extends NoraComponentBase {
     // Register notes icon with callback (not birpcMethodName)
     const notesResult = await this.rpc.sidebar.registerSidebarIcon({
       name: "notes",
-      i18nName: "sidebar.notes.title", 
+      i18nName: "sidebar.notes.title",
       iconUrl: "./icons/notes.svg",
       callback: () => this.onNotesIconActivated(), // Direct callback
     });
-    
+
     pipe(
       notesResult,
       E.fold(
         (error) => console.warn("Failed to register notes icon:", error),
-        () => console.debug("Notes icon registered successfully")
-      )
+        () => console.debug("Notes icon registered successfully"),
+      ),
     );
 
     // Register bookmarks icon with callback
     const bookmarksResult = await this.rpc.sidebar.registerSidebarIcon({
       name: "bookmarks",
       i18nName: "sidebar.bookmarks.title",
-      iconUrl: "chrome://browser/skin/bookmark.svg", 
+      iconUrl: "chrome://browser/skin/bookmark.svg",
       callback: () => this.onBookmarksIconActivated(), // Direct callback
     });
-    
+
     pipe(
       bookmarksResult,
       E.fold(
         (error) => console.warn("Failed to register bookmarks icon:", error),
-        () => console.debug("Bookmarks icon registered successfully")
-      )
+        () => console.debug("Bookmarks icon registered successfully"),
+      ),
     );
 
     // Register callbacks for data updates and selection changes
-    const dataCallbackResult = await this.rpc.sidebar.registerDataUpdateCallback(
-      (data: any) => this.onPanelDataUpdate(data)
-    );
-    
-    const selectionCallbackResult = await this.rpc.sidebar.registerSelectionChangeCallback(
-      (panelId: string) => this.onPanelSelectionChange(panelId)
-    );
+    const dataCallbackResult =
+      await this.rpc.sidebar.registerDataUpdateCallback((data: any) =>
+        this.onPanelDataUpdate(data),
+      );
+
+    const selectionCallbackResult =
+      await this.rpc.sidebar.registerSelectionChangeCallback(
+        (panelId: string) => this.onPanelSelectionChange(panelId),
+      );
 
     console.debug("SidebarAddonPanel: Callbacks registered with sidebar");
   }
@@ -123,18 +125,18 @@ export default class SidebarAddonPanel extends NoraComponentBase {
     // Handle bookmarks panel activation - this would be called via RPC from sidebar module
   }
 
-  // Example method to demonstrate icon click handling  
+  // Example method to demonstrate icon click handling
   public async handleIconClick(iconName: string): Promise<void> {
     console.debug(`SidebarAddonPanel: Handling click for icon: ${iconName}`);
     const result = await this.rpc.sidebar.onClicked(iconName);
-    
+
     // Handle the Either result
     pipe(
       result,
       E.fold(
         (error) => console.error("Failed to handle icon click:", error),
-        () => console.debug("Icon click handled successfully")
-      )
+        () => console.debug("Icon click handled successfully"),
+      ),
     );
   }
 
@@ -169,7 +171,10 @@ export { SidebarHeader } from "./ui/components/sidebar-header.tsx";
 export { PanelSidebarButton } from "./ui/components/sidebar-panel-button.tsx";
 export { SidebarSelectbox } from "./ui/components/sidebar-selectbox.tsx";
 export { SidebarSplitter } from "./ui/components/sidebar-splitter.tsx";
-export { PanelSidebarElem, PanelSidebarElem as Sidebar } from "./ui/components/sidebar.tsx";
+export {
+  PanelSidebarElem,
+  PanelSidebarElem as Sidebar,
+} from "./ui/components/sidebar.tsx";
 
 /* Re-export panel APIs */
 export * from "./panel";

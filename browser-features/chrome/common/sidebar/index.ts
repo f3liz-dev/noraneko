@@ -26,7 +26,7 @@ interface SidebarIconRegistration {
 export default class Sidebar extends NoraComponentBase {
   // No dependencies - sidebar-addon-panel will register callbacks
   protected rpc!: RPCDependencies<[]>;
-  
+
   private registeredIcons: Map<string, SidebarIconRegistration> = new Map();
   private dataUpdateCallbacks: Set<(data: any) => void> = new Set();
   private selectionChangeCallbacks: Set<(panelId: string) => void> = new Set();
@@ -49,7 +49,7 @@ export default class Sidebar extends NoraComponentBase {
   }): Promise<void> {
     // Register the sidebar icon with its callback
     this.registeredIcons.set(options.name, options);
-    
+
     console.debug(`Sidebar: Registered icon ${options.name} with callback`);
   }
 
@@ -61,7 +61,10 @@ export default class Sidebar extends NoraComponentBase {
         await iconRegistration.callback();
         console.debug(`Sidebar: Icon ${iconName} callback executed`);
       } catch (error) {
-        console.error(`Sidebar: Error executing callback for icon ${iconName}:`, error);
+        console.error(
+          `Sidebar: Error executing callback for icon ${iconName}:`,
+          error,
+        );
       }
     } else {
       console.warn(`Sidebar: No callback registered for icon ${iconName}`);
@@ -75,7 +78,9 @@ export default class Sidebar extends NoraComponentBase {
   }
 
   // RPC method: Register callback for selection changes
-  private registerSelectionChangeCallback(callback: (panelId: string) => void): void {
+  private registerSelectionChangeCallback(
+    callback: (panelId: string) => void,
+  ): void {
     this.selectionChangeCallbacks.add(callback);
     console.debug("Sidebar: Registered selection change callback");
   }
@@ -86,14 +91,16 @@ export default class Sidebar extends NoraComponentBase {
   }
 
   // RPC method: Unregister a callback
-  private unregisterSelectionChangeCallback(callback: (panelId: string) => void): void {
+  private unregisterSelectionChangeCallback(
+    callback: (panelId: string) => void,
+  ): void {
     this.selectionChangeCallbacks.delete(callback);
   }
 
   // Public API methods that can be called by other components
   public async notifyDataChanged(data: any): Promise<void> {
     setPanelSidebarData(data);
-    
+
     // Call all registered callbacks instead of dispatching events
     for (const callback of this.dataUpdateCallbacks) {
       try {
@@ -110,7 +117,7 @@ export default class Sidebar extends NoraComponentBase {
 
   public async selectPanel(panelId: string): Promise<void> {
     setSelectedPanelId(panelId);
-    
+
     // Call all registered callbacks instead of dispatching events
     for (const callback of this.selectionChangeCallbacks) {
       try {
@@ -139,10 +146,16 @@ export default class Sidebar extends NoraComponentBase {
           callback: () => void | Promise<void>;
         }) => this.registerSidebarIcon(options),
         onClicked: (iconName: string) => this.onClicked(iconName),
-        registerDataUpdateCallback: (callback: (data: any) => void) => this.registerDataUpdateCallback(callback),
-        registerSelectionChangeCallback: (callback: (panelId: string) => void) => this.registerSelectionChangeCallback(callback),
-        unregisterDataUpdateCallback: (callback: (data: any) => void) => this.unregisterDataUpdateCallback(callback),
-        unregisterSelectionChangeCallback: (callback: (panelId: string) => void) => this.unregisterSelectionChangeCallback(callback),
+        registerDataUpdateCallback: (callback: (data: any) => void) =>
+          this.registerDataUpdateCallback(callback),
+        registerSelectionChangeCallback: (
+          callback: (panelId: string) => void,
+        ) => this.registerSelectionChangeCallback(callback),
+        unregisterDataUpdateCallback: (callback: (data: any) => void) =>
+          this.unregisterDataUpdateCallback(callback),
+        unregisterSelectionChangeCallback: (
+          callback: (panelId: string) => void,
+        ) => this.unregisterSelectionChangeCallback(callback),
       },
     };
   }

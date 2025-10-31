@@ -1,12 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 import * as path from "@std/path";
-import {
-  runCommandChecked,
-  Logger,
-  exists,
-  safeRemove,
-} from "./utils.ts";
+import { runCommandChecked, Logger, exists, safeRemove } from "./utils.ts";
 import { BIN_DIR } from "./defines.ts";
 
 const logger = new Logger("patcher");

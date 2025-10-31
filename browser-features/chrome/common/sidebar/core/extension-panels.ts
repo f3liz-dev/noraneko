@@ -17,7 +17,9 @@ export function getFirefoxSidebarPanels(): Sidebar[] {
 }
 
 export function isExtensionExist(extensionId: string): boolean {
-  return getFirefoxSidebarPanels().some((panel) => panel.extensionId === extensionId);
+  return getFirefoxSidebarPanels().some(
+    (panel) => panel.extensionId === extensionId,
+  );
 }
 
 export function getSidebarIconFromSidebarController(extensionId: string) {

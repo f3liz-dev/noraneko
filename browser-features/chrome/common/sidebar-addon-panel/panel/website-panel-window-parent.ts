@@ -77,7 +77,8 @@ export class WebsitePanel {
       const targetPanelWindow = this.getWindowByWebpanelId(webpanelId, window);
       const uri = targetPanelWindow.bmsLoadedURI;
       targetPanelWindow.gBrowser.loadURI(Services.io.newURI(uri), {
-        triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+        triggeringPrincipal:
+          Services.scriptSecurityManager.getSystemPrincipal(),
       });
     }, "Failed to go to index page in webpanel");
   }

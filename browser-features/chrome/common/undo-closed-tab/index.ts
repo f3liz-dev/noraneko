@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
 
-
 import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
 import { createRootHMR } from "@nora/solid-xul";
 import { addI18nObserver, setLanguage } from "#i18n/config-browser-chrome.ts";

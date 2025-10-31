@@ -11,7 +11,11 @@ import { isLeft } from "fp-ts/Either";
 export const zPanel = t.intersection([
   t.type({
     id: t.string,
-    type: t.union([t.literal("web"), t.literal("static"), t.literal("extension")]),
+    type: t.union([
+      t.literal("web"),
+      t.literal("static"),
+      t.literal("extension"),
+    ]),
     width: t.number,
   }),
   t.partial({

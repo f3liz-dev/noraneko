@@ -1,59 +1,38 @@
 // SPDX-License-Identifier: MPL-2.0
 
 /**
- * Central registry for all module RPC interfaces
- * This file contains TypeScript interfaces for all module RPC methods
- * Used for type-safe RPC calls via this.rpc
+ * RPC type definitions - now using automatic type inference!
  * 
- * NOTE: With the new Either-based system, all RPC methods automatically return
- * Promise<Either<Error, T>> for error-safe handling
+ * Types are automatically inferred from module metadata via declaration merging.
+ * See features-rpc.d.ts for the inference system.
+ * 
+ * All RPC methods automatically return Either<Error, T> for error safety.
  */
 
-import type * as E from "fp-ts/Either";
-
-/**
- * Sidebar module RPC interface
- * All methods automatically wrapped with Either for error safety
- */
-export interface SidebarRPC {
-  registerSidebarIcon(options: {
-    name: string;
-    i18nName: string;
-    iconUrl: string;
-    birpcMethodName: string;
-  }): Promise<E.Either<Error, void>>;
-  onClicked(iconName: string): Promise<E.Either<Error, void>>;
-}
-
-/**
- * Sidebar Addon Panel module RPC interface
- * All methods automatically wrapped with Either for error safety
- */
-export interface SidebarAddonPanelRPC {
-  onPanelDataUpdate(data: any): Promise<E.Either<Error, void>>;
-  onPanelSelectionChange(panelId: string): Promise<E.Either<Error, void>>;
-  onNotesIconActivated(): Promise<E.Either<Error, void>>;
-  onBookmarksIconActivated(): Promise<E.Either<Error, void>>;
-}
-
-/**
- * Type mapping from module names to their RPC interfaces
- * Add new modules here to enable type-safe RPC calls
- */
-export interface ModuleRPCInterfaces {
-  "sidebar": SidebarRPC;
-  "sidebar-addon-panel": SidebarAddonPanelRPC;
-  // Add more modules here as they are migrated to RPC
-}
+import type { InferredRPCDependencies, FeatureRpcMethods } from "./features-rpc.d.ts";
 
 /**
  * Helper type to create typed RPC object based on dependencies
  * Usage: RPCDependencies<["sidebar", "other-module"]>
  * 
+ * Types are automatically inferred from module metadata!
+ * No manual interface declarations needed.
+ * 
  * All methods return Either<Error, T> for error-safe handling:
  * - Hard dependencies: Either<Error, T>
  * - Soft dependencies: Either<Error, T | undefined>
  */
-export type RPCDependencies<T extends ReadonlyArray<keyof ModuleRPCInterfaces>> = {
-  [K in T[number]]: ModuleRPCInterfaces[K];
-};
+export type RPCDependencies<T extends readonly (keyof FeatureRpcMethods)[]> = 
+  InferredRPCDependencies<T, []>;
+
+/**
+ * Helper type with separate hard and soft dependencies
+ */
+export type RPCDependenciesWithSoft<
+  THard extends readonly (keyof FeatureRpcMethods)[],
+  TSoft extends readonly (keyof FeatureRpcMethods)[]
+> = InferredRPCDependencies<THard, TSoft>;
+
+// Re-export for convenience
+export type { FeatureRpcMethods, InferredRPCDependencies };
+

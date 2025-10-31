@@ -1,17 +1,21 @@
 // SPDX-License-Identifier: MPL-2.0
 // This file demonstrates how to use the RPC registry for inter-module communication
+// with automatic type inference
 
 import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
-import type { RPCDependencies } from "#features-chrome/common/rpc-interfaces.ts";
+import type { RPCDependenciesWithSoft } from "#features-chrome/common/rpc-interfaces.ts";
+import * as E from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
 
 /**
  * Example Module A - Provider
  * This module exposes RPC methods that other modules can call
+ * Types are automatically inferred - no manual interface needed!
  */
 @noraComponent(import.meta.hot)
 export class ModuleA extends NoraComponentBase {
-  // Type-safe RPC access (this module has no dependencies)
-  protected rpc!: RPCDependencies<[]>;
+  // No dependencies
+  protected rpc!: RPCDependenciesWithSoft<[], []>;
 
   // Private state
   private data = "initial value";
@@ -25,13 +29,13 @@ export class ModuleA extends NoraComponentBase {
       moduleName: "module-a",
       dependencies: [],
       softDependencies: [],
-      // Define RPC methods that other modules can call
+      // Define RPC methods - types are automatically inferred!
       rpcMethods: {
         getData: () => this.getData(),
         setData: (value: string) => this.setData(value),
         performAction: (action: string) => this.performAction(action),
       },
-    };
+    } as const;
   }
 
   // RPC-exposed methods
@@ -47,21 +51,28 @@ export class ModuleA extends NoraComponentBase {
 
   private async performAction(action: string): Promise<string> {
     console.log("ModuleA: performAction called with", action);
-    // Simulate async work
     await new Promise(resolve => setTimeout(resolve, 100));
     return `Performed: ${action}`;
   }
 }
 
+// Register in global registry for automatic type inference
+declare global {
+  interface FeatureModuleRegistry {
+    ModuleA: typeof ModuleA;
+  }
+}
+
 /**
- * Example Module B - Consumer (NEW PATTERN)
- * This module calls RPC methods on Module A using this.rpc
+ * Example Module B - Consumer
+ * This module calls RPC methods on Module A
+ * Types are automatically inferred from ModuleA's metadata!
  */
 @noraComponent(import.meta.hot)
 export class ModuleB extends NoraComponentBase {
-  // Type-safe RPC access to module-a
-  // Since module-a is in softDependencies, calls will return undefined if not available
-  protected rpc!: RPCDependencies<["module-a"]>;
+  // Type-safe RPC access - types automatically inferred from module-a!
+  // No manual interface declaration needed
+  protected rpc!: RPCDependenciesWithSoft<[], ["module-a"]>;
 
   init() {
     console.log("ModuleB initialized");
@@ -71,39 +82,58 @@ export class ModuleB extends NoraComponentBase {
   _metadata() {
     return {
       moduleName: "module-b",
-      dependencies: [], // No hard dependency on module-a
-      softDependencies: ["module-a"], // Soft dependency - won't fail if module-a is missing
-      // Module B can also expose its own RPC methods
+      dependencies: [],
+      softDependencies: ["module-a"],
       rpcMethods: {
         notifyModuleB: (message: string) => this.notifyModuleB(message),
       },
-    };
+    } as const;
   }
 
   private async demonstrateRPCCalls() {
-    // NEW PATTERN: Clean, type-safe RPC calls via this.rpc
-    // IDE autocomplete will work here!
+    console.log("=== Demonstrating automatic type inference with Either ===");
     
-    console.log("=== Demonstrating new this.rpc pattern ===");
+    // All types are automatically inferred!
+    // IDE autocomplete works perfectly
     
-    // Call getData - type-safe, returns string | undefined
-    const data = await this.rpc["module-a"].getData();
-    if (data) {
-      console.log("ModuleB: Received data from ModuleA:", data);
-    } else {
-      console.log("ModuleB: ModuleA not available, continuing without it");
-    }
+    // Call getData - returns Either<Error, string | undefined> (soft dependency)
+    const dataResult = await this.rpc["module-a"].getData();
+    
+    pipe(
+      dataResult,
+      E.fold(
+        (error) => console.error("Failed to get data:", error),
+        (data) => {
+          if (data === undefined) {
+            console.log("ModuleA not available");
+          } else {
+            console.log("ModuleB: Received data from ModuleA:", data);
+          }
+        }
+      )
+    );
 
-    // Call setData
-    await this.rpc["module-a"].setData("new value from ModuleB");
+    // Call setData - types inferred automatically!
+    const setResult = await this.rpc["module-a"].setData("new value");
     
-    // Call performAction
-    const result = await this.rpc["module-a"].performAction("test-action");
-    console.log("ModuleB: Action result:", result || "No result (module not available)");
+    pipe(
+      setResult,
+      E.fold(
+        (error) => console.error("Failed to set data:", error),
+        () => console.log("Data set successfully")
+      )
+    );
     
-    // Get updated data
-    const updatedData = await this.rpc["module-a"].getData();
-    console.log("ModuleB: Updated data:", updatedData || "No data");
+    // Call performAction - return type automatically inferred as string
+    const actionResult = await this.rpc["module-a"].performAction("test");
+    
+    pipe(
+      actionResult,
+      E.fold(
+        (error) => console.error("Failed to perform action:", error),
+        (result) => console.log("Action result:", result || "No result")
+      )
+    );
   }
 
   private notifyModuleB(message: string): void {
@@ -111,50 +141,30 @@ export class ModuleB extends NoraComponentBase {
   }
 }
 
-/**
- * Example Module C - No Dependencies
- * This module demonstrates a module that doesn't use RPC at all
- */
-@noraComponent(import.meta.hot)
-export class ModuleC extends NoraComponentBase {
-  protected rpc!: RPCDependencies<[]>;
-
-  init() {
-    console.log("ModuleC initialized - this module works independently");
-  }
-
-  _metadata() {
-    return {
-      moduleName: "module-c",
-      dependencies: [],
-      softDependencies: [],
-      // No RPC methods exposed
-    };
+// Register in global registry
+declare global {
+  interface FeatureModuleRegistry {
+    ModuleB: typeof ModuleB;
   }
 }
 
 /**
- * Key Benefits of the new this.rpc pattern:
+ * Key Benefits of Automatic Type Inference:
  * 
- * 1. ✅ Clean syntax: `this.rpc.sidebar.registerIcon(...)` 
- *    vs old: `getSoftModuleProxy<SidebarRPC>("sidebar").registerIcon(...)`
+ * 1. ✅ **No Manual Interface Declarations**: Types extracted from rpcMethods
+ * 2. ✅ **Type Safety**: Full TypeScript checking on method signatures
+ * 3. ✅ **IDE Autocomplete**: Works perfectly with inferred types
+ * 4. ✅ **Error Safety**: Either<Error, T> for all RPC calls
+ * 5. ✅ **DRY**: Single source of truth (the rpcMethods object)
+ * 6. ✅ **Refactoring Safe**: Change rpcMethods, types update automatically
  * 
- * 2. ✅ Type-safe: IDE autocomplete works automatically
- *    Just declare: `protected rpc!: RPCDependencies<["sidebar", "other"]>`
+ * How it works:
  * 
- * 3. ✅ Automatic setup: RPC proxies created in NoraComponentBase constructor
- *    based on dependencies/softDependencies in metadata
+ * 1. Module defines rpcMethods in _metadata()
+ * 2. Module registers in FeatureModuleRegistry via declaration merging
+ * 3. TypeScript extracts types from rpcMethods automatically
+ * 4. RPCDependencies type creates typed proxy based on module name
+ * 5. All wrapped with Either for error safety
  * 
- * 4. ✅ Consistent pattern: All modules use the same `this.rpc.moduleName.method()` pattern
- * 
- * 5. ✅ Still graceful: Soft dependencies return undefined if module not loaded
- *    Hard dependencies throw errors if module not available
- * 
- * To add a new module with RPC:
- * 
- * 1. Add its RPC interface to common/rpc-interfaces.ts
- * 2. Update ModuleRPCInterfaces mapping
- * 3. Declare `protected rpc!: RPCDependencies<["dependency-name"]>` in your class
- * 4. Use `this.rpc["dependency-name"].method()` to call RPC methods
- * 5. Add softDependencies or dependencies in _metadata()
+ * No .d.ts generation needed - pure TypeScript type system!
  */

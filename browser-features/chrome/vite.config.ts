@@ -36,7 +36,8 @@ export default defineConfig({
             const parts = id.split("node_modules/")[1].split("/");
             let pkg = parts[0] === ".pnpm" ? parts[1] : parts[0];
             // Sanitize package names that start with dots (e.g., .deno)
-            // as they cause loading issues in chrome:// protocol
+            // as they cause loading issues in chrome:// protocol.
+            // This applies to both regular node_modules and .pnpm structures.
             if (pkg.startsWith(".")) {
               pkg = pkg.substring(1);
             }

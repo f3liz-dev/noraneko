@@ -36,12 +36,6 @@ export default defineConfig({
             const parts = id.split("node_modules/")[1].split("/");
             // .pnpm || .deno
             let pkg = parts[0].startsWith(".") ? parts[1] : parts[0];
-            // Sanitize package names that start with dots (e.g., .deno)
-            // as they cause loading issues in chrome:// protocol.
-            // This applies to both regular node_modules and .pnpm structures.
-            if (pkg.startsWith(".")) {
-              pkg = pkg.substring(1);
-            }
             return `external/${pkg}`;
           }
           if (id.includes(".svg")) {

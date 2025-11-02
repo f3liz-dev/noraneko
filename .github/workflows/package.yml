@@ -91,10 +91,8 @@ jobs:
 
       - name: Setup Noraneko
         run: |
-          cd $GITHUB_WORKSPACE
-          cd ./noraneko
+          cd noraneko
           deno install --allow-scripts
-          cd ..
 
       - name: Setup
         run: |
@@ -103,9 +101,8 @@ jobs:
 
       - name: Write Versions
         run: |
-          cd ./noraneko
+          cd noraneko
           deno task feles-build misc writeVersion
-          cd ..
 
       - name: Mach configure
         run: |
@@ -198,27 +195,16 @@ jobs:
           mkdir -p ~/downloads
           curl -L https://github.com/${{ github.repository }}-runtime/releases/latest/download/${{ env.ARTIFACT_FROM_RELEASE_NAME }} -o ~/downloads/${{ env.ARTIFACT_FROM_RELEASE_NAME }}
 
-      - name: Make Downloaded Artifact to Mozilla Artifact (Actions)
-        if: ${{ env.RUNTIME_ARTIFACT_WORKFLOW_RUN_ID != 'false' }}
+      - name: Prepare Mozilla Artifact
         run: |
           mkdir -p ~/artifacts
           cp -r ~/downloads/* ~/artifacts
           ls -R ~/artifacts
-          cd $GITHUB_WORKSPACE
-
-      - name: Make Download Artifact to Mozilla Artifact (GitHub Releases)
-        if: ${{ env.RUNTIME_ARTIFACT_WORKFLOW_RUN_ID == 'false' }}
-        run: |
-          mkdir -p ~/artifacts
-          cp -r ~/downloads/* ~/artifacts
-          ls -R ~/artifacts
-          cd $GITHUB_WORKSPACE
 
       - name: Build Noraneko
         run: |
-          cd ./noraneko
+          cd noraneko
           NODE_ENV='production' deno task feles-build build --phase before-mach
-          cd ..
 
       - name: Build
         run: |
@@ -231,7 +217,7 @@ jobs:
 
       - name: Inject Noraneko
         run: |
-          cd ./noraneko
+          cd noraneko
           deno task feles-build build --phase after-mach
           rsync -aL ../obj-artifact-build-output/dist/bin/ ../obj-artifact-build-output/dist/tmp__bin
           rm -rf ../obj-artifact-build-output/dist/bin
@@ -248,7 +234,6 @@ jobs:
               done
             done
           fi
-          cd ..
 
       - name: Package noraneko
         run: |

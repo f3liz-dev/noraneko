@@ -1,0 +1,20 @@
+name: 'Setup Noraneko Build Environment'
+description: 'Sets up Node.js, Deno, and installs Noraneko dependencies'
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+      shell: bash
+
+    - uses: denoland/setup-deno@v2
+      with:
+        deno-version: v2.x
+      shell: bash
+
+    - name: Install Noraneko dependencies
+      run: deno install --allow-scripts
+      shell: bash
+      working-directory: ${{ github.workspace }}/noraneko

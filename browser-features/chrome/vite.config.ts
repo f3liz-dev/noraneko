@@ -34,7 +34,8 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes("node_modules")) {
             const parts = id.split("node_modules/")[1].split("/");
-            const pkg = parts[0] === ".pnpm" ? parts[1] : parts[0];
+            // .pnpm || .deno
+            let pkg = parts[0].startsWith(".") ? parts[1] : parts[0];
             return `external/${pkg}`;
           }
           if (id.includes(".svg")) {

@@ -17,19 +17,35 @@ async function generateUpdateXML(
   metaJsonPath: string,
   outputXmlPath: string,
 ): Promise<void> {
-  // Read meta.json
-  const metaContent = await Deno.readTextFile(metaJsonPath);
-  const meta: MetaData = JSON.parse(metaContent);
+  // Read and parse meta.json with error handling
+  let meta: MetaData;
+  try {
+    const metaContent = await Deno.readTextFile(metaJsonPath);
+    meta = JSON.parse(metaContent);
+    
+    // Validate required fields
+    const requiredFields = ['version', 'noraneko_version', 'noraneko_buildid', 'mar_size', 'mar_shasum', 'buildid'];
+    for (const field of requiredFields) {
+      if (!(field in meta)) {
+        throw new Error(`Missing required field '${field}' in meta.json`);
+      }
+    }
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`Invalid JSON in ${metaJsonPath}: ${error.message}`);
+    }
+    throw error;
+  }
 
-  // Extract directory from output path to determine platform
-  const platform = outputXmlPath.includes("WINNT")
+  // Determine platform from output path
+  // Look for WINNT in the path to determine Windows platform
+  const isWindows = outputXmlPath.includes("WINNT");
+  const platform = isWindows
     ? "WINNT_x86_64-msvc-x64"
     : "Linux_x86_64-gcc3";
 
   // Construct MAR file URL (relative to where the XML will be hosted)
-  const marFileName = `noraneko-${
-    platform.includes("WINNT") ? "windows" : "linux"
-  }-x64-full.mar`;
+  const marFileName = `noraneko-${isWindows ? "windows" : "linux"}-x64-full.mar`;
 
   // Generate update XML
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

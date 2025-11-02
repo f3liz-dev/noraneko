@@ -43,7 +43,7 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ github.repository }}/actions/workflows/package.yml/runs?branch=main&status=success" \
-            | jq -r '[.workflow_runs[] | select(.display_title | endswith("Windows-x64"))][0].id')
+            | jq -r '[.workflow_runs[] | select(.display_title | endswith("Windows-x86_64"))][0].id')
             echo "WINDOWS_RUN_ID=$WINDOWS_ID" >> $GITHUB_ENV
           else
             echo "WINDOWS_RUN_ID=${{ inputs.win_runtime_artifact_workflow_call }}" >> $GITHUB_ENV
@@ -52,7 +52,7 @@ jobs:
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: noraneko-windows-x64-mar-full
+          name: noraneko-windows-x86_64-mar-full
           run-id: ${{ env.WINDOWS_RUN_ID }}
           path: ~/noraneko-publish/win
           github-token: ${{ github.token }}
@@ -60,7 +60,7 @@ jobs:
       - name: Download Windows installer
         uses: actions/download-artifact@v4
         with:
-          name: noraneko-windows-x64-installer
+          name: noraneko-windows-x86_64-installer
           run-id: ${{ env.WINDOWS_RUN_ID }}
           path: ~/noraneko-publish/win-dist
           github-token: ${{ github.token }}

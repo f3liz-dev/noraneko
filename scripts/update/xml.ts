@@ -45,7 +45,7 @@ async function generateUpdateXML(
     : "Linux_x86_64-gcc3";
 
   // Construct MAR file URL (relative to where the XML will be hosted)
-  const marFileName = `noraneko-${isWindows ? "windows" : "linux"}-x64-full.mar`;
+  const marFileName = `noraneko-${isWindows ? "windows" : "linux"}-x86_64-full.mar`;
 
   // Generate update XML
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

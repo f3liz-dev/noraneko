@@ -24,14 +24,14 @@ jobs:
   package-windows:
     uses: ./.github/workflows/package.yml
     with:
-      platform: Windows-x64
+      platform: Windows-x86_64
       runtime_artifact_workflow_run_id: ${{ inputs.runtime_windows_artifact_workflow_run_id }}
     secrets: inherit
 
   package-linux:
     uses: ./.github/workflows/package.yml
     with:
-      platform: Linux-x64
+      platform: Linux-x86_64
       runtime_artifact_workflow_run_id: ${{ inputs.runtime_linux_artifact_workflow_run_id }}
     secrets: inherit
 

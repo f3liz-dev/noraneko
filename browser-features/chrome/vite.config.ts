@@ -34,7 +34,8 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes("node_modules")) {
             const parts = id.split("node_modules/")[1].split("/");
-            let pkg = parts[0] === ".pnpm" ? parts[1] : parts[0];
+            // .pnpm || .deno
+            let pkg = parts[0].startsWith(".") ? parts[1] : parts[0];
             // Sanitize package names that start with dots (e.g., .deno)
             // as they cause loading issues in chrome:// protocol.
             // This applies to both regular node_modules and .pnpm structures.

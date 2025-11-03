@@ -23,6 +23,15 @@ export interface ViteOxcDecoratorOptions {
 }
 
 /**
+ * Regex pattern to detect decorator usage in code.
+ * Matches decorators before:
+ * - Class declarations: @decorator class / @decorator export class
+ * - Method/property modifiers: @decorator static, async, get, set, private, public, protected, readonly
+ * This helps avoid transforming files that only contain '@' in comments or strings.
+ */
+const DECORATOR_PATTERN = /@\w+(\(|\s+(export\s+)?(class|static|async|get|set|private|public|protected|readonly))/m;
+
+/**
  * Vite plugin for transforming Stage 3 decorators using Babel
  * 
  * This plugin uses Babel's decorator plugin to transform decorators
@@ -69,9 +78,9 @@ export default function viteOxcDecoratorStage3(
         return null;
       }
 
-      //  Check if code contains actual class decorators (simple heuristic)
+      // Check if code contains actual class decorators (simple heuristic)
       // Look for decorators before class/method/property declarations
-      if (!/@\w+(\(|\s+(export\s+)?(class|static|async|get|set|private|public|protected|readonly))/m.test(code)) {
+      if (!DECORATOR_PATTERN.test(code)) {
         return null;
       }
 
@@ -105,7 +114,8 @@ export default function viteOxcDecoratorStage3(
           map: result.map,
         };
       } catch (error) {
-        // If transformation fails, let other plugins handle it
+        // Transformation failed - this is a critical error since we detected decorators
+        // Throwing ensures the build fails rather than silently producing incorrect code
         console.error(`Failed to transform decorators in ${id}:`, error);
         throw error;
       }

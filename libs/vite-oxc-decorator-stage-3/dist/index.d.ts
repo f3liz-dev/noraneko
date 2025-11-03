@@ -1,5 +1,4 @@
 import type { Plugin } from 'vite';
-import { type TransformOptions } from '@babel/core';
 export interface ViteOxcDecoratorOptions {
     /**
      * Include files matching these patterns.
@@ -11,16 +10,12 @@ export interface ViteOxcDecoratorOptions {
      * @default [/node_modules/]
      */
     exclude?: RegExp | RegExp[];
-    /**
-     * Babel transform options
-     */
-    babel?: TransformOptions;
 }
 /**
- * Vite plugin for transforming Stage 3 decorators using Babel
+ * Vite plugin for transforming Stage 3 decorators using oxc WASM transformer
  *
- * This plugin uses Babel's decorator plugin to transform decorators
- * following the TC39 Stage 3 proposal semantics.
+ * This plugin uses a Rust/WASM Component Model transformer built with oxc
+ * to transform decorators following the TC39 Stage 3 proposal semantics.
  *
  * @example
  * ```ts

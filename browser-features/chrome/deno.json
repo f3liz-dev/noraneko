@@ -3,6 +3,7 @@
   "imports": {
     "@deno/vite-plugin": "npm:@deno/vite-plugin@^1.0.5",
     "@jsr/std__assert": "npm:@jsr/std__assert@^1.0.15",
+    "@jsr/std__collections": "npm:@jsr/std__collections@^1.1.3",
     "@types/uuid": "npm:@types/uuid@^11.0.0",
 
     "birpc": "npm:birpc@^2.6.1",

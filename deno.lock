@@ -3721,14 +3721,14 @@
           "npm:fp-ts@^2.16.11",
           "npm:i18next@^25.6.0",
           "npm:io-ts@^2.2.22",
+          "npm:rolldown-vite@latest",
           "npm:solid-js@^1.9.10",
           "npm:solid-styled-jsx@~0.27.1",
           "npm:uuid@13",
           "npm:vite-plugin-istanbul@^7.2.0",
           "npm:vite-plugin-solid@^2.11.10",
           "npm:vite-tsconfig-paths@^5.1.4",
-          "npm:vite@*",
-          "npm:vite@^7.1.12"
+          "npm:vite@*"
         ],
         "packageJson": {
           "dependencies": [

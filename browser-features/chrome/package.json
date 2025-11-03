@@ -1,3 +1,7 @@
 {
-  "name": "@nora/chrome"
+  "name": "@nora/chrome",
+  "dependencies": {
+    "@deno/vite-plugin": "^1.0.5",
+    "vite": "7.1.12"
+  }
 }

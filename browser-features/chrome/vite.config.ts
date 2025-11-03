@@ -73,10 +73,8 @@ export default defineConfig({
   },
 
   plugins: [
+    decorators(),
     deno(),
-    decorators({
-      exclude: [/node_modules/],
-    }),
 
     solidPlugin({
       solid: {

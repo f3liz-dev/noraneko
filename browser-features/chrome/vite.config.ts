@@ -15,6 +15,20 @@ export default defineConfig({
   server: { port: 5181, strictPort: true },
   define: { "import.meta.env.__BUILDID2__": '"placeholder"' },
 
+  // Configure environments to avoid vite-plugin-solid dynamic import issue
+  environments: {
+    client: {
+      resolve: {
+        conditions: ["solid", "module", "browser", "development|production"],
+      },
+    },
+    ssr: {
+      resolve: {
+        conditions: ["solid", "module", "node", "development|production"],
+      },
+    },
+  },
+
   build: {
     sourcemap: true,
     reportCompressedSize: false,

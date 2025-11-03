@@ -21,6 +21,14 @@ export default class StatusBar extends NoraComponentBase {
 
     manager.init();
   }
+  static _metadata() {
+    return {
+      moduleName: "statusbar",
+      dependencies: [],
+      softDependencies: [],
+      rpcMethods: {},
+    };
+  }
 }
 
 function onPopupShowing(event: Event) {

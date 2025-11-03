@@ -35,7 +35,7 @@ export default class ContextMenu extends NoraComponentBase {
     });
   }
 
-  _metadata() {
+  static _metadata() {
     return {
       moduleName: "context-menu",
       dependencies: [],

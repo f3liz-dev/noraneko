@@ -1,6 +1,7 @@
 use oxc_allocator::Allocator;
 use oxc_ast::ast::*;
 use oxc_traverse::{Traverse, TraverseCtx};
+use oxc_codegen::Codegen;
 use std::cell::RefCell;
 
 /// Represents the kind of decorator according to TC39 Stage 3 decorator specification
@@ -29,6 +30,7 @@ pub struct TransformerState;
 pub struct ClassTransformation {
     pub class_name: String,
     pub static_block_code: String,
+    pub needs_instance_init: bool,  // True if field/accessor decorators exist
 }
 
 impl<'a> DecoratorTransformer<'a> {
@@ -43,9 +45,20 @@ impl<'a> DecoratorTransformer<'a> {
     }
     
     pub fn check_for_decorators(&self, program: &Program<'a>) -> bool {
-        program.body.iter().any(|stmt| {
-            matches!(stmt, Statement::ClassDeclaration(class_decl) if self.has_decorators(&class_decl))
-        })
+        program.body.iter().any(|stmt| self.statement_has_decorators(stmt))
+    }
+    
+    fn statement_has_decorators(&self, stmt: &Statement<'a>) -> bool {
+        match stmt {
+            Statement::ClassDeclaration(class) => self.has_decorators(class),
+            Statement::ExportDefaultDeclaration(export) => {
+                matches!(&export.declaration, ExportDefaultDeclarationKind::ClassDeclaration(class) if self.has_decorators(class))
+            }
+            Statement::ExportNamedDeclaration(export) => {
+                matches!(&export.declaration, Some(Declaration::ClassDeclaration(class)) if self.has_decorators(class))
+            }
+            _ => false,
+        }
     }
     
     pub fn needs_helpers(&self) -> bool {
@@ -103,19 +116,26 @@ impl<'a> DecoratorTransformer<'a> {
         }).collect()
     }
     
+    /// Generates source code for a decorator expression.
+    /// Returns the full expression including any call arguments.
+    /// For example: `noraComponent(import.meta.hot)` instead of just `noraComponent`
+    fn generate_expression_code(&self, expr: &Expression<'a>) -> String {
+        let mut codegen = Codegen::new();
+        codegen.print_expression(expr);
+        let code = codegen.into_source_text();
+        
+        // Fallback to "decorator" if code generation produces empty string
+        // This should not happen with valid AST, but provides a safe default
+        if code.is_empty() {
+            "decorator".to_string()
+        } else {
+            code
+        }
+    }
+    
     fn extract_decorator_names(&self, decorators: &oxc_allocator::Vec<'a, Decorator<'a>>) -> Vec<String> {
         decorators.iter().map(|dec| {
-            match &dec.expression {
-                Expression::Identifier(ident) => ident.name.to_string(),
-                Expression::CallExpression(call) => {
-                    if let Expression::Identifier(ident) = &call.callee {
-                        ident.name.to_string()
-                    } else {
-                        "decorator".to_string()
-                    }
-                }
-                _ => "decorator".to_string(),
-            }
+            self.generate_expression_code(&dec.expression)
         }).collect()
     }
     
@@ -148,11 +168,17 @@ impl<'a> DecoratorTransformer<'a> {
         let metadata = self.collect_decorator_metadata(class);
         let class_decorators = self.collect_class_decorators(class);
         
+        // Check if we need instance initialization (field or accessor decorators)
+        let needs_instance_init = metadata.iter().any(|m| {
+            m.kind == DecoratorKind::Field || m.kind == DecoratorKind::Accessor
+        });
+        
         if !metadata.is_empty() || !class_decorators.is_empty() {
             let static_block_code = self.generate_static_block_code(&metadata, &class_decorators);
             self.transformations.borrow_mut().push(ClassTransformation {
                 class_name,
                 static_block_code,
+                needs_instance_init,
             });
         }
         
@@ -172,17 +198,7 @@ impl<'a> DecoratorTransformer<'a> {
     
     fn collect_class_decorators(&self, class: &Class<'a>) -> Vec<String> {
         class.decorators.iter().map(|dec| {
-            match &dec.expression {
-                Expression::Identifier(ident) => ident.name.to_string(),
-                Expression::CallExpression(call) => {
-                    if let Expression::Identifier(ident) = &call.callee {
-                        ident.name.to_string()
-                    } else {
-                        "decorator".to_string()
-                    }
-                }
-                _ => "decorator".to_string(),
-            }
+            self.generate_expression_code(&dec.expression)
         }).collect()
     }
     
@@ -204,11 +220,23 @@ impl<'a> DecoratorTransformer<'a> {
         let member_desc_array = format!("[{}]", descriptors.join(", "));
         let class_dec_array = format!("[{}]", class_decorators.join(", "));
         
-        format!(
-            "static {{ [_initProto, _initClass] = _applyDecs(this, {}, {}).e; }}",
-            member_desc_array,
-            class_dec_array
-        )
+        // Generate the appropriate static block based on whether there are class decorators
+        if class_decorators.is_empty() {
+            // Only member decorators - use .e property and call _initClass if defined
+            format!(
+                "static {{ [_initProto, _initClass] = _applyDecs(this, {}, {}).e; if (_initClass) _initClass(); }}",
+                member_desc_array,
+                class_dec_array
+            )
+        } else {
+            // Has class decorators - use .c property which may replace the class
+            // The .c property returns [newClass, classInitializer]
+            format!(
+                "static {{ let _classThis; [_classThis, _initClass] = _applyDecs(this, {}, {}).c; if (_initClass) _initClass(); }}",
+                member_desc_array,
+                class_dec_array
+            )
+        }
     }
 }
 

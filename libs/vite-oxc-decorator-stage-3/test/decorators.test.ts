@@ -1,14 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { transformAsync } from '@babel/core';
-// @ts-expect-error - Babel plugin types
-import decoratorsPlugin from '@babel/plugin-proposal-decorators';
+import viteOxcDecoratorStage3 from '../src/index';
 
 describe('Stage 3 Decorator Transformation', () => {
   async function transformCode(code: string): Promise<string> {
-    const result = await transformAsync(code, {
-      plugins: [[decoratorsPlugin, { version: '2023-11' }]],
-    });
-    return result?.code || '';
+    const plugin = viteOxcDecoratorStage3();
+    await plugin.buildStart!.call({} as any);
+    
+    const result = await plugin.transform!(code, 'test.ts');
+    if (!result || typeof result !== 'object' || !('code' in result)) {
+      throw new Error('Transformation failed');
+    }
+    
+    return result.code;
   }
 
   describe('Class Method Decorators', () => {
@@ -37,6 +40,10 @@ describe('Stage 3 Decorator Transformation', () => {
       expect(output).toBeTruthy();
       expect(output).toContain('function logged');
       expect(output).toContain('class C');
+      // Should have static block for decorator application
+      expect(output).toContain('static {');
+      // Decorator should be removed from method
+      expect(output).not.toContain('@logged');
     });
   });
 
@@ -60,6 +67,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function logged');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@logged');
     });
   });
 
@@ -94,6 +103,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function logged');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@logged');
     });
   });
 
@@ -120,6 +131,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function logged');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@logged');
     });
   });
 
@@ -148,6 +161,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function logged');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@logged');
     });
 
     it('should transform setter decorator', async () => {
@@ -174,6 +189,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function logged');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@logged');
     });
   });
 
@@ -195,6 +212,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function customElement');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@customElement');
     });
 
     it('should support addInitializer with method decorators', async () => {
@@ -216,6 +235,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function bound');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@bound');
     });
   });
 
@@ -236,6 +257,9 @@ describe('Stage 3 Decorator Transformation', () => {
       expect(output).toBeTruthy();
       expect(output).toContain('function first');
       expect(output).toContain('function second');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@first');
+      expect(output).not.toContain('@second');
     });
   });
 
@@ -255,6 +279,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function logged');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@logged');
     });
 
     it('should handle decorators on private fields', async () => {
@@ -272,6 +298,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function logged');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@logged');
     });
   });
 
@@ -291,6 +319,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function logged');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@logged');
     });
 
     it('should handle decorators on static fields', async () => {
@@ -308,6 +338,8 @@ describe('Stage 3 Decorator Transformation', () => {
       const output = await transformCode(input);
       expect(output).toBeTruthy();
       expect(output).toContain('function logged');
+      expect(output).toContain('static {');
+      expect(output).not.toContain('@logged');
     });
   });
 });

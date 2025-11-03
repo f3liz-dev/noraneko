@@ -60,7 +60,7 @@ export default class TabRename extends NoraComponentBase {
     });
   }
 
-  _metadata() {
+  static _metadata() {
     return {
       moduleName: "tab-rename",
       dependencies: [],

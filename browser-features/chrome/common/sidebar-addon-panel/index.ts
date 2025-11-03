@@ -140,15 +140,12 @@ export default class SidebarAddonPanel extends NoraComponentBase {
     );
   }
 
-  _metadata() {
+  static _metadata() {
     return {
       moduleName: "sidebar-addon-panel",
       dependencies: [],
-      softDependencies: ["sidebar"], // sidebar is a soft dependency
-      // No RPC methods needed - callbacks are registered directly with sidebar
-      rpcMethods: {
-        // Can keep these if other modules need to call them directly
-      },
+      softDependencies: ["sidebar"],
+      rpcMethods: {},
     };
   }
 }

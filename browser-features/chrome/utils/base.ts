@@ -63,7 +63,8 @@ export abstract class NoraComponentBase {
     this.logger = _console;
 
     // Initialize RPC proxies based on metadata
-    const metadata = this._metadata();
+    // @ts-expect-error
+    const metadata = this.constructor._metadata();
     this.rpc = this._createRPCProxies(metadata);
 
     // Run init with solid-js HMR support
@@ -95,9 +96,11 @@ export abstract class NoraComponentBase {
   /**
    * Return module metadata for dependency management and internal RPC
    */
-  abstract _metadata(): {
+  static _metadata(): {
     moduleName: string;
     dependencies: string[];
     softDependencies: string[];
-  };
+  } {
+    throw new Error("Method is not implemented")
+  }
 }

@@ -12,8 +12,6 @@
     "jsr:@std/path@^1.1.1": "1.1.2",
     "jsr:@std/path@^1.1.2": "1.1.2",
     "jsr:@std/streams@^1.0.13": "1.0.13",
-    "npm:@babel/core@^7.23.0": "7.28.5",
-    "npm:@babel/plugin-proposal-decorators@^7.23.0": "7.28.0_@babel+core@7.28.5",
     "npm:@bytecodealliance/jco@1": "1.15.2",
     "npm:@bytecodealliance/preview2-shim@~0.17.4": "0.17.4",
     "npm:@deno/vite-plugin@^1.0.4": "1.0.5_vite@5.4.21__@types+node@20.19.24__lightningcss@1.30.2_@types+node@20.19.24_lightningcss@1.30.2",
@@ -26,7 +24,6 @@
     "npm:@swc/core@^1.14.0": "1.14.0",
     "npm:@tailwindcss/vite@^4.1.13": "4.1.16_vite@5.4.21__@types+node@20.19.24__lightningcss@1.30.2_@types+node@20.19.24_lightningcss@1.30.2",
     "npm:@tailwindcss/vite@^4.1.16": "4.1.16_vite@5.4.21__@types+node@20.19.24__lightningcss@1.30.2_@types+node@20.19.24_lightningcss@1.30.2",
-    "npm:@types/babel__core@^7.20.5": "7.20.5",
     "npm:@types/chroma-js@^3.1.2": "3.1.2",
     "npm:@types/node@^20.11.0": "20.19.24",
     "npm:@types/node@^24.9.2": "24.9.2",
@@ -153,12 +150,6 @@
         "jsesc"
       ]
     },
-    "@babel/helper-annotate-as-pure@7.27.3": {
-      "integrity": "sha512-fXSwMQqitTGeHLBC08Eq5yXz2m37E4pJX1qAU1+2cNedz/ifv/bVXft90VeSav5nFO61EcNgwr0aJxbyPaWBPg==",
-      "dependencies": [
-        "@babel/types@7.28.5"
-      ]
-    },
     "@babel/helper-compilation-targets@7.27.2": {
       "integrity": "sha512-2+1thGUUWWjLTYTHZWK1n8Yga0ijBz1XAhUXcKy81rd5g6yh7hGqMp45v7cadSbEHc9G3OTv45SyneRN3ps4DQ==",
       "dependencies": [
@@ -169,28 +160,8 @@
         "semver@6.3.1"
       ]
     },
-    "@babel/helper-create-class-features-plugin@7.28.5_@babel+core@7.28.5": {
-      "integrity": "sha512-q3WC4JfdODypvxArsJQROfupPBq9+lMwjKq7C33GhbFYJsufD0yd/ziwD+hJucLeWsnFPWZjsU2DNFqBPE7jwQ==",
-      "dependencies": [
-        "@babel/core",
-        "@babel/helper-annotate-as-pure",
-        "@babel/helper-member-expression-to-functions",
-        "@babel/helper-optimise-call-expression",
-        "@babel/helper-replace-supers",
-        "@babel/helper-skip-transparent-expression-wrappers",
-        "@babel/traverse",
-        "semver@6.3.1"
-      ]
-    },
     "@babel/helper-globals@7.28.0": {
       "integrity": "sha512-+W6cISkXFa1jXsDEdYA8HeevQT/FULhxzR99pxphltZcVaugps53THCeiWA8SguxxpSp3gKPiuYfSWopkLQ4hw=="
-    },
-    "@babel/helper-member-expression-to-functions@7.28.5": {
-      "integrity": "sha512-cwM7SBRZcPCLgl8a7cY0soT1SptSzAlMH39vwiRpOQkJlh53r5hdHwLSCZpQdVLT39sZt+CRpNwYG4Y2v77atg==",
-      "dependencies": [
-        "@babel/traverse",
-        "@babel/types@7.28.5"
-      ]
     },
     "@babel/helper-module-imports@7.18.6": {
       "integrity": "sha512-0NFvs3VkuSYbFi1x2Vd6tKrywq+z/cLeYC/RJNFrIX/30Bf5aiGYbtvGXolEktzJH8o5E5KJ3tT+nkxuuZFVlA==",
@@ -214,30 +185,8 @@
         "@babel/traverse"
       ]
     },
-    "@babel/helper-optimise-call-expression@7.27.1": {
-      "integrity": "sha512-URMGH08NzYFhubNSGJrpUEphGKQwMQYBySzat5cAByY1/YgIRkULnIy3tAMeszlL/so2HbeilYloUmSpd7GdVw==",
-      "dependencies": [
-        "@babel/types@7.28.5"
-      ]
-    },
     "@babel/helper-plugin-utils@7.27.1": {
       "integrity": "sha512-1gn1Up5YXka3YYAHGKpbideQ5Yjf1tDa9qYcgysz+cNCXukyLl6DjPXhD3VRwSb8c0J9tA4b2+rHEZtc6R0tlw=="
-    },
-    "@babel/helper-replace-supers@7.27.1_@babel+core@7.28.5": {
-      "integrity": "sha512-7EHz6qDZc8RYS5ElPoShMheWvEgERonFCs7IAonWLLUTXW59DP14bCZt89/GKyreYn8g3S83m21FelHKbeDCKA==",
-      "dependencies": [
-        "@babel/core",
-        "@babel/helper-member-expression-to-functions",
-        "@babel/helper-optimise-call-expression",
-        "@babel/traverse"
-      ]
-    },
-    "@babel/helper-skip-transparent-expression-wrappers@7.27.1": {
-      "integrity": "sha512-Tub4ZKEXqbPjXgWLl2+3JpQAYBJ8+ikpQ2Ocj/q/r0LwE3UhENh7EUabyHjz2kCEsrRY83ew2DQdHluuiDQFzg==",
-      "dependencies": [
-        "@babel/traverse",
-        "@babel/types@7.28.5"
-      ]
     },
     "@babel/helper-string-parser@7.27.1": {
       "integrity": "sha512-qMlSxKbpRlAridDExk92nSobyDdpPijUq2DW6oDnUqd0iOGxmQjyqhMIihI9+zv4LPyZdRje2cavWPbCbWm3eA=="
@@ -261,22 +210,6 @@
         "@babel/types@7.28.5"
       ],
       "bin": true
-    },
-    "@babel/plugin-proposal-decorators@7.28.0_@babel+core@7.28.5": {
-      "integrity": "sha512-zOiZqvANjWDUaUS9xMxbMcK/Zccztbe/6ikvUXaG9nsPH3w6qh5UaPGAnirI/WhIbZ8m3OHU0ReyPrknG+ZKeg==",
-      "dependencies": [
-        "@babel/core",
-        "@babel/helper-create-class-features-plugin",
-        "@babel/helper-plugin-utils",
-        "@babel/plugin-syntax-decorators"
-      ]
-    },
-    "@babel/plugin-syntax-decorators@7.27.1_@babel+core@7.28.5": {
-      "integrity": "sha512-YMq8Z87Lhl8EGkmb0MwYkt36QnxC+fzCgrl66ereamPlYToRpIk5nUjKUY3QKLWq8mwUB1BgbeXcTJhZOCDg5A==",
-      "dependencies": [
-        "@babel/core",
-        "@babel/helper-plugin-utils"
-      ]
     },
     "@babel/plugin-syntax-jsx@7.27.1_@babel+core@7.28.5": {
       "integrity": "sha512-y8YTNIeKoyhGd9O0Jiyzyyqk8gdjnumGTQPsz0xOZOQ2RmkVJeZ1vmmfIvFEKqucBG6axJGBZDE/7iI5suUI/w==",
@@ -3781,10 +3714,7 @@
       "libs/vite-oxc-decorator-stage-3": {
         "packageJson": {
           "dependencies": [
-            "npm:@babel/core@^7.23.0",
-            "npm:@babel/plugin-proposal-decorators@^7.23.0",
             "npm:@bytecodealliance/jco@1",
-            "npm:@types/babel__core@^7.20.5",
             "npm:@types/node@^20.11.0",
             "npm:typescript@^5.3.3",
             "npm:vite@5",

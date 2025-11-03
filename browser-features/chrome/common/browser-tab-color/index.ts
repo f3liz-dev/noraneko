@@ -78,7 +78,7 @@ export default class BrowserTabColor extends NoraComponentBase {
     });
   }
 
-  _metadata() {
+  static _metadata() {
     return {
       moduleName: "browser-tab-color",
       dependencies: [],

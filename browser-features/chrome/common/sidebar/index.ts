@@ -132,7 +132,7 @@ export default class Sidebar extends NoraComponentBase {
     return Array.from(this.registeredIcons.values());
   }
 
-  _metadata() {
+  static _metadata() {
     return {
       moduleName: "sidebar",
       dependencies: [],

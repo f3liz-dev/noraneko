@@ -1,0 +1,74 @@
+{
+  "name": "vite-oxc-decorator-stage-3",
+  "version": "0.1.0",
+  "description": "Vite plugin for transforming TC39 Stage 3 decorators using oxc WASM transformer",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "pkg",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build:wasm": "cd decorator-transformer && ./build-wasm.sh",
+    "build:jco": "jco transpile decorator-transformer/target/wasm32-wasip2/release/decorator_transformer.wasm -o pkg",
+    "build:ts": "tsc",
+    "build": "npm run build:wasm && npm run build:jco && npm run build:ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "vite",
+    "plugin",
+    "decorators",
+    "stage-3",
+    "tc39",
+    "oxc",
+    "wasm",
+    "component-model",
+    "wit",
+    "rust",
+    "transform",
+    "javascript",
+    "typescript",
+    "class-decorators",
+    "method-decorators",
+    "field-decorators",
+    "accessor-decorators"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nyanrus/vite-oxc-decorator-stage-3.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nyanrus/vite-oxc-decorator-stage-3/issues"
+  },
+  "homepage": "https://github.com/nyanrus/vite-oxc-decorator-stage-3#readme",
+  "peerDependencies": {
+    "vite": "^4.0.0 || ^5.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/plugin-proposal-decorators": "^7.23.0",
+    "@bytecodealliance/jco": "^1.0.0",
+    "@types/babel__core": "^7.20.5",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0",
+    "vitest": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

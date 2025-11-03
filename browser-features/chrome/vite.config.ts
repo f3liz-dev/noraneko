@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 import path from "node:path";
 import solidPlugin from "vite-plugin-solid";
 import istanbulPlugin from "vite-plugin-istanbul";
-import swc from "unplugin-swc";
+import decorators from "../../libs/vite-oxc-decorator-stage-3/dist/index.js";
 import { genJarmnPlugin } from "../../libs/vite-plugin-gen-jarmn/plugin.ts";
 
 const r = (dir: string) => path.resolve(import.meta.dirname, dir);
@@ -58,13 +58,8 @@ export default defineConfig({
   },
 
   plugins: [
-    swc.vite({
-      exclude: ["*solid-xul*", "*solid-js*"],
-      jsc: {
-        target: "esnext",
-        parser: { syntax: "typescript", decorators: true },
-        transform: { decoratorMetadata: true, decoratorVersion: "2022-03" },
-      },
+    decorators({
+      exclude: [/node_modules/, /solid-xul/, /solid-js/],
     }),
 
     solidPlugin({

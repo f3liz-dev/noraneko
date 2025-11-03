@@ -1,0 +1,11 @@
+package decorator:transformer;
+
+world transformer {
+  export transform: func(filename: string, source-text: string, options: string) -> result<transform-result, string>;
+  
+  record transform-result {
+    code: string,
+    map: option<string>,
+    errors: list<string>,
+  }
+}

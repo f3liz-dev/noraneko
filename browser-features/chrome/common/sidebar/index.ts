@@ -88,8 +88,13 @@ export default class Sidebar implements SidebarRPC {
   }
 
   private renderDockBar(): void {
-    // Inject styles
-    render(() => <style>{dockBarStyle}</style>, document?.head);
+    // Inject styles only once
+    if (!document?.getElementById("sidebar-dock-bar-styles")) {
+      render(
+        () => <style id="sidebar-dock-bar-styles">{dockBarStyle}</style>,
+        document?.head
+      );
+    }
 
     // Render dock bar component
     const parentElem = document?.getElementById("browser");

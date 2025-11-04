@@ -98,6 +98,10 @@ export default class SidebarAddonPanel {
   }
 
   // Example method that demonstrates registering sidebar icons
+  // Note: Function references work here because the RPC system in this codebase
+  // is not a traditional serialized RPC - it's a typed dependency injection system
+  // where all modules run in the same JavaScript context. The callbacks are
+  // direct function references, not serialized over a boundary.
   private async registerExampleSidebarIcons(): Promise<void> {
     // Register notes icon with callback (not birpcMethodName)
     const notesResult = await this.rpc.sidebar.registerSidebarIcon({

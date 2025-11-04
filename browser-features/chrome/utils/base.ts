@@ -21,7 +21,24 @@ interface ComponentMetadata {
  */
 export function rpcMethod(_: Function, context: ClassMethodDecoratorContext) {
   context.addInitializer(function () {
-    const className = this.constructor.name;
+    // START OF FIX
+    // This initializer may be called with 'this' as the class (static)
+    // or 'this' as the prototype (instance). We need the class name in both cases.
+    const className =
+      typeof this === "function" ? this.name : this.constructor.name;
+
+    console.log("rpcMethodDecorator");
+
+    if (!className) {
+      console.error(
+        "RPCMethod: Could not determine class name for decorator on method:",
+        context.name,
+      );
+      return;
+    }
+    // END OF FIX
+    console.log(className);
+
     if (!_rpcMethods.has(className)) _rpcMethods.set(className, new Set());
     _rpcMethods.get(className)!.add(context.name);
   });
@@ -51,7 +68,9 @@ export function component(config: {
     });
 
     return class extends target {
-      protected logger = console.createInstance({ prefix: `nora@${kebabCase(name)}` });
+      protected logger = console.createInstance({
+        prefix: `nora@${kebabCase(name)}`,
+      });
       protected rpc = createDependencyRPCProxies([
         ..._metadata.get(name)!.dependencies,
         ..._metadata.get(name)!.softDependencies,
@@ -59,19 +78,23 @@ export function component(config: {
 
       constructor(...args: any[]) {
         super(...args);
+        console.log("construct on decorator");
+        console.log(this);
         createRootHMR(() => {
-          if ('init' in this && typeof this.init === 'function') this.init();
+          if ("init" in this && typeof this.init === "function") this.init();
           onCleanup(() => _hotContexts.delete(name));
         }, _hotContexts.get(name));
       }
 
-      static _metadata() { return _metadata.get(name)!; }
+      static _metadata() {
+        return _metadata.get(name)!;
+      }
 
       rpcMethods() {
         const methods = _rpcMethods.get(name);
         if (!methods) return {};
         return Object.fromEntries(
-          Array.from(methods).map(m => [m, (this as any)[m].bind(this)])
+          Array.from(methods).map((m) => [m, (this as any)[m].bind(this)]),
         );
       }
     } as T;

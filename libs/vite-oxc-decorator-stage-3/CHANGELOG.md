@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- Fixed class name access in method decorator `addInitializer` callbacks
+  - Static method decorators now correctly receive `this` as the class constructor
+  - Instance method decorators continue to receive `this` as the instance
+  - Enables reliable use of `this.name` (for static) and `this.constructor.name` (for instance) patterns
+  - See FIX_CLASS_NAME_ACCESS.md for details
+
 ### Added
 - Rust/WASM Component Model transformer using oxc v0.96.0
 - WIT interface definition for type-safe bindings
@@ -13,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - jco for JavaScript bindings
 - WASM-only architecture (no Babel in production)
 - Zero runtime dependencies
+- Example: `examples/rpc-method-example.ts` demonstrating class name access in decorators
 
 ### Changed
 - Migrated from wasm-bindgen to wit-bindgen

@@ -10,7 +10,7 @@ use oxc_semantic::SemanticBuilder;
 
 mod transformer;
 mod codegen;
-use transformer::{DecoratorTransformer, TransformerState};
+use transformer::{DecoratorTransformer, TransformerState, ClassDecoratorInfo};
 use codegen::generate_helper_functions;
 
 // Generate bindings from WIT file
@@ -62,10 +62,14 @@ pub fn transform(
     
     traverse_mut(&mut transformer, &allocator, &mut parse_result.program, scoping, TransformerState);
     
-    // Step 3: Inject variable declarations via AST instead of string manipulation
     inject_variable_declarations_ast(&mut parse_result.program, &allocator);
     
     let mut codegen_result = Codegen::new().build(&parse_result.program);
+    
+    let class_decorator_info = transformer.get_classes_with_class_decorators();
+    if !class_decorator_info.is_empty() {
+        codegen_result.code = apply_class_decorator_replacements_string(&codegen_result.code, &class_decorator_info);
+    }
     
     if transformer.needs_helpers() {
         codegen_result.code = format!("{}\n{}", generate_helper_functions(), codegen_result.code);
@@ -82,14 +86,10 @@ pub fn transform(
     })
 }
 
-/// Inject variable declarations (let _initProto, _initClass;) before decorated classes
-/// Step 3: AST-based approach - scans program body for classes with static blocks
-/// and inserts variable declarations as AST nodes
 fn inject_variable_declarations_ast<'a>(program: &mut Program<'a>, allocator: &'a Allocator) {
     let ast = AstBuilder::new(allocator);
     let mut insertions: Vec<(usize, Statement<'a>)> = Vec::new();
     
-    // Find all class declarations (including exported ones) that have static blocks
     for (i, stmt) in program.body.iter().enumerate() {
         let has_static_block = match stmt {
             Statement::ClassDeclaration(class) => class_has_static_block(class),
@@ -103,28 +103,23 @@ fn inject_variable_declarations_ast<'a>(program: &mut Program<'a>, allocator: &'
         };
         
         if has_static_block {
-            // Create: let _initProto, _initClass;
             let var_decl = create_init_variables_declaration(&ast);
             insertions.push((i, var_decl));
         }
     }
     
-    // Insert declarations in reverse order to maintain correct indices
     for (index, decl) in insertions.into_iter().rev() {
         program.body.insert(index, decl);
     }
 }
 
-/// Check if a class has a static block (indicating it was decorated)
 fn class_has_static_block(class: &oxc_ast::ast::Class) -> bool {
     class.body.body.iter().any(|element| {
         matches!(element, ClassElement::StaticBlock(_))
     })
 }
 
-/// Create variable declaration: let _initProto, _initClass;
 fn create_init_variables_declaration<'a>(ast: &AstBuilder<'a>) -> Statement<'a> {
-    // Create binding for _initProto
     let init_proto_binding = ast.binding_pattern(
         ast.binding_pattern_kind_binding_identifier(SPAN, "_initProto"),
         NONE,
@@ -135,11 +130,10 @@ fn create_init_variables_declaration<'a>(ast: &AstBuilder<'a>) -> Statement<'a> 
         SPAN,
         VariableDeclarationKind::Let,
         init_proto_binding,
-        None,  // init: Option<Expression>
+        None,
         false,
     );
     
-    // Create binding for _initClass
     let init_class_binding = ast.binding_pattern(
         ast.binding_pattern_kind_binding_identifier(SPAN, "_initClass"),
         NONE,
@@ -150,11 +144,10 @@ fn create_init_variables_declaration<'a>(ast: &AstBuilder<'a>) -> Statement<'a> 
         SPAN,
         VariableDeclarationKind::Let,
         init_class_binding,
-        None,  // init: Option<Expression>
+        None,
         false,
     );
     
-    // Create variable declaration with both declarators
     let mut declarators = ast.vec();
     declarators.push(init_proto_declarator);
     declarators.push(init_class_declarator);
@@ -190,6 +183,88 @@ fn generate_result<'a>(program: &Program<'a>, opts: &TransformOptions, errors: V
     })
 }
 
+fn apply_class_decorator_replacements_string(code: &str, class_info: &[ClassDecoratorInfo]) -> String {
+    let mut result = code.to_string();
+    
+    for info in class_info {
+        let class_name = &info.class_name;
+        let decorators = info.decorator_names.join(", ");
+        
+        let export_default_pattern = format!("export default class {}", class_name);
+        if let Some(export_pos) = result.find(&export_default_pattern) {
+            if let Some(class_end) = find_class_end(&result, export_pos) {
+                let class_body_start = export_pos + export_default_pattern.len();
+                let before = result[..export_pos].to_string();
+                let class_body = result[class_body_start..class_end].to_string();
+                let after = result[class_end..].to_string();
+                
+                result = format!("{}let {} = class {}{}{}", before, class_name, class_name, class_body, after);
+                
+                let new_class_end = before.len() + format!("let {} = class {}{}", class_name, class_name, class_body).len();
+                
+                let decorator_call = format!(";\n{} = _applyDecs({}, [], [{}]).c[0];\nexport default {};", 
+                    class_name, class_name, decorators, class_name);
+                result.insert_str(new_class_end, &decorator_call);
+            }
+            continue;
+        }
+        
+        let export_pattern = format!("export class {}", class_name);
+        if let Some(export_pos) = result.find(&export_pattern) {
+            if let Some(class_end) = find_class_end(&result, export_pos) {
+                let class_body_start = export_pos + export_pattern.len();
+                let before = result[..export_pos].to_string();
+                let class_body = result[class_body_start..class_end].to_string();
+                let after = result[class_end..].to_string();
+                
+                result = format!("{}let {} = class {}{}{}", before, class_name, class_name, class_body, after);
+                
+                let new_class_end = before.len() + format!("let {} = class {}{}", class_name, class_name, class_body).len();
+                
+                let decorator_call = format!(";\n{} = _applyDecs({}, [], [{}]).c[0];\nexport {{ {} }};", 
+                    class_name, class_name, decorators, class_name);
+                result.insert_str(new_class_end, &decorator_call);
+            }
+            continue;
+        }
+        
+        let class_pattern = format!("class {}", class_name);
+        
+        if let Some(class_pos) = result.find(&class_pattern) {
+            if let Some(class_end) = find_class_end(&result, class_pos) {
+                result.insert_str(class_pos, &format!("let {} = ", class_name));
+                
+                let insert_len = format!("let {} = ", class_name).len();
+                let new_class_end = class_end + insert_len;
+                
+                let decorator_call = format!(";\n{} = _applyDecs({}, [], [{}]).c[0];", class_name, class_name, decorators);
+                result.insert_str(new_class_end, &decorator_call);
+            }
+        }
+    }
+    
+    result
+}
+
+fn find_class_end(code: &str, start_pos: usize) -> Option<usize> {
+    let class_code = &code[start_pos..];
+    let mut brace_count = 0;
+    let mut in_class = false;
+    
+    for (i, ch) in class_code.char_indices() {
+        if ch == '{' {
+            in_class = true;
+            brace_count += 1;
+        } else if ch == '}' {
+            brace_count -= 1;
+            if in_class && brace_count == 0 {
+                return Some(start_pos + i + 1);
+            }
+        }
+    }
+    
+    None
+}
 
 // Implement the WIT interface
 struct Component;
@@ -1168,19 +1243,17 @@ export default class MyClass {
         
         assert!(result.is_ok());
         if let Ok(res) = result {
-            // Should NOT have "export default var" - this was the bug
             assert!(!res.code.contains("export default var"), 
                 "Bug: Found 'export default var' which is invalid syntax");
             assert!(!res.code.contains("export default let"), 
                 "Bug: Found 'export default let' which is invalid syntax");
             
-            // Should have correct syntax: let declaration before export
             assert!(res.code.contains("let _initProto, _initClass;"), 
                 "Should use 'let' for variable declaration");
-            assert!(res.code.contains("export default class MyClass"), 
-                "Should have export default class");
             
-            // Verify the order: let comes before export
+            assert!(res.code.contains("export default MyClass"), 
+                "Should have export default identifier (not class declaration)");
+            
             let let_pos = res.code.find("let _initProto").expect("Should find let declaration");
             let export_pos = res.code.find("export default").expect("Should find export default");
             assert!(let_pos < export_pos, 
@@ -1205,21 +1278,19 @@ export class MyClass {
         
         assert!(result.is_ok());
         if let Ok(res) = result {
-            // Should NOT have "export var" or "export let"
             assert!(!res.code.contains("export var"), 
                 "Bug: Found 'export var' which is invalid syntax");
             assert!(!res.code.contains("export let"), 
                 "Bug: Found 'export let' - variable should come before export");
             
-            // Should have correct syntax
             assert!(res.code.contains("let _initProto, _initClass;"), 
                 "Should use 'let' for variable declaration");
-            assert!(res.code.contains("export class MyClass"), 
-                "Should have export class");
             
-            // Verify the order
+            assert!(res.code.contains("export { MyClass }"), 
+                "Should have export {{ MyClass }} for named export");
+            
             let let_pos = res.code.find("let _initProto").expect("Should find let declaration");
-            let export_pos = res.code.find("export class").expect("Should find export class");
+            let export_pos = res.code.find("export {").expect("Should find export");
             assert!(let_pos < export_pos, 
                 "Variable declaration should come before export statement");
         }

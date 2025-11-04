@@ -147,12 +147,13 @@ function _applyDecs(
     
     let descriptor;
     let accessorInitializers;
+    let descriptorKey;
     
     if (!isClassDecorator) {
       descriptor = {};
       accessorInitializers = [];
       
-      const descriptorKey = isGetter ? "get" : (isSetter || isAccessor ? "set" : "value");
+      descriptorKey = isGetter ? "get" : (isSetter || isAccessor ? "set" : "value");
       
       if (isPrivate) {
         if (hasPrivateGetter || isAccessor) {
@@ -172,7 +173,7 @@ function _applyDecs(
           _setFunctionName(descriptor[descriptorKey], memberName, isMethod ? "" : descriptorKey);
         }
       } else if (!hasPrivateGetter) {
-        descriptor = Object.getOwnPropertyDescriptor(target, memberName);
+        descriptor = Object.getOwnPropertyDescriptor(target, memberName) || {};
       }
       
       // Check for duplicate decorators
@@ -346,9 +347,9 @@ function _applyDecs(
   
   appliedDecorators = [];
   
-  const addClassInitializer = function (initializer) {
+  const addClassInitializer = function (initializer, isStatic) {
     if (initializer) {
-      appliedDecorators.push(createInitializerWrapper(initializer));
+      appliedDecorators.push(createInitializerWrapper(initializer, isStatic, 0));
     }
   };
   
@@ -360,12 +361,12 @@ function _applyDecs(
       const decoratorInfo = memberDecorators[i];
       const flags = decoratorInfo[1];
       const kind = flags & 7; // Extract kind bits
+      const memberName = decoratorInfo[2];
+      const isPrivateMember = !!decoratorInfo[3];
+      const hasPairedDecorator = flags & 16;
       
       // Check if this decorator matches the current pass
-      if ((flags & 8) == isStatic && (!kind) === isPrivate) {
-        const memberName = decoratorInfo[2];
-        const isPrivateMember = !!decoratorInfo[3];
-        const hasPairedDecorator = flags & 16;
+      if ((flags & 8) == isStatic && isPrivateMember === !!isPrivate) {
         
         applyDecorator(
           isStatic ? targetClass : targetClass.prototype,
@@ -373,7 +374,7 @@ function _applyDecs(
           hasPairedDecorator,
           isPrivateMember ? "#" + memberName : _toPropertyKey(memberName),
           kind,
-          kind < 2 ? [] : (isStatic ? (staticInitializers = staticInitializers || []) : (protoInitializers = protoInitializers || [])),
+          isStatic ? (staticInitializers = staticInitializers || []) : (protoInitializers = protoInitializers || []),
           appliedDecorators,
           !!isStatic,
           isPrivateMember,
@@ -397,8 +398,11 @@ function _applyDecs(
   processDecorators(0, 1);
   
   // Add proto and static initializers
-  addClassInitializer(protoInitializers);
-  addClassInitializer(staticInitializers);
+  // Pass isStatic flag to ensure 'this' is correctly bound in initializers:
+  // - For instance methods (isStatic=0): this = instance, use this.constructor.name
+  // - For static methods (isStatic=8): this = class, use this.name
+  addClassInitializer(protoInitializers, 0);
+  addClassInitializer(staticInitializers, 8);
   
   existingMetadata = appliedDecorators;
   

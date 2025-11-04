@@ -3,6 +3,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/**
+ * Sidebar Module
+ * 
+ * This module provides an independent dock bar that can be used to register icons.
+ * It exposes a registration API via RPC that other modules can use.
+ * 
+ * Key Features:
+ * - Renders a vertical dock bar with icons
+ * - Provides RPC methods for icon registration
+ * - Manages icon click callbacks
+ * - Does not depend on other feature modules
+ * 
+ * Architecture:
+ * - This module is independent and can be used by any other module
+ * - Other modules (like sidebar-addon-panel) use RPC to register icons
+ * - When icons are clicked, registered callbacks are invoked
+ */
+
 import { component, rpcMethod } from "#features-chrome/utils/base.ts";
 import { createSignal, onCleanup } from "solid-js";
 import { render } from "@nora/solid-xul";

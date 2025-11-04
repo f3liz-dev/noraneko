@@ -52,11 +52,11 @@ export class ModuleA extends NoraComponentBase {
 }
 
 // Register in global registry for automatic type inference
-declare global {
-  interface FeatureModuleRegistry {
-    ModuleA: typeof ModuleA;
-  }
-}
+//declare global {
+//  interface FeatureModuleRegistry {
+//    ModuleA: typeof ModuleA;
+//  }
+//}
 
 /**
  * Example Module B - Consumer
@@ -132,11 +132,11 @@ export class ModuleB extends NoraComponentBase {
 }
 
 // Register in global registry
-declare global {
-  interface FeatureModuleRegistry {
-    ModuleB: typeof ModuleB;
-  }
-}
+//declare global {
+//  interface FeatureModuleRegistry {
+//    ModuleB: typeof ModuleB;
+//  }
+//}
 
 /**
  * Benefits of Simplified RPC:

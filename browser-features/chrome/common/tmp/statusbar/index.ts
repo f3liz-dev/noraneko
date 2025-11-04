@@ -27,7 +27,7 @@ export default class StatusBar extends NoraComponentBase {
       dependencies: [],
       softDependencies: [],
       rpcMethods: {},
-    };
+    } as const;
   }
 }
 

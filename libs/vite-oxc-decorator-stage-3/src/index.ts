@@ -1,149 +1,107 @@
 import type { Plugin } from 'vite';
 
 export interface ViteOxcDecoratorOptions {
-  /**
-   * Include files matching these patterns.
-   * @default [/\.[jt]sx?$/]
-   */
   include?: RegExp | RegExp[];
-
-  /**
-   * Exclude files matching these patterns.
-   * @default [/node_modules/]
-   */
   exclude?: RegExp | RegExp[];
 }
 
-// Type for WASM Component Model transformer (jco-generated)
 interface TransformResult {
   code: string;
   map?: string;
   errors: string[];
 }
 
-interface WasmTransformer {
-  transform(filename: string, sourceText: string, options: string): TransformResult | { tag: 'err', val: string };
+interface TransformError {
+  tag: 'err';
+  val: string;
 }
+
+interface WasmTransformer {
+  transform(filename: string, sourceText: string, options: string): TransformResult | TransformError;
+}
+
+const DEFAULT_INCLUDE = [/\.[jt]sx?$/];
+const DEFAULT_EXCLUDE = [/node_modules/];
+const DECORATOR_MARKER = '@';
+const TRANSFORM_OPTIONS = JSON.stringify({ source_maps: true });
 
 let wasmTransformer: WasmTransformer | null = null;
 
-/**
- * Load the WASM transformer module (jco-generated)
- */
 async function loadWasmTransformer(): Promise<WasmTransformer> {
   if (wasmTransformer) {
     return wasmTransformer;
   }
 
   try {
-    // Load the jco-generated WASM Component
     const wasm = await import('../pkg/decorator_transformer.js');
     wasmTransformer = wasm as unknown as WasmTransformer;
     return wasmTransformer;
   } catch (e) {
     throw new Error(
-      `Failed to load WASM transformer. ` +
-      `Please build the WASM module first: npm run build:wasm && npm run build:jco\n` +
-      `Error: ${e}`
+      `Failed to load WASM transformer. Run: npm run build:wasm && npm run build:jco\nError: ${e}`
     );
   }
 }
 
-/**
- * Vite plugin for transforming Stage 3 decorators using oxc WASM transformer
- * 
- * This plugin uses a Rust/WASM Component Model transformer built with oxc
- * to transform decorators following the TC39 Stage 3 proposal semantics.
- * 
- * @example
- * ```ts
- * import { defineConfig } from 'vite';
- * import decorators from 'vite-oxc-decorator-stage-3';
- * 
- * export default defineConfig({
- *   plugins: [decorators()],
- * });
- * ```
- */
+function isTransformError(result: TransformResult | TransformError): result is TransformError {
+  return 'tag' in result && result.tag === 'err';
+}
+
+function normalizePatterns(pattern: RegExp | RegExp[]): RegExp[] {
+  return Array.isArray(pattern) ? pattern : [pattern];
+}
+
 export default function viteOxcDecoratorStage3(
   options: ViteOxcDecoratorOptions = {}
 ): Plugin {
-  const {
-    include = [/\.[jt]sx?$/],
-    exclude = [/node_modules/],
-  } = options;
-
-  const includePatterns = Array.isArray(include) ? include : [include];
-  const excludePatterns = Array.isArray(exclude) ? exclude : [exclude];
+  const includePatterns = normalizePatterns(options.include ?? DEFAULT_INCLUDE);
+  const excludePatterns = normalizePatterns(options.exclude ?? DEFAULT_EXCLUDE);
 
   const shouldTransform = (id: string): boolean => {
-    // Check exclude patterns first
-    if (excludePatterns.some((pattern) => pattern.test(id))) {
-      return false;
-    }
-    // Check include patterns
-    return includePatterns.some((pattern) => pattern.test(id));
+    return !excludePatterns.some(pattern => pattern.test(id)) &&
+           includePatterns.some(pattern => pattern.test(id));
   };
 
   let wasmInit: Promise<WasmTransformer> | null = null;
 
   return {
     name: 'vite-oxc-decorator-stage-3',
-
-    enforce: 'pre', // Run before other plugins
+    enforce: 'pre',
 
     async buildStart() {
-      // Initialize WASM transformer
       if (!wasmInit) {
         wasmInit = loadWasmTransformer();
       }
     },
 
     async transform(code: string, id: string) {
-      if (!shouldTransform(id)) {
+      if (!shouldTransform(id) || !code.includes(DECORATOR_MARKER)) {
         return null;
       }
 
-      // Check if code contains decorators
-      if (!code.includes('@')) {
-        return null;
-      }
-
-      // Load WASM transformer
       const wasm = await wasmInit;
       if (!wasm) {
         throw new Error('WASM transformer not initialized');
       }
 
       try {
-        // Call Component Model transform function
-        const options = JSON.stringify({ source_maps: true });
-        const result = wasm.transform(id, code, options);
+        const result = wasm.transform(id, code, TRANSFORM_OPTIONS);
         
-        // Check if result is an error (Component Model Result type)
-        if (typeof result === 'object' && 'tag' in result && result.tag === 'err') {
-          throw new Error(`WASM transformer error in ${id}: ${result.val}`);
+        if (isTransformError(result)) {
+          throw new Error(`Transformer error: ${result.val}`);
         }
         
-        const transformResult = result as TransformResult;
-        
-        // Check for transformation errors
-        if (transformResult.errors.length > 0) {
-          throw new Error(
-            `WASM transformer errors in ${id}:\n${transformResult.errors.join('\n')}`
-          );
+        if (result.errors.length > 0) {
+          throw new Error(`Transformation errors:\n${result.errors.join('\n')}`);
         }
         
         return {
-          code: transformResult.code,
-          map: transformResult.map ? JSON.parse(transformResult.map) : null,
+          code: result.code,
+          map: result.map ? JSON.parse(result.map) : null,
         };
       } catch (error) {
-        // Re-throw with better context
-        if (error instanceof Error) {
-          throw new Error(`Failed to transform decorators in ${id}: ${error.message}`);
-        }
-        throw error;
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Failed to transform decorators in ${id}: ${message}`);
       }
     },
   };

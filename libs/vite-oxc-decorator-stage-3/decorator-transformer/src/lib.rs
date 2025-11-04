@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 use oxc_allocator::Allocator;
-use oxc_ast::ast::Program;
+use oxc_ast::{NONE, ast::{Program, Statement, Declaration, VariableDeclarationKind, ClassElement}};
+use oxc_ast::AstBuilder;
 use oxc_codegen::Codegen;
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{SourceType, SPAN};
 use oxc_traverse::traverse_mut;
 use oxc_semantic::SemanticBuilder;
 
@@ -61,8 +62,10 @@ pub fn transform(
     
     traverse_mut(&mut transformer, &allocator, &mut parse_result.program, scoping, TransformerState);
     
+    // Step 3: Inject variable declarations via AST instead of string manipulation
+    inject_variable_declarations_ast(&mut parse_result.program, &allocator);
+    
     let mut codegen_result = Codegen::new().build(&parse_result.program);
-    inject_static_blocks(&mut codegen_result.code, &transformer.transformations.borrow());
     
     if transformer.needs_helpers() {
         codegen_result.code = format!("{}\n{}", generate_helper_functions(), codegen_result.code);
@@ -79,6 +82,93 @@ pub fn transform(
     })
 }
 
+/// Inject variable declarations (let _initProto, _initClass;) before decorated classes
+/// Step 3: AST-based approach - scans program body for classes with static blocks
+/// and inserts variable declarations as AST nodes
+fn inject_variable_declarations_ast<'a>(program: &mut Program<'a>, allocator: &'a Allocator) {
+    let ast = AstBuilder::new(allocator);
+    let mut insertions: Vec<(usize, Statement<'a>)> = Vec::new();
+    
+    // Find all class declarations (including exported ones) that have static blocks
+    for (i, stmt) in program.body.iter().enumerate() {
+        let has_static_block = match stmt {
+            Statement::ClassDeclaration(class) => class_has_static_block(class),
+            Statement::ExportDefaultDeclaration(export) => {
+                matches!(&export.declaration, oxc_ast::ast::ExportDefaultDeclarationKind::ClassDeclaration(class) if class_has_static_block(class))
+            }
+            Statement::ExportNamedDeclaration(export) => {
+                matches!(&export.declaration, Some(Declaration::ClassDeclaration(class)) if class_has_static_block(class))
+            }
+            _ => false,
+        };
+        
+        if has_static_block {
+            // Create: let _initProto, _initClass;
+            let var_decl = create_init_variables_declaration(&ast);
+            insertions.push((i, var_decl));
+        }
+    }
+    
+    // Insert declarations in reverse order to maintain correct indices
+    for (index, decl) in insertions.into_iter().rev() {
+        program.body.insert(index, decl);
+    }
+}
+
+/// Check if a class has a static block (indicating it was decorated)
+fn class_has_static_block(class: &oxc_ast::ast::Class) -> bool {
+    class.body.body.iter().any(|element| {
+        matches!(element, ClassElement::StaticBlock(_))
+    })
+}
+
+/// Create variable declaration: let _initProto, _initClass;
+fn create_init_variables_declaration<'a>(ast: &AstBuilder<'a>) -> Statement<'a> {
+    // Create binding for _initProto
+    let init_proto_binding = ast.binding_pattern(
+        ast.binding_pattern_kind_binding_identifier(SPAN, "_initProto"),
+        NONE,
+        false,
+    );
+    
+    let init_proto_declarator = ast.variable_declarator(
+        SPAN,
+        VariableDeclarationKind::Let,
+        init_proto_binding,
+        None,  // init: Option<Expression>
+        false,
+    );
+    
+    // Create binding for _initClass
+    let init_class_binding = ast.binding_pattern(
+        ast.binding_pattern_kind_binding_identifier(SPAN, "_initClass"),
+        NONE,
+        false,
+    );
+    
+    let init_class_declarator = ast.variable_declarator(
+        SPAN,
+        VariableDeclarationKind::Let,
+        init_class_binding,
+        None,  // init: Option<Expression>
+        false,
+    );
+    
+    // Create variable declaration with both declarators
+    let mut declarators = ast.vec();
+    declarators.push(init_proto_declarator);
+    declarators.push(init_class_declarator);
+    
+    let declaration = ast.declaration_variable(
+        SPAN,
+        VariableDeclarationKind::Let,
+        declarators,
+        false,
+    );
+    
+    Statement::from(declaration)
+}
+
 fn parse_options(options: &str) -> Result<TransformOptions, String> {
     if options.is_empty() {
         Ok(TransformOptions { source_maps: true })
@@ -88,7 +178,7 @@ fn parse_options(options: &str) -> Result<TransformOptions, String> {
 }
 
 fn generate_result<'a>(program: &Program<'a>, opts: &TransformOptions, errors: Vec<String>) -> Result<TransformResult, String> {
-    let codegen_result = Codegen::new().build(&program);
+    let codegen_result = Codegen::new().build(program);
     Ok(TransformResult {
         code: codegen_result.code,
         map: if opts.source_maps {
@@ -100,154 +190,6 @@ fn generate_result<'a>(program: &Program<'a>, opts: &TransformOptions, errors: V
     })
 }
 
-/// Find the absolute position where variable declarations should be injected
-/// by analyzing the text before the class keyword.
-///
-/// This function is designed to work with oxc-generated code output, which is
-/// well-formed and doesn't contain comments or strings in unexpected positions.
-///
-/// This handles cases like:
-/// - `class C {}` -> returns position before 'class'
-/// - `export class C {}` -> returns position before 'export'
-/// - `export default class C {}` -> returns position before 'export'
-///
-/// # Arguments
-/// * `before_class` - The text content before the 'class' keyword
-/// * `class_pos` - The absolute position where 'class' keyword starts (must be valid)
-///
-/// # Returns
-/// The absolute position where variable declarations should be injected
-fn find_statement_start(before_class: &str, class_pos: usize) -> usize {
-    // Find the start of the current line in before_class
-    let line_start = before_class.rfind('\n')
-        .map(|pos| pos + 1)
-        .unwrap_or(0);
-    
-    // Get the content from line start to where we found 'class'
-    let line_content = &before_class[line_start..];
-    
-    // Check if this line contains "export" keyword before where class would be
-    // This handles both "export class" and "export default class"
-    let trimmed = line_content.trim_start();
-    if trimmed.starts_with("export") {
-        // Find the actual position of "export" keyword (handles leading whitespace)
-        // Since trimmed (which is line_content without leading whitespace) starts with "export",
-        // we know "export" must exist in line_content
-        let export_offset = line_content.find("export")
-            .expect("export keyword must exist since trimmed starts with it");
-        line_start + export_offset
-    } else {
-        // No export on this line, inject right before "class"
-        // (class_pos is already an absolute position provided by the caller)
-        class_pos
-    }
-}
-
-fn inject_static_blocks(code: &mut String, transformations: &[transformer::ClassTransformation]) {
-    for transformation in transformations {
-        // Search for "class ClassName" followed eventually by "{"
-        // This handles: class C {, class C extends X {, etc.
-        let class_name_pattern = format!("class {}", transformation.class_name);
-        
-        let (class_start_pos, class_body_start) = if let Some(class_pos) = code.find(&class_name_pattern) {
-            // Find the opening brace after the class name
-            let search_start = class_pos + class_name_pattern.len();
-            let brace_offset = code[search_start..].find('{')
-                .map(|brace_offset| search_start + brace_offset + 1);
-            (Some(class_pos), brace_offset)
-        } else if transformation.class_name == "AnonymousClass" {
-            let anon_class_pos = code.find("class {");
-            (anon_class_pos, anon_class_pos.map(|pos| pos + "class {".len()))
-        } else {
-            (None, None)
-        };
-        
-        if let (Some(class_pos), Some(injection_point)) = (class_start_pos, class_body_start) {
-            // Find the actual start of the statement (could have 'export default' or 'export')
-            // Look backwards from class_pos to find where the statement begins
-            let before_class = &code[..class_pos];
-            
-            let var_injection_pos = find_statement_start(before_class, class_pos);
-            
-            let before_injection = &code[..var_injection_pos];
-            let after_injection = &code[var_injection_pos..];
-            
-            // Use 'let' instead of 'var' for ESNext compatibility
-            let var_decl = "let _initProto, _initClass;\n";
-            *code = format!("{}{}{}", before_injection, var_decl, after_injection);
-            
-            // Adjust injection point by the length of the var declaration we just added
-            let adjusted_injection_point = injection_point + var_decl.len();
-            
-            // Now inject the static block
-            let before = &code[..adjusted_injection_point];
-            let after = &code[adjusted_injection_point..];
-            *code = format!("{}\n  {}{}", before, transformation.static_block_code, after);
-            
-            // If we need instance initialization, inject constructor code
-            // Note: We add formatting offset (newline + indentation) to class_body_start
-            // to account for the static block and formatting that was just injected
-            let formatting_offset = 3; // "\n  " = newline + 2-space indent
-            if transformation.needs_instance_init {
-                inject_constructor_init(code, &transformation.class_name, adjusted_injection_point + transformation.static_block_code.len() + formatting_offset);
-            }
-        }
-    }
-}
-
-/// Inject _initProto call into constructor
-fn inject_constructor_init(code: &mut String, _class_name: &str, class_body_start: usize) {
-    // Find the constructor within the class body
-    let class_body = &code[class_body_start..];
-    
-    // Look for existing constructor
-    if let Some(ctor_pos) = class_body.find("constructor(") {
-        // Found existing constructor - inject after super() if present, or at start
-        let ctor_start = class_body_start + ctor_pos;
-        let ctor_body_start = if let Some(brace_pos) = code[ctor_start..].find('{') {
-            ctor_start + brace_pos + 1
-        } else {
-            return; // Malformed constructor
-        };
-        
-        // Look for super() call
-        let ctor_body = &code[ctor_body_start..];
-        if let Some(super_pos) = ctor_body.find("super(") {
-            // Find the end of the super() call - look for semicolon or closing paren followed by newline/space
-            let super_start = ctor_body_start + super_pos;
-            let search_from = super_start + "super(".len();
-            
-            // Find the matching closing paren (simple approach - look for first ')')
-            if let Some(paren_pos) = code[search_from..].find(')') {
-                let call_end = search_from + paren_pos + 1;
-                
-                // Find the statement end (semicolon or newline)
-                let remaining = &code[call_end..];
-                let injection_point = if let Some(semi_pos) = remaining.find(';') {
-                    call_end + semi_pos + 1
-                } else {
-                    // No semicolon - inject right after the closing paren
-                    call_end
-                };
-                
-                let before = &code[..injection_point];
-                let after = &code[injection_point..];
-                *code = format!("{}\n    if (_initProto) _initProto(this);{}", before, after);
-            }
-        } else {
-            // No super() - inject at start of constructor body
-            let before = &code[..ctor_body_start];
-            let after = &code[ctor_body_start..];
-            *code = format!("{}\n    if (_initProto) _initProto(this);{}", before, after);
-        }
-    } else {
-        // No constructor - create one
-        // We need to inject right after the static block
-        let before = &code[..class_body_start];
-        let after = &code[class_body_start..];
-        *code = format!("{}\n  constructor() {{\n    if (_initProto) _initProto(this);\n  }}{}", before, after);
-    }
-}
 
 // Implement the WIT interface
 struct Component;

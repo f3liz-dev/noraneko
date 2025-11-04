@@ -65,7 +65,6 @@ interface ModuleMetadata {
   moduleName: string;
   dependencies: string[];
   softDependencies: string[];
-  rpcMethods?: Record<string, (...args: any[]) => any>;
 }
 
 interface LoadedModule {
@@ -73,8 +72,7 @@ interface LoadedModule {
   metadata: ModuleMetadata;
   init?: typeof Function;
   initBeforeSessionStoreInit?: typeof Function;
-  default?: typeof Function;
-  rpcMethods?: Record<string, (...args: any[]) => any>;
+  default?: any; // Module class constructor
 }
 
 async function loadEnabledModules(enabled_features: typeof MODULES_KEYS): Promise<LoadedModule[]> {
@@ -91,14 +89,19 @@ async function loadEnabledModules(enabled_features: typeof MODULES_KEYS): Promis
         ) {
           try {
             const moduleExports = await categoryValue[moduleName]();
-            const metadata = (moduleExports as any).default?._metadata?.() || {moduleName,dependencies:[],softDependencies:[]} satisfies ModuleMetadata;
+            const metadata = (moduleExports as any).default?._metadata?.() || {
+              moduleName,
+              dependencies: [],
+              softDependencies: []
+            } satisfies ModuleMetadata;
+
             const module: LoadedModule = {
               name: moduleName,
               metadata,
               ...(moduleExports as {
                 init?: typeof Function;
                 initBeforeSessionStoreInit?: typeof Function;
-                default?: typeof Function;
+                default?: any;
               }),
             };
             console.log(module);
@@ -121,18 +124,7 @@ async function initializeModules(modules: LoadedModule[]) {
   // Sort modules by dependencies
   const sortedModules = sortModulesByDependencies(modules);
 
-  // Register RPC methods for all modules first (before initialization)
-  for (const module of sortedModules) {
-    if (module.metadata.rpcMethods) {
-      try {
-        registerModuleRPC(module.name, module.metadata.rpcMethods);
-        console.debug(`[noraneko] Registered RPC methods for module ${module.metadata.moduleName}`);
-      } catch (e) {
-        console.error(`[noraneko] Failed to register RPC methods for module ${module.metadata.moduleName}:`, e);
-      }
-    }
-  }
-
+  // Run initBeforeSessionStoreInit for all modules
   for (const module of sortedModules) {
     try {
       await module?.initBeforeSessionStoreInit?.();
@@ -143,30 +135,45 @@ async function initializeModules(modules: LoadedModule[]) {
       );
     }
   }
+
+  // Wait for SessionStore to be ready
   // @ts-expect-error SessionStore type not defined
   await SessionStore.promiseInitialized;
 
+  // Initialize each module and register RPC after init
   for (const module of sortedModules) {
     try {
+      console.log("init " + module.name);
+
       // Wait for hard dependencies to load
-      // Note: Due to topological sorting, dependencies come before dependents,
-      // so this typically resolves immediately unless a dependency is still initializing
       for (const dep of module.metadata.dependencies) {
         await onModuleLoaded(dep);
       }
 
-      if (module?.init) {
-        await module.init();
-      }
+      // Create instance (decorator auto-runs init via constructor)
+      let instance: any;
       if (module?.default) {
-        new module.default();
+        instance = new module.default();
       }
+
+      // Register RPC methods after initialization
+      if (instance && typeof instance.rpcMethods === 'function') {
+        try {
+          const rpcMethods = instance.rpcMethods();
+          registerModuleRPC(module.metadata.moduleName, rpcMethods);
+          console.debug(`[noraneko] Registered RPC methods for module ${module.metadata.moduleName}`);
+        } catch (e) {
+          console.error(`[noraneko] Failed to register RPC methods for module ${module.metadata.moduleName}:`, e);
+        }
+      }
+
       _registerModuleLoadState(module.name, true);
     } catch (e) {
       console.error(`[noraneko] Failed to init module ${module.name}:`, e);
       _registerModuleLoadState(module.name, false);
     }
   }
+
   _registerModuleLoadState("__init_all__", true);
   await _rejectOtherLoadStates();
 }

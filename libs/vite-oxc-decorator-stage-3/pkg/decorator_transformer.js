@@ -142,9 +142,9 @@ class AsyncTask {
   #state;
   #isAsync;
   #onResolve = null;
-  #returnedResults = null;
   #entryFnName = null;
   #subtasks = [];
+  #completionPromise = null;
   
   cancelled = false;
   requested = false;
@@ -157,6 +157,7 @@ class AsyncTask {
   awaitableResume = null;
   awaitableCancel = null;
   
+  
   constructor(opts) {
     if (opts?.id === undefined) { throw new TypeError('missing task ID during task creation'); }
     this.#id = opts.id;
@@ -168,8 +169,16 @@ class AsyncTask {
     this.#isAsync = opts?.isAsync ?? false;
     this.#entryFnName = opts.entryFnName;
     
+    const {
+      promise: completionPromise,
+      resolve: resolveCompletionPromise,
+      reject: rejectCompletionPromise,
+    } = Promise.withResolvers();
+    this.#completionPromise = completionPromise;
+    
     this.#onResolve = (results) => {
-      this.#returnedResults = results;
+      // TODO: handle external facing cancellation (should likely be a rejection)
+      resolveCompletionPromise(results);
     }
   }
   
@@ -177,13 +186,8 @@ class AsyncTask {
   id() { return this.#id; }
   componentIdx() { return this.#componentIdx; }
   isAsync() { return this.#isAsync; }
-  getEntryFnName() { return this.#entryFnName; }
-  
-  takeResults() {
-    const results = this.#returnedResults;
-    this.#returnedResults = null;
-    return results;
-  }
+  entryFnName() { return this.#entryFnName; }
+  completionPromise() { return this.#completionPromise; }
   
   mayEnter(task) {
     const cstate = getOrCreateAsyncState(this.#componentIdx);
@@ -214,7 +218,6 @@ class AsyncTask {
     let mayNotEnter = !this.mayEnter(this);
     const componentHasPendingTasks = cstate.pendingTasks > 0;
     if (mayNotEnter || componentHasPendingTasks) {
-      
       throw new Error('in enter()'); // TODO: remove
       cstate.pendingTasks.set(this.#id, new Awaitable(new Promise()));
       
@@ -226,7 +229,7 @@ class AsyncTask {
           throw new Error('pending task [' + this.#id + '] not found for component instance');
         }
         cstate.pendingTasks.remove(this.#id);
-        this.#onResolve([]);
+        this.#onResolve(new Error('failed enter'));
         return false;
       }
       
@@ -448,17 +451,17 @@ class AsyncTask {
     }
     if (this.borrowedHandles.length > 0) { throw new Error('task still has borrow handles'); }
     
-    this.#onResolve([]);
+    this.#onResolve(new Error('cancelled'));
     this.#state = AsyncTask.State.RESOLVED;
   }
   
-  resolve(result) {
-    _debugLog('[AsyncTask#resolve()] args', { result });
+  resolve(results) {
+    _debugLog('[AsyncTask#resolve()] args', { results });
     if (this.#state === AsyncTask.State.RESOLVED) {
       throw new Error('task is already resolved');
     }
     if (this.borrowedHandles.length > 0) { throw new Error('task still has borrow handles'); }
-    this.#onResolve(result);
+    this.#onResolve(results.length === 1 ? results[0] : results);
     this.#state = AsyncTask.State.RESOLVED;
   }
   
@@ -824,6 +827,7 @@ function trampoline4() {
   _debugLog('[iface="wasi:cli/stderr@0.2.3", function="get-stderr"][Instruction::Return]', {
     funcName: 'get-stderr',
     paramCount: 1,
+    async: false,
     postReturn: false
   });
   return handle0;
@@ -852,6 +856,7 @@ function trampoline5() {
   _debugLog('[iface="wasi:cli/stdin@0.2.3", function="get-stdin"][Instruction::Return]', {
     funcName: 'get-stdin',
     paramCount: 1,
+    async: false,
     postReturn: false
   });
   return handle0;
@@ -876,6 +881,7 @@ function trampoline6() {
   _debugLog('[iface="wasi:cli/stdout@0.2.3", function="get-stdout"][Instruction::Return]', {
     funcName: 'get-stdout',
     paramCount: 1,
+    async: false,
     postReturn: false
   });
   return handle0;
@@ -911,6 +917,7 @@ function trampoline7(arg0) {
   _debugLog('[iface="wasi:cli/exit@0.2.3", function="exit"][Instruction::Return]', {
     funcName: 'exit',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -945,6 +952,7 @@ function trampoline8(arg0) {
   _debugLog('[iface="wasi:cli/environment@0.2.3", function="get-environment"][Instruction::Return]', {
     funcName: 'get-environment',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -1143,6 +1151,7 @@ function trampoline9(arg0, arg1) {
   _debugLog('[iface="wasi:filesystem/types@0.2.3", function="filesystem-error-code"][Instruction::Return]', {
     funcName: 'filesystem-error-code',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -1365,6 +1374,7 @@ function trampoline10(arg0, arg1, arg2) {
   _debugLog('[iface="wasi:filesystem/types@0.2.3", function="[method]descriptor.write-via-stream"][Instruction::Return]', {
     funcName: '[method]descriptor.write-via-stream',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -1583,6 +1593,7 @@ function trampoline11(arg0, arg1) {
   _debugLog('[iface="wasi:filesystem/types@0.2.3", function="[method]descriptor.append-via-stream"][Instruction::Return]', {
     funcName: '[method]descriptor.append-via-stream',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -1835,6 +1846,7 @@ function trampoline12(arg0, arg1) {
   _debugLog('[iface="wasi:filesystem/types@0.2.3", function="[method]descriptor.get-type"][Instruction::Return]', {
     funcName: '[method]descriptor.get-type',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -2120,6 +2132,7 @@ function trampoline13(arg0, arg1) {
   _debugLog('[iface="wasi:filesystem/types@0.2.3", function="[method]descriptor.stat"][Instruction::Return]', {
     funcName: '[method]descriptor.stat',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -2194,6 +2207,7 @@ function trampoline14(arg0, arg1) {
   _debugLog('[iface="wasi:io/streams@0.2.3", function="[method]output-stream.check-write"][Instruction::Return]', {
     funcName: '[method]output-stream.check-write',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -2270,6 +2284,7 @@ function trampoline15(arg0, arg1, arg2, arg3) {
   _debugLog('[iface="wasi:io/streams@0.2.3", function="[method]output-stream.write"][Instruction::Return]', {
     funcName: '[method]output-stream.write',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -2343,6 +2358,7 @@ function trampoline16(arg0, arg1) {
   _debugLog('[iface="wasi:io/streams@0.2.3", function="[method]output-stream.blocking-flush"][Instruction::Return]', {
     funcName: '[method]output-stream.blocking-flush',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -2419,6 +2435,7 @@ function trampoline17(arg0, arg1, arg2, arg3) {
   _debugLog('[iface="wasi:io/streams@0.2.3", function="[method]output-stream.blocking-write-and-flush"][Instruction::Return]', {
     funcName: '[method]output-stream.blocking-write-and-flush',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -2456,6 +2473,7 @@ function trampoline18(arg0) {
   _debugLog('[iface="wasi:filesystem/preopens@0.2.3", function="get-directories"][Instruction::Return]', {
     funcName: 'get-directories',
     paramCount: 0,
+    async: false,
     postReturn: false
   });
 }
@@ -2524,7 +2542,12 @@ function transform(arg0, arg1, arg2) {
   var len1 = utf8EncodedLen;
   var ptr2 = utf8Encode(arg2, realloc1, memory0);
   var len2 = utf8EncodedLen;
-  _debugLog('[iface="transform", function="transform"] [Instruction::CallWasm] (async? false, @ enter)');
+  _debugLog('[iface="transform", function="transform"][Instruction::CallWasm] enter', {
+    funcName: 'transform',
+    paramCount: 6,
+    async: false,
+    postReturn: true,
+  });
   const _wasm_call_currentTaskID = startCurrentTask(0, false, 'exports1Transform');
   const ret = exports1Transform(ptr0, len0, ptr1, len1, ptr2, len2);
   endCurrentTask(0);
@@ -2588,6 +2611,7 @@ function transform(arg0, arg1, arg2) {
   _debugLog('[iface="transform", function="transform"][Instruction::Return]', {
     funcName: 'transform',
     paramCount: 1,
+    async: false,
     postReturn: true
   });
   const retCopy = variant9;

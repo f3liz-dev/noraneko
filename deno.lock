@@ -12,7 +12,7 @@
     "jsr:@std/path@^1.1.1": "1.1.2",
     "jsr:@std/path@^1.1.2": "1.1.2",
     "jsr:@std/streams@^1.0.13": "1.0.13",
-    "npm:@bytecodealliance/jco@1": "1.15.2",
+    "npm:@bytecodealliance/jco@^1.15.3": "1.15.3",
     "npm:@bytecodealliance/preview2-shim@~0.17.4": "0.17.4",
     "npm:@deno/vite-plugin@^1.0.4": "1.0.5_vite@5.4.21__@types+node@20.19.24__lightningcss@1.30.2_@types+node@20.19.24_lightningcss@1.30.2",
     "npm:@deno/vite-plugin@^1.0.5": "1.0.5_vite@5.4.21__@types+node@20.19.24__lightningcss@1.30.2_@types+node@20.19.24_lightningcss@1.30.2",
@@ -266,8 +266,8 @@
       ],
       "bin": true
     },
-    "@bytecodealliance/jco@1.15.2": {
-      "integrity": "sha512-IRjNiNmg6RhJuhJdN3EIJVwV0lHMKTStb/JbFGbMyWQdTTpXnUuzQSxKybp0psN1WV4ljhS6EcjxMfueo55pag==",
+    "@bytecodealliance/jco@1.15.3": {
+      "integrity": "sha512-5Zd/PDQ2CVX8SKp57EALiGSN9qg7gpDRp+RUazcssdTzv/Ye22PTpJxQv98gLL4hcANJhnmqIIwdcJmT7tUGmw==",
       "dependencies": [
         "@bytecodealliance/componentize-js",
         "@bytecodealliance/preview2-shim",
@@ -3714,7 +3714,7 @@
       "libs/vite-oxc-decorator-stage-3": {
         "packageJson": {
           "dependencies": [
-            "npm:@bytecodealliance/jco@1",
+            "npm:@bytecodealliance/jco@^1.15.3",
             "npm:@types/node@^20.11.0",
             "npm:typescript@^5.3.3",
             "npm:vite@5",

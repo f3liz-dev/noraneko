@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.env
+coverage/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.turbo
+.tmp/
+tmp/
+decorator-transformer/target/
+pkg/

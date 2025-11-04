@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
+import { component } from "#features-chrome/utils/base";
 import type { RPCDependencies } from "../rpc-interfaces.ts";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
@@ -18,8 +18,11 @@ import {
 import { WebsitePanelWindowChild } from "./panel/website-panel-window-child";
 import { migratePanelSidebarData } from "./data/migration.ts";
 
-@noraComponent(import.meta.hot)
-export default class SidebarAddonPanel extends NoraComponentBase {
+@component({
+  moduleName: "sidebar-addon-panel",
+  hot:import.meta.hot
+})
+export default class SidebarAddonPanel {
   // Type-safe RPC access - Either handles both available and missing modules
   protected rpc!: RPCDependencies<["sidebar"]>;
 
@@ -138,15 +141,6 @@ export default class SidebarAddonPanel extends NoraComponentBase {
         () => console.debug("Icon click handled successfully"),
       ),
     );
-  }
-
-  static _metadata() {
-    return {
-      moduleName: "sidebar-addon-panel",
-      dependencies: [],
-      softDependencies: ["sidebar"],
-      rpcMethods: {},
-    };
   }
 }
 

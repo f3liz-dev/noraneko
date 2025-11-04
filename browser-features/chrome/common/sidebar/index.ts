@@ -88,18 +88,24 @@ export default class Sidebar implements SidebarRPC {
   }
 
   private renderDockBar(): void {
+    // Validate document is available
+    if (!document) {
+      this.logger.error("Document is not available, cannot render dock bar");
+      return;
+    }
+
     // Inject styles only once
-    if (!document?.getElementById("sidebar-dock-bar-styles")) {
+    if (!document.getElementById("sidebar-dock-bar-styles")) {
       render(
         () => <style id="sidebar-dock-bar-styles">{dockBarStyle}</style>,
-        document?.head
+        document.head
       );
     }
 
     // Render dock bar component
-    const parentElem = document?.getElementById("browser");
-    const beforeElem = document?.getElementById("panel-sidebar-box") || 
-                       document?.getElementById("tabbrowser-tabbox");
+    const parentElem = document.getElementById("browser");
+    const beforeElem = document.getElementById("panel-sidebar-box") || 
+                       document.getElementById("tabbrowser-tabbox");
 
     if (parentElem && beforeElem) {
       render(
@@ -113,7 +119,10 @@ export default class Sidebar implements SidebarRPC {
         { marker: beforeElem as XULElement }
       );
     } else {
-      this.logger.warn("Could not find parent or marker element for dock bar");
+      this.logger.error(
+        "Could not find parent or marker element for dock bar. " +
+        `parentElem: ${!!parentElem}, beforeElem: ${!!beforeElem}`
+      );
     }
   }
 
@@ -195,7 +204,7 @@ export default class Sidebar implements SidebarRPC {
     }
   }
 
-  // Public non-RPC methods (can be called directly but not via RPC)
+  // Public RPC method to get registered icons
   @rpcMethod
   async getRegisteredIcons(): Promise<SidebarIconRegistration[]> {
     return Array.from(this.registeredIcons.values());

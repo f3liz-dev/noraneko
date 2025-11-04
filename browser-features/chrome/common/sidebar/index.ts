@@ -3,8 +3,27 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/**
+ * Sidebar Module
+ * 
+ * This module provides an independent dock bar that can be used to register icons.
+ * It exposes a registration API via RPC that other modules can use.
+ * 
+ * Key Features:
+ * - Renders a vertical dock bar with icons
+ * - Provides RPC methods for icon registration
+ * - Manages icon click callbacks
+ * - Does not depend on other feature modules
+ * 
+ * Architecture:
+ * - This module is independent and can be used by any other module
+ * - Other modules (like sidebar-addon-panel) use RPC to register icons
+ * - When icons are clicked, registered callbacks are invoked
+ */
+
 import { component, rpcMethod } from "#features-chrome/utils/base.ts";
-import { onCleanup } from "solid-js";
+import { createSignal, onCleanup } from "solid-js";
+import { render } from "@nora/solid-xul";
 import {
   panelSidebarData,
   setPanelSidebarData,
@@ -13,8 +32,10 @@ import {
   selectedPanelId,
   setSelectedPanelId,
 } from "./core/data.ts";
+import { DockBar } from "./ui/dock-bar.tsx";
+import dockBarStyle from "./ui/dock-bar.css?inline";
 
-interface SidebarIconRegistration {
+export interface SidebarIconRegistration {
   name: string;
   i18nName: string;
   iconUrl: string;
@@ -26,6 +47,13 @@ export interface SidebarRPC {
   notifyDataChanged(data: any): Promise<void>;
   notifyConfigChanged(config: any): Promise<void>;
   selectPanel(panelId: string): Promise<void>;
+  registerSidebarIcon(options: SidebarIconRegistration): Promise<void>;
+  onClicked(iconName: string): Promise<void>;
+  registerDataUpdateCallback(callback: (data: any) => void): Promise<void>;
+  registerSelectionChangeCallback(callback: (panelId: string) => void): Promise<void>;
+  unregisterDataUpdateCallback(callback: (data: any) => void): Promise<void>;
+  unregisterSelectionChangeCallback(callback: (panelId: string) => void): Promise<void>;
+  getRegisteredIcons(): Promise<SidebarIconRegistration[]>;
 }
 
 // 2. Implement with decorator
@@ -40,8 +68,18 @@ export default class Sidebar implements SidebarRPC {
   private registeredIcons: Map<string, SidebarIconRegistration> = new Map();
   private dataUpdateCallbacks: Set<(data: any) => void> = new Set();
   private selectionChangeCallbacks: Set<(panelId: string) => void> = new Set();
+  private getIcons!: () => SidebarIconRegistration[];
+  private setIcons!: (icons: SidebarIconRegistration[]) => void;
 
   init(): void {
+    // Create signal for icons
+    const [getIcons, setIcons] = createSignal<SidebarIconRegistration[]>([]);
+    this.getIcons = getIcons;
+    this.setIcons = setIcons;
+
+    // Render the dock bar UI
+    this.renderDockBar();
+
     onCleanup(() => {
       this.registeredIcons.clear();
       this.dataUpdateCallbacks.clear();
@@ -49,18 +87,56 @@ export default class Sidebar implements SidebarRPC {
     });
   }
 
-  // Private helper methods (not exposed via RPC)
-  private async registerSidebarIcon(options: {
-    name: string;
-    i18nName: string;
-    iconUrl: string;
-    callback: () => void | Promise<void>;
-  }): Promise<void> {
+  private renderDockBar(): void {
+    // Validate document is available
+    if (!document) {
+      this.logger.error("Document is not available, cannot render dock bar");
+      return;
+    }
+
+    // Inject styles only once
+    if (!document.getElementById("sidebar-dock-bar-styles")) {
+      render(
+        () => <style id="sidebar-dock-bar-styles">{dockBarStyle}</style>,
+        document.head
+      );
+    }
+
+    // Render dock bar component
+    const parentElem = document.getElementById("browser");
+    const beforeElem = document.getElementById("panel-sidebar-box") || 
+                       document.getElementById("tabbrowser-tabbox");
+
+    if (parentElem && beforeElem) {
+      render(
+        () => (
+          <DockBar
+            icons={this.getIcons}
+            onIconClick={(iconName) => this.onClicked(iconName)}
+          />
+        ),
+        parentElem,
+        { marker: beforeElem as XULElement }
+      );
+    } else {
+      this.logger.error(
+        "Could not find parent or marker element for dock bar. " +
+        `parentElem: ${!!parentElem}, beforeElem: ${!!beforeElem}`
+      );
+    }
+  }
+
+  // Public RPC methods for registration (exposed to other modules)
+  @rpcMethod
+  async registerSidebarIcon(options: SidebarIconRegistration): Promise<void> {
     this.registeredIcons.set(options.name, options);
+    // Update the signal to trigger UI update
+    this.setIcons(Array.from(this.registeredIcons.values()));
     this.logger.debug(`Registered icon ${options.name} with callback`);
   }
 
-  private async onClicked(iconName: string): Promise<void> {
+  @rpcMethod
+  async onClicked(iconName: string): Promise<void> {
     const iconRegistration = this.registeredIcons.get(iconName);
     if (iconRegistration?.callback) {
       try {
@@ -74,21 +150,25 @@ export default class Sidebar implements SidebarRPC {
     }
   }
 
-  private registerDataUpdateCallback(callback: (data: any) => void): void {
+  @rpcMethod
+  async registerDataUpdateCallback(callback: (data: any) => void): Promise<void> {
     this.dataUpdateCallbacks.add(callback);
     this.logger.debug("Registered data update callback");
   }
 
-  private registerSelectionChangeCallback(callback: (panelId: string) => void): void {
+  @rpcMethod
+  async registerSelectionChangeCallback(callback: (panelId: string) => void): Promise<void> {
     this.selectionChangeCallbacks.add(callback);
     this.logger.debug("Registered selection change callback");
   }
 
-  private unregisterDataUpdateCallback(callback: (data: any) => void): void {
+  @rpcMethod
+  async unregisterDataUpdateCallback(callback: (data: any) => void): Promise<void> {
     this.dataUpdateCallbacks.delete(callback);
   }
 
-  private unregisterSelectionChangeCallback(callback: (panelId: string) => void): void {
+  @rpcMethod
+  async unregisterSelectionChangeCallback(callback: (panelId: string) => void): Promise<void> {
     this.selectionChangeCallbacks.delete(callback);
   }
 
@@ -124,8 +204,9 @@ export default class Sidebar implements SidebarRPC {
     }
   }
 
-  // Public non-RPC methods (can be called directly but not via RPC)
-  getRegisteredIcons(): SidebarIconRegistration[] {
+  // Public RPC method to get registered icons
+  @rpcMethod
+  async getRegisteredIcons(): Promise<SidebarIconRegistration[]> {
     return Array.from(this.registeredIcons.values());
   }
 }

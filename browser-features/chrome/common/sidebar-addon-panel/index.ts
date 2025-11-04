@@ -3,6 +3,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/**
+ * SidebarAddonPanel Module
+ * 
+ * This module manages the panel content (browsers) for the sidebar.
+ * It depends on the sidebar module to register icons in the dock bar.
+ * 
+ * Architecture:
+ * - sidebar module: Renders dock bar, exposes icon registration API
+ * - sidebar-addon-panel module: Manages panel browsers, registers icons via sidebar RPC
+ * 
+ * The separation allows:
+ * - sidebar to be independent and reusable for other dock-like UIs
+ * - sidebar-addon-panel to focus on panel management
+ * - Other modules to also register icons in the dock if needed
+ */
+
 import { component } from "#features-chrome/utils/base";
 import type { RPCDependencies } from "../rpc-interfaces.ts";
 import * as E from "fp-ts/Either";
@@ -40,13 +56,25 @@ export default class SidebarAddonPanel {
     PanelSidebarAddModal.getInstance();
     PanelSidebarFloating.getInstance();
 
-    // Register example sidebar icons (demonstrating the usage)
-    this.registerExampleSidebarIcons();
+    // Register sidebar icons based on panels
+    this.registerPanelIcons();
 
     // Set up cleanup
     onCleanup(() => {
       this.ctx = null;
     });
+  }
+
+  // Register icons for each panel in the dock bar
+  private async registerPanelIcons(): Promise<void> {
+    // This is a placeholder for the real implementation
+    // In the real implementation, this would:
+    // 1. Get the list of panels from panelSidebarData
+    // 2. Register an icon for each panel
+    // 3. Handle panel click to show/hide the panel
+    
+    // For now, keep the example implementation as a reference
+    this.registerExampleSidebarIcons();
   }
 
   // RPC methods that can be called by sidebar via registered callbacks
@@ -70,6 +98,10 @@ export default class SidebarAddonPanel {
   }
 
   // Example method that demonstrates registering sidebar icons
+  // Note: Function references work here because the RPC system in this codebase
+  // is not a traditional serialized RPC - it's a typed dependency injection system
+  // where all modules run in the same JavaScript context. The callbacks are
+  // direct function references, not serialized over a boundary.
   private async registerExampleSidebarIcons(): Promise<void> {
     // Register notes icon with callback (not birpcMethodName)
     const notesResult = await this.rpc.sidebar.registerSidebarIcon({

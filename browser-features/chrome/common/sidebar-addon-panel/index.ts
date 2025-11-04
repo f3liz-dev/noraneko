@@ -5,14 +5,14 @@
 
 /**
  * SidebarAddonPanel Module
- * 
+ *
  * This module manages the panel content (browsers) for the sidebar.
  * It depends on the sidebar module to register icons in the dock bar.
- * 
+ *
  * Architecture:
  * - sidebar module: Renders dock bar, exposes icon registration API
  * - sidebar-addon-panel module: Manages panel browsers, registers icons via sidebar RPC
- * 
+ *
  * The separation allows:
  * - sidebar to be independent and reusable for other dock-like UIs
  * - sidebar-addon-panel to focus on panel management
@@ -36,7 +36,8 @@ import { migratePanelSidebarData } from "./data/migration.ts";
 
 @component({
   moduleName: "sidebar-addon-panel",
-  hot:import.meta.hot
+  softDependencies: ["sidebar"],
+  hot: import.meta.hot,
 })
 export default class SidebarAddonPanel {
   // Type-safe RPC access - Either handles both available and missing modules
@@ -72,7 +73,7 @@ export default class SidebarAddonPanel {
     // 1. Get the list of panels from panelSidebarData
     // 2. Register an icon for each panel
     // 3. Handle panel click to show/hide the panel
-    
+
     // For now, keep the example implementation as a reference
     this.registerExampleSidebarIcons();
   }

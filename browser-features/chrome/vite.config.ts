@@ -36,7 +36,7 @@ export default defineConfig({
     cssMinify: false,
     emptyOutDir: true,
     assetsInlineLimit: 0,
-    target: "firefox133",
+    target: "esnext",
     outDir: r("_dist"),
 
     rollupOptions: {

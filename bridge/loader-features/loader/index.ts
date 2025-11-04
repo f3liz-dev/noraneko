@@ -75,7 +75,9 @@ interface LoadedModule {
   default?: any; // Module class constructor
 }
 
-async function loadEnabledModules(enabled_features: typeof MODULES_KEYS): Promise<LoadedModule[]> {
+async function loadEnabledModules(
+  enabled_features: typeof MODULES_KEYS,
+): Promise<LoadedModule[]> {
   const modules: LoadedModule[] = [];
 
   const loadModulePromises = Object.entries(MODULES).flatMap(
@@ -89,11 +91,13 @@ async function loadEnabledModules(enabled_features: typeof MODULES_KEYS): Promis
         ) {
           try {
             const moduleExports = await categoryValue[moduleName]();
-            const metadata = (moduleExports as any).default?._metadata?.() || {
-              moduleName,
-              dependencies: [],
-              softDependencies: []
-            } satisfies ModuleMetadata;
+            const metadata =
+              (moduleExports as any).default?._metadata?.() ||
+              ({
+                moduleName,
+                dependencies: [],
+                softDependencies: [],
+              } satisfies ModuleMetadata);
 
             const module: LoadedModule = {
               name: moduleName,
@@ -157,13 +161,21 @@ async function initializeModules(modules: LoadedModule[]) {
       }
 
       // Register RPC methods after initialization
-      if (instance && typeof instance.rpcMethods === 'function') {
+      if (instance && typeof instance.rpcMethods === "function") {
         try {
           const rpcMethods = instance.rpcMethods();
+          console.log(module.metadata.moduleName);
+          console.log(rpcMethods);
           registerModuleRPC(module.metadata.moduleName, rpcMethods);
-          console.debug(`[noraneko] Registered RPC methods for module ${module.metadata.moduleName}`);
+
+          console.debug(
+            `[noraneko] Registered RPC methods for module ${module.metadata.moduleName}`,
+          );
         } catch (e) {
-          console.error(`[noraneko] Failed to register RPC methods for module ${module.metadata.moduleName}:`, e);
+          console.error(
+            `[noraneko] Failed to register RPC methods for module ${module.metadata.moduleName}:`,
+            e,
+          );
         }
       }
 
@@ -179,14 +191,18 @@ async function initializeModules(modules: LoadedModule[]) {
 }
 
 function validateDependencies(modules: LoadedModule[]): void {
-  const moduleNames = new Set(modules.map(m => m.name));
+  const moduleNames = new Set(modules.map((m) => m.name));
   const visited = new Set<string>();
   const visiting = new Set<string>();
-  const moduleMap = new Map(modules.map(m => [m.name, m]));
+  const moduleMap = new Map(modules.map((m) => [m.name, m]));
 
-  const checkCircular = (name: string, deps: string[], path: string[] = []): void => {
+  const checkCircular = (
+    name: string,
+    deps: string[],
+    path: string[] = [],
+  ): void => {
     if (visiting.has(name)) {
-      const cycle = [...path, name].join(' -> ');
+      const cycle = [...path, name].join(" -> ");
       throw new Error(`Circular dependency detected: ${cycle}`);
     }
     if (visited.has(name)) return;
@@ -207,7 +223,9 @@ function validateDependencies(modules: LoadedModule[]): void {
     // Check hard dependencies exist
     for (const dep of module.metadata.dependencies) {
       if (!moduleNames.has(dep)) {
-        throw new Error(`Missing dependency: ${dep} required by ${module.name}`);
+        throw new Error(
+          `Missing dependency: ${dep} required by ${module.name}`,
+        );
       }
     }
 
@@ -219,7 +237,7 @@ function validateDependencies(modules: LoadedModule[]): void {
 function sortModulesByDependencies(modules: LoadedModule[]): LoadedModule[] {
   const sorted: LoadedModule[] = [];
   const processed = new Set<string>();
-  const moduleMap = new Map(modules.map(m => [m.name, m]));
+  const moduleMap = new Map(modules.map((m) => [m.name, m]));
 
   const process = (module: LoadedModule): void => {
     if (processed.has(module.name)) return;

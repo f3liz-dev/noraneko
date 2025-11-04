@@ -10,7 +10,7 @@ use oxc_semantic::SemanticBuilder;
 
 mod transformer;
 mod codegen;
-use transformer::{DecoratorTransformer, TransformerState, ClassDecoratorInfo};
+use transformer::{DecoratorTransformer, TransformerState};
 use codegen::generate_helper_functions;
 
 // Generate bindings from WIT file
@@ -66,7 +66,7 @@ pub fn transform(
     
     let mut codegen_result = Codegen::new().build(&parse_result.program);
     
-    let class_decorator_info = transformer.get_classes_with_class_decorators();
+    let class_decorator_info = transformer.get_class_decorator_strings();
     if !class_decorator_info.is_empty() {
         codegen_result.code = apply_class_decorator_replacements_string(&codegen_result.code, &class_decorator_info);
     }
@@ -119,7 +119,18 @@ fn class_has_static_block(class: &oxc_ast::ast::Class) -> bool {
     })
 }
 
+/// Create variable declaration for decorator initialization functions.
+/// 
+/// Generated code:
+/// ```js
+/// let _initProto, _initClass;
+/// ```
+/// 
+/// These variables are assigned in the static block and used to:
+/// - `_initProto`: Initialize instance members (fields, accessors)
+/// - `_initClass`: Apply class decorators
 fn create_init_variables_declaration<'a>(ast: &AstBuilder<'a>) -> Statement<'a> {
+    // Create binding pattern for `_initProto`
     let init_proto_binding = ast.binding_pattern(
         ast.binding_pattern_kind_binding_identifier(SPAN, "_initProto"),
         NONE,
@@ -134,6 +145,7 @@ fn create_init_variables_declaration<'a>(ast: &AstBuilder<'a>) -> Statement<'a> 
         false,
     );
     
+    // Create binding pattern for `_initClass`
     let init_class_binding = ast.binding_pattern(
         ast.binding_pattern_kind_binding_identifier(SPAN, "_initClass"),
         NONE,
@@ -148,6 +160,7 @@ fn create_init_variables_declaration<'a>(ast: &AstBuilder<'a>) -> Statement<'a> 
         false,
     );
     
+    // Combine into a single let declaration
     let mut declarators = ast.vec();
     declarators.push(init_proto_declarator);
     declarators.push(init_class_declarator);
@@ -183,12 +196,27 @@ fn generate_result<'a>(program: &Program<'a>, opts: &TransformOptions, errors: V
     })
 }
 
-fn apply_class_decorator_replacements_string(code: &str, class_info: &[ClassDecoratorInfo]) -> String {
+/// Apply class decorator transformations using post-codegen string manipulation.
+///
+/// **Note on Implementation**: This function uses string manipulation after codegen, which
+/// differs from the ideal Oxc pattern of pure AST manipulation. However, class decorators
+/// require transforming a single statement (ClassDeclaration) into multiple statements
+/// (VariableDeclaration + ExpressionStatement + Export), which is complex to handle during
+/// AST traversal. The alternative would be a second AST pass before codegen, but the current
+/// approach is simpler and works correctly for all test cases.
+///
+/// The decorator expressions are stored as AST nodes throughout the transformation pipeline,
+/// and only converted to strings at extraction time for code generation.
+///
+/// Transforms:
+/// - `@dec export default class C {}` → `let C = class C {}; C = _applyDecs(C, [], [dec]).c[0]; export default C;`
+/// - `@dec export class C {}` → `let C = class C {}; C = _applyDecs(C, [], [dec]).c[0]; export { C };`
+/// - `@dec class C {}` → `let C = class C {}; C = _applyDecs(C, [], [dec]).c[0];`
+fn apply_class_decorator_replacements_string(code: &str, class_info: &[(String, Vec<String>)]) -> String {
     let mut result = code.to_string();
     
-    for info in class_info {
-        let class_name = &info.class_name;
-        let decorators = info.decorator_names.join(", ");
+    for (class_name, decorator_strings) in class_info {
+        let decorators = decorator_strings.join(", ");
         
         let export_default_pattern = format!("export default class {}", class_name);
         if let Some(export_pos) = result.find(&export_default_pattern) {

@@ -220,6 +220,12 @@ function _applyDecs(
         
         if (assertCallable(appliedDecorators, "class decorators", "return")) {
           decoratedValue = appliedDecorators;
+          // Preserve the original class name if the decorator returns a new class
+          // This ensures that instance method initializers can access the class name
+          // via this.constructor.name even when the decorator returns an extended class
+          if (decoratedValue !== target && memberName) {
+            _setFunctionName(decoratedValue, memberName);
+          }
         }
       } else {
         // Member decorator

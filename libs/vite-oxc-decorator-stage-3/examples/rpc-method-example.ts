@@ -51,6 +51,34 @@ class UserService {
 }
 
 /**
+ * Class decorator that extends the class
+ * This demonstrates the fix for the issue where class decorators that return
+ * extended classes would cause method decorators to lose access to the class name
+ */
+function withLogging<T extends { new (...args: any[]): {} }>(constructor: T) {
+  return class extends constructor {
+    logged = true;
+  };
+}
+
+/**
+ * Example with both class decorator and method decorators
+ * This is the exact scenario from the problem statement
+ */
+@withLogging
+class OrderService {
+  @rpcMethod
+  getOrder(id: number) {
+    return { id, status: "shipped" };
+  }
+
+  @rpcMethod
+  static getOrderCount() {
+    return 200;
+  }
+}
+
+/**
  * Another example class to show it works for multiple classes
  */
 class ProductService {
@@ -75,6 +103,10 @@ export function demonstrateRPCMethods() {
   // Create instances to trigger instance method initializers
   console.log('📦 Creating UserService instance...');
   const userService = new UserService();
+  console.log();
+
+  console.log('📦 Creating OrderService instance (with class decorator)...');
+  const orderService = new OrderService();
   console.log();
 
   console.log('📦 Creating ProductService instance...');

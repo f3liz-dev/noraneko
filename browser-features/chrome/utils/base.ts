@@ -21,13 +21,7 @@ interface ComponentMetadata {
  */
 export function rpcMethod(_: Function, context: ClassMethodDecoratorContext) {
   context.addInitializer(function () {
-    // START OF FIX
-    // This initializer may be called with 'this' as the class (static)
-    // or 'this' as the prototype (instance). We need the class name in both cases.
-    const className =
-      typeof this === "function" ? this.name : this.constructor.name;
-
-    console.log("rpcMethodDecorator");
+    const className = context.static ? this.name : this.constructor.name;
 
     if (!className) {
       console.error(
@@ -79,7 +73,6 @@ export function component(config: {
       constructor(...args: any[]) {
         super(...args);
         console.log("construct on decorator");
-        console.log(this);
         createRootHMR(() => {
           if ("init" in this && typeof this.init === "function") this.init();
           onCleanup(() => _hotContexts.delete(name));

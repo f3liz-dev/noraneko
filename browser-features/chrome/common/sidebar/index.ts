@@ -25,16 +25,15 @@ import { component, rpcMethod } from "#features-chrome/utils/base.ts";
 import { createSignal, onCleanup } from "solid-js";
 
 import {
-  panelSidebarData,
-  setPanelSidebarData,
   panelSidebarConfig,
-  setPanelSidebarConfig,
+  panelSidebarData,
   selectedPanelId,
+  setPanelSidebarConfig,
+  setPanelSidebarData,
   setSelectedPanelId,
 } from "./core/data.ts";
-import { DockBar } from "./ui/dock-bar.tsx";
 
-import { _renderDockbar, _renderStyle } from "./renderDockbar.js";
+import { _renderDockbar, _renderStyle } from "./renderDockbar.tsx";
 
 export interface SidebarIconRegistration {
   name: string;
@@ -45,20 +44,20 @@ export interface SidebarIconRegistration {
 
 // 1. Define RPC interface
 export interface SidebarRPC {
-  notifyDataChanged(data: any): Promise<void>;
-  notifyConfigChanged(config: any): Promise<void>;
-  selectPanel(panelId: string): Promise<void>;
-  registerSidebarIcon(options: SidebarIconRegistration): Promise<void>;
+  notifyDataChanged(data: any): void;
+  notifyConfigChanged(config: any): void;
+  selectPanel(panelId: string): void;
+  registerSidebarIcon(options: SidebarIconRegistration): void;
   onClicked(iconName: string): Promise<void>;
-  registerDataUpdateCallback(callback: (data: any) => void): Promise<void>;
+  registerDataUpdateCallback(callback: (data: any) => void): void;
   registerSelectionChangeCallback(
     callback: (panelId: string) => void,
-  ): Promise<void>;
-  unregisterDataUpdateCallback(callback: (data: any) => void): Promise<void>;
+  ): void;
+  unregisterDataUpdateCallback(callback: (data: any) => void): void;
   unregisterSelectionChangeCallback(
     callback: (panelId: string) => void,
-  ): Promise<void>;
-  getRegisteredIcons(): Promise<SidebarIconRegistration[]>;
+  ): void;
+  getRegisteredIcons(): SidebarIconRegistration[];
 }
 
 // 2. Implement with decorator
@@ -108,12 +107,16 @@ export default class Sidebar implements SidebarRPC {
 
     // Render dock bar component
     const parentElem = document.getElementById("browser");
-    const beforeElem =
-      document.getElementById("panel-sidebar-box") ||
+    const beforeElem = document.getElementById("panel-sidebar-box") ||
       document.getElementById("tabbrowser-tabbox");
 
     if (parentElem && beforeElem) {
-      _renderDockbar(parentElem, beforeElem, this.getIcons, this.onClicked);
+      _renderDockbar(
+        parentElem,
+        beforeElem,
+        this.getIcons,
+        this.onClicked.bind(this),
+      );
     } else {
       this.logger.error(
         "Could not find parent or marker element for dock bar. " +
@@ -124,7 +127,7 @@ export default class Sidebar implements SidebarRPC {
 
   // Public RPC methods for registration (exposed to other modules)
   @rpcMethod
-  async registerSidebarIcon(options: SidebarIconRegistration): Promise<void> {
+  registerSidebarIcon(options: SidebarIconRegistration): void {
     this.registeredIcons.set(options.name, options);
     // Update the signal to trigger UI update
     this.setIcons(Array.from(this.registeredIcons.values()));
@@ -150,38 +153,38 @@ export default class Sidebar implements SidebarRPC {
   }
 
   @rpcMethod
-  async registerDataUpdateCallback(
+  registerDataUpdateCallback(
     callback: (data: any) => void,
-  ): Promise<void> {
+  ): void {
     this.dataUpdateCallbacks.add(callback);
     this.logger.debug("Registered data update callback");
   }
 
   @rpcMethod
-  async registerSelectionChangeCallback(
+  registerSelectionChangeCallback(
     callback: (panelId: string) => void,
-  ): Promise<void> {
+  ): void {
     this.selectionChangeCallbacks.add(callback);
     this.logger.debug("Registered selection change callback");
   }
 
   @rpcMethod
-  async unregisterDataUpdateCallback(
+  unregisterDataUpdateCallback(
     callback: (data: any) => void,
-  ): Promise<void> {
+  ): void {
     this.dataUpdateCallbacks.delete(callback);
   }
 
   @rpcMethod
-  async unregisterSelectionChangeCallback(
+  unregisterSelectionChangeCallback(
     callback: (panelId: string) => void,
-  ): Promise<void> {
+  ): void {
     this.selectionChangeCallbacks.delete(callback);
   }
 
   // Public RPC methods (exposed to other modules)
   @rpcMethod
-  async notifyDataChanged(data: any): Promise<void> {
+  notifyDataChanged(data: any): void {
     setPanelSidebarData(data);
 
     for (const callback of this.dataUpdateCallbacks) {
@@ -194,12 +197,12 @@ export default class Sidebar implements SidebarRPC {
   }
 
   @rpcMethod
-  async notifyConfigChanged(config: any): Promise<void> {
+  notifyConfigChanged(config: any): void {
     setPanelSidebarConfig(config);
   }
 
   @rpcMethod
-  async selectPanel(panelId: string): Promise<void> {
+  selectPanel(panelId: string): void {
     setSelectedPanelId(panelId);
 
     for (const callback of this.selectionChangeCallbacks) {
@@ -213,7 +216,7 @@ export default class Sidebar implements SidebarRPC {
 
   // Public RPC method to get registered icons
   @rpcMethod
-  async getRegisteredIcons(): Promise<SidebarIconRegistration[]> {
+  getRegisteredIcons(): SidebarIconRegistration[] {
     return Array.from(this.registeredIcons.values());
   }
 }

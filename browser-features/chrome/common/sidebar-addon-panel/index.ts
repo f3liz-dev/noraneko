@@ -26,13 +26,14 @@ import { pipe } from "fp-ts/function";
 import { onCleanup } from "solid-js";
 import {
   CPanelSidebar,
-  PanelSidebarElem,
-  SidebarContextMenuElem,
   PanelSidebarAddModal,
+  PanelSidebarElem,
   PanelSidebarFloating,
+  SidebarContextMenuElem,
 } from "./ui";
 import { WebsitePanelWindowChild } from "./panel/website-panel-window-child";
 import { migratePanelSidebarData } from "./data/migration.ts";
+import iconNotes from "./icons/notes.svg?url";
 
 @component({
   moduleName: "sidebar-addon-panel",
@@ -108,7 +109,7 @@ export default class SidebarAddonPanel {
     const notesResult = await this.rpc.sidebar.registerSidebarIcon({
       name: "notes",
       i18nName: "sidebar.notes.title",
-      iconUrl: "./icons/notes.svg",
+      iconUrl: iconNotes,
       callback: () => this.onNotesIconActivated(), // Direct callback
     });
 
@@ -137,13 +138,11 @@ export default class SidebarAddonPanel {
     );
 
     // Register callbacks for data updates and selection changes
-    const dataCallbackResult =
-      await this.rpc.sidebar.registerDataUpdateCallback((data: any) =>
-        this.onPanelDataUpdate(data),
-      );
+    const dataCallbackResult = await this.rpc.sidebar
+      .registerDataUpdateCallback((data: any) => this.onPanelDataUpdate(data));
 
-    const selectionCallbackResult =
-      await this.rpc.sidebar.registerSelectionChangeCallback(
+    const selectionCallbackResult = await this.rpc.sidebar
+      .registerSelectionChangeCallback(
         (panelId: string) => this.onPanelSelectionChange(panelId),
       );
 

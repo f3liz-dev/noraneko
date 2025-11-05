@@ -37,5 +37,6 @@
   "tasks": {
     "feles-build": "deno run -A tools/feles-build.ts"
   },
-  "nodeModulesDir": "auto"
+  "nodeModulesDir": "auto",
+  "vendor": true
 }

@@ -6,11 +6,9 @@ A Vite plugin for transforming TC39 Stage 3 decorators using Rust/WASM (oxc v0.9
 
 ## Features
 
-- ✅ Full TC39 Stage 3 decorator semantics
-- ✅ All decorator types: class, method, field, accessor, getter, setter
-- ✅ `addInitializer` API support
-- ✅ Private and static members
-- ✅ Rust/WASM transformer (production-ready)
+- Full TC39 Stage 3 decorator semantics (class, method, field, accessor, getter, setter)
+- `addInitializer` API support with private and static members
+- Rust/WASM transformer with zero runtime dependencies
 
 ## Installation
 
@@ -30,25 +28,6 @@ export default defineConfig({
 });
 ```
 
-```typescript
-// app.ts
-function logged(value, { kind, name }) {
-  if (kind === 'method') {
-    return function(...args) {
-      console.log(`Calling ${name}`);
-      return value.apply(this, args);
-    };
-  }
-}
-
-class Calculator {
-  @logged
-  add(a, b) {
-    return a + b;
-  }
-}
-```
-
 ## Options
 
 ```typescript
@@ -56,19 +35,6 @@ interface ViteOxcDecoratorOptions {
   include?: RegExp | RegExp[];  // Default: [/\.[jt]sx?$/]
   exclude?: RegExp | RegExp[];  // Default: [/node_modules/]
 }
-```
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Build WASM and TypeScript
-npm run build
-
-# Run tests
-npm test
 ```
 
 ## Requirements

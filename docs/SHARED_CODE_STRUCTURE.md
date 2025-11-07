@@ -19,7 +19,7 @@ Moved shared code from `libs/shared` to `browser-features/shared` because:
 
 ### 2. Path Alias Configuration
 
-Added `@nora/shared` path alias in two locations for maximum compatibility:
+Added `@nora/shared` path alias for maximum compatibility:
 
 #### a. Vite Configuration
 In `browser-features/chrome/vite.config.ts`:

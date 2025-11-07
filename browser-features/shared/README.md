@@ -80,7 +80,7 @@ The shared code uses:
 - **fp-ts** for functional programming utilities
 - TypeScript for static type checking
 
-Dependencies are managed in `libs/shared/package.json`.
+Dependencies are managed in `browser-features/shared/package.json`.
 
 ## Best Practices
 

@@ -1,13 +1,20 @@
 # Shared Code Library
 
-This directory contains shared code that is used across multiple parts of the Noraneko browser:
+This directory contains shared code that is used across multiple parts of the Noraneko browser features:
 - `browser-features/chrome` (UI/chrome features)
 - `browser-features/modules` (system modules)
+
+## Location
+
+The shared code is located at `browser-features/shared/` to keep it close to the features that use it. This makes it:
+- Easier to find and modify alongside chrome and modules code
+- Accessible even when actively being developed
+- Logically grouped with related browser feature code
 
 ## Structure
 
 ```
-libs/shared/
+browser-features/shared/
 ├── custom-shortcut-key/    # Custom shortcut key functionality
 │   ├── commands.ts          # Command definitions and implementations
 │   ├── defines.ts           # Type definitions and data codecs
@@ -45,23 +52,23 @@ The `@nora/shared` alias is configured in multiple locations for maximum compati
 
 1. **Vite** (`browser-features/chrome/vite.config.ts`):
    ```javascript
-   { find: "@nora/shared", replacement: r("../../libs/shared") }
+   { find: "@nora/shared", replacement: r("../shared") }
    ```
 
 2. **Deno** (`deno.json` and `browser-features/chrome/deno.json`):
    ```json
-   "@nora/shared/": "./libs/shared/"
+   "@nora/shared/": "./browser-features/shared/"
    ```
 
 3. **pnpm workspace** (`pnpm-workspace.yaml`):
    ```yaml
    packages:
-     - 'libs/*'
+     - 'browser-features/*'
    ```
 
 ## Adding New Shared Code
 
-1. Create a new directory under `libs/shared/` for your shared module
+1. Create a new directory under `browser-features/shared/` for your shared module
 2. Add an `index.ts` to export the public API
 3. Import using `@nora/shared/your-module-name/...`
 4. Ensure your code works in both chrome and modules contexts

@@ -147,7 +147,7 @@ export default defineConfig({
       },
       {
         find: "@nora/shared",
-        replacement: r("../../libs/shared"),
+        replacement: r("../shared"),
       },
       { find: "@std/toml", replacement: "@jsr/std__toml" },
       { find: "#i18n", replacement: r("../../i18n") },

@@ -9,7 +9,15 @@ However, the path resolution and workspace configuration were not properly set u
 
 ## Solution Implemented
 
-### 1. Monorepo Workspace Configuration
+### 1. Shared Code Location
+
+Moved shared code from `libs/shared` to `browser-features/shared` because:
+- The shared code is specifically for browser features (chrome and modules)
+- It's modified together with chrome/modules code
+- Keeping it under `browser-features/` makes it more accessible and logically grouped
+- When actively developed, it's easier to find alongside related code
+
+### 2. Monorepo Workspace Configuration
 
 Created `pnpm-workspace.yaml` at the repository root:
 ```yaml
@@ -19,9 +27,9 @@ packages:
   - 'bridge/*'
 ```
 
-This establishes the project as a proper pnpm monorepo workspace, allowing packages to be linked and resolved correctly.
+This establishes the project as a proper pnpm monorepo workspace. The `browser-features/*` pattern automatically includes `browser-features/shared`.
 
-### 2. Path Alias Configuration
+### 3. Path Alias Configuration
 
 Added `@nora/shared` path alias in three locations for maximum compatibility:
 
@@ -30,7 +38,7 @@ In `browser-features/chrome/vite.config.ts`:
 ```typescript
 {
   find: "@nora/shared",
-  replacement: r("../../libs/shared"),
+  replacement: r("../shared"),
 }
 ```
 
@@ -41,24 +49,25 @@ In both root `deno.json` and `browser-features/chrome/deno.json`:
 ```json
 {
   "imports": {
-    "@nora/shared/": "./libs/shared/"
+    "@nora/shared/": "./browser-features/shared/"
   }
 }
 ```
 
 This enables Deno LSP to provide proper IDE support (autocomplete, go-to-definition, etc.).
 
-### 3. Code Modernization
+### 4. Code Modernization
 
 Updated the shared code to use consistent import patterns:
 - Removed `.ts` file extensions from imports (monorepo best practice)
 - Added comprehensive re-exports in `index.ts` for convenience
 - Migrated from Zod (`zCSKData`) to io-ts (`CSKDataCodec`) for consistency
 
-### 4. Documentation
+### 5. Documentation
 
-Created `libs/shared/README.md` with:
+Created `browser-features/shared/README.md` with:
 - Directory structure explanation
+- Location rationale (why it's under browser-features)
 - Usage examples for both chrome and modules contexts
 - Path resolution details
 - Best practices for adding new shared code
@@ -67,28 +76,34 @@ Created `libs/shared/README.md` with:
 ## Benefits
 
 ### For Developers
-1. **IDE Support**: Code editors can now properly:
+1. **Logical Grouping**: Shared code is co-located with the features that use it
+   - Easier to find when working on browser features
+   - More accessible during active development
+   - Clear ownership and purpose
+
+2. **IDE Support**: Code editors can now properly:
    - Auto-complete `@nora/shared` imports
    - Navigate to definitions with "Go to Definition"
    - Show inline documentation and type hints
    - Refactor across shared code
 
-2. **Consistent Imports**: Single import pattern works everywhere:
+3. **Consistent Imports**: Single import pattern works everywhere:
    ```typescript
    import { commands } from "@nora/shared/custom-shortcut-key/commands";
    ```
 
-3. **Type Safety**: TypeScript and io-ts provide compile-time and runtime type checking
+4. **Type Safety**: TypeScript and io-ts provide compile-time and runtime type checking
 
 ### For the Project
-1. **Maintainability**: Shared code is in a single, well-documented location
+1. **Maintainability**: Shared code is in a single, well-documented location under browser-features
 2. **Scalability**: Easy to add new shared modules following the established pattern
 3. **Build Integration**: Works seamlessly with Vite, Deno, and the existing build system
+4. **Accessibility**: Co-located with chrome and modules for easier discovery and modification
 
 ## Current Structure
 
 ```
-libs/shared/
+browser-features/shared/
 ├── custom-shortcut-key/     # Custom shortcut key functionality
 │   ├── commands.ts           # Command definitions and implementations
 │   ├── defines.ts            # Type definitions and io-ts codecs
@@ -133,4 +148,4 @@ The implementation has been verified by:
 
 ## Conclusion
 
-The shared code structure is now properly configured for both build-time and development-time resolution. Code editors can discover and navigate the shared code easily, making it convenient for developers to modify and maintain the shared functionality.
+The shared code is now located at `browser-features/shared/`, co-located with the chrome and modules features that use it. This makes it more accessible during active development and logically groups it with related code. The path resolution is properly configured for both build-time and development-time, enabling code editors to discover and navigate the shared code easily.

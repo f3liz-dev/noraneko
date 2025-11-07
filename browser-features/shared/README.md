@@ -60,12 +60,6 @@ The `@nora/shared` alias is configured in multiple locations for maximum compati
    "@nora/shared/": "./browser-features/shared/"
    ```
 
-3. **pnpm workspace** (`pnpm-workspace.yaml`):
-   ```yaml
-   packages:
-     - 'browser-features/*'
-   ```
-
 ## Adding New Shared Code
 
 1. Create a new directory under `browser-features/shared/` for your shared module

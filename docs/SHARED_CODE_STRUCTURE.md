@@ -17,21 +17,9 @@ Moved shared code from `libs/shared` to `browser-features/shared` because:
 - Keeping it under `browser-features/` makes it more accessible and logically grouped
 - When actively developed, it's easier to find alongside related code
 
-### 2. Monorepo Workspace Configuration
+### 2. Path Alias Configuration
 
-Created `pnpm-workspace.yaml` at the repository root:
-```yaml
-packages:
-  - 'libs/*'
-  - 'browser-features/*'
-  - 'bridge/*'
-```
-
-This establishes the project as a proper pnpm monorepo workspace. The `browser-features/*` pattern automatically includes `browser-features/shared`.
-
-### 3. Path Alias Configuration
-
-Added `@nora/shared` path alias in three locations for maximum compatibility:
+Added `@nora/shared` path alias in two locations for maximum compatibility:
 
 #### a. Vite Configuration
 In `browser-features/chrome/vite.config.ts`:
@@ -56,14 +44,14 @@ In both root `deno.json` and `browser-features/chrome/deno.json`:
 
 This enables Deno LSP to provide proper IDE support (autocomplete, go-to-definition, etc.).
 
-### 4. Code Modernization
+### 3. Code Modernization
 
 Updated the shared code to use consistent import patterns:
 - Removed `.ts` file extensions from imports (monorepo best practice)
 - Added comprehensive re-exports in `index.ts` for convenience
 - Migrated from Zod (`zCSKData`) to io-ts (`CSKDataCodec`) for consistency
 
-### 5. Documentation
+### 4. Documentation
 
 Created `browser-features/shared/README.md` with:
 - Directory structure explanation

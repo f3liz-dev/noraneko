@@ -1,4 +1,0 @@
-packages:
-  - 'libs/*'
-  - 'browser-features/*'
-  - 'bridge/*'

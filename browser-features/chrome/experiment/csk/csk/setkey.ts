@@ -9,7 +9,7 @@ import {
 import type { commands } from "@nora/shared/custom-shortcut-key/commands";
 import { checkIsSystemShortcut } from "@nora/shared/custom-shortcut-key/utils";
 import { pipe } from "fp-ts/function";
-import { getOrElse } from "fp-ts/Either";
+import { getOrElseW } from "fp-ts/Either";
 
 export const [editingStatus, setEditingStatus] = createSignal<string | null>(
   null,
@@ -37,7 +37,7 @@ export const [cskData, setCSKData] = createSignal<CSKData>(
         Services.prefs.getStringPref("floorp.browser.nora.csk.data", "{}"),
       ),
     ),
-    getOrElse(() => ({} as CSKData))
+    getOrElseW(() => ({} as CSKData))
   ),
 );
 

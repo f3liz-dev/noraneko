@@ -1,0 +1,136 @@
+# Shared Code Structure - Research Summary
+
+## Problem Statement
+The repository had shared code in `libs/shared` that needed to be accessible from both:
+- `browser-features/chrome` (UI/chrome features)
+- `browser-features/modules` (system modules)
+
+However, the path resolution and workspace configuration were not properly set up, making it difficult for code editors to find and navigate to the shared code.
+
+## Solution Implemented
+
+### 1. Monorepo Workspace Configuration
+
+Created `pnpm-workspace.yaml` at the repository root:
+```yaml
+packages:
+  - 'libs/*'
+  - 'browser-features/*'
+  - 'bridge/*'
+```
+
+This establishes the project as a proper pnpm monorepo workspace, allowing packages to be linked and resolved correctly.
+
+### 2. Path Alias Configuration
+
+Added `@nora/shared` path alias in three locations for maximum compatibility:
+
+#### a. Vite Configuration
+In `browser-features/chrome/vite.config.ts`:
+```typescript
+{
+  find: "@nora/shared",
+  replacement: r("../../libs/shared"),
+}
+```
+
+This allows Vite to resolve the `@nora/shared` imports during build and development.
+
+#### b. Deno Import Maps
+In both root `deno.json` and `browser-features/chrome/deno.json`:
+```json
+{
+  "imports": {
+    "@nora/shared/": "./libs/shared/"
+  }
+}
+```
+
+This enables Deno LSP to provide proper IDE support (autocomplete, go-to-definition, etc.).
+
+### 3. Code Modernization
+
+Updated the shared code to use consistent import patterns:
+- Removed `.ts` file extensions from imports (monorepo best practice)
+- Added comprehensive re-exports in `index.ts` for convenience
+- Migrated from Zod (`zCSKData`) to io-ts (`CSKDataCodec`) for consistency
+
+### 4. Documentation
+
+Created `libs/shared/README.md` with:
+- Directory structure explanation
+- Usage examples for both chrome and modules contexts
+- Path resolution details
+- Best practices for adding new shared code
+- Editor support information
+
+## Benefits
+
+### For Developers
+1. **IDE Support**: Code editors can now properly:
+   - Auto-complete `@nora/shared` imports
+   - Navigate to definitions with "Go to Definition"
+   - Show inline documentation and type hints
+   - Refactor across shared code
+
+2. **Consistent Imports**: Single import pattern works everywhere:
+   ```typescript
+   import { commands } from "@nora/shared/custom-shortcut-key/commands";
+   ```
+
+3. **Type Safety**: TypeScript and io-ts provide compile-time and runtime type checking
+
+### For the Project
+1. **Maintainability**: Shared code is in a single, well-documented location
+2. **Scalability**: Easy to add new shared modules following the established pattern
+3. **Build Integration**: Works seamlessly with Vite, Deno, and the existing build system
+
+## Current Structure
+
+```
+libs/shared/
+├── custom-shortcut-key/     # Custom shortcut key functionality
+│   ├── commands.ts           # Command definitions and implementations
+│   ├── defines.ts            # Type definitions and io-ts codecs
+│   ├── utils.ts              # Utility functions
+│   ├── i18n.ts               # Internationalization support
+│   └── index.ts              # Public API exports
+├── package.json              # Package metadata with dependencies
+├── deno.json                 # Deno configuration
+├── tsconfig.json             # TypeScript configuration
+└── README.md                 # Usage documentation
+```
+
+## Usage Example
+
+```typescript
+// In browser-features/chrome or browser-features/modules:
+import { 
+  commands, 
+  CSKData, 
+  checkIsSystemShortcut 
+} from "@nora/shared/custom-shortcut-key";
+
+// Or import from specific submodules:
+import { commands } from "@nora/shared/custom-shortcut-key/commands";
+import { CSKDataCodec } from "@nora/shared/custom-shortcut-key/defines";
+```
+
+## Testing
+
+The implementation has been verified by:
+1. ✅ Deno type checking resolves `@nora/shared` imports correctly
+2. ✅ No import resolution errors in the affected files
+3. ✅ Shared package dependencies (fp-ts, io-ts) are properly configured
+4. ✅ Re-exports in index.ts provide convenient import paths
+
+## Future Considerations
+
+1. **Add More Shared Modules**: Follow the `custom-shortcut-key` pattern for new shared code
+2. **Consider TypeScript Path Mapping**: For editors that don't use Deno LSP
+3. **Add Tests**: Consider adding unit tests for shared code modules
+4. **Document API**: Add JSDoc comments for better IntelliSense support
+
+## Conclusion
+
+The shared code structure is now properly configured for both build-time and development-time resolution. Code editors can discover and navigate the shared code easily, making it convenient for developers to modify and maintain the shared functionality.

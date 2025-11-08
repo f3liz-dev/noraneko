@@ -4,10 +4,12 @@ import { createEffect, createSignal } from "solid-js";
 import {
   type CSKCommands,
   type CSKData,
-  zCSKData,
+  CSKDataCodec,
 } from "@nora/shared/custom-shortcut-key/defines";
 import type { commands } from "@nora/shared/custom-shortcut-key/commands";
 import { checkIsSystemShortcut } from "@nora/shared/custom-shortcut-key/utils";
+import { pipe } from "fp-ts/function";
+import { getOrElseW } from "fp-ts/Either";
 
 export const [editingStatus, setEditingStatus] = createSignal<string | null>(
   null,
@@ -28,12 +30,14 @@ createEffect(() => {
   );
 });
 
-export const [cskData, setCSKData] = createSignal(
-  //TODO: safely catch
-  zCSKData.parse(
-    JSON.parse(
-      Services.prefs.getStringPref("floorp.browser.nora.csk.data", "{}"),
+export const [cskData, setCSKData] = createSignal<CSKData>(
+  pipe(
+    CSKDataCodec.decode(
+      JSON.parse(
+        Services.prefs.getStringPref("floorp.browser.nora.csk.data", "{}"),
+      ),
     ),
+    getOrElseW(() => ({} as CSKData))
   ),
 );
 

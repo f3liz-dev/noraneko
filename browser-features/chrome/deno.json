@@ -21,6 +21,7 @@
     "chroma-js": "npm:chroma-js@^3.1.2",
     "@types/chroma-js": "npm:@types/chroma-js@^3.1.2",
     "@types/gecko": "jsr:@types/gecko",
+    "@nora/shared/": "../shared/",
     "#features-chrome/": "./"
   },
   "compilerOptions": {

@@ -3687,7 +3687,7 @@
           "npm:vite@^7.1.4"
         ]
       },
-      "libs/shared": {
+      "browser-features/shared": {
         "dependencies": [
           "jsr:@types/gecko@*"
         ],

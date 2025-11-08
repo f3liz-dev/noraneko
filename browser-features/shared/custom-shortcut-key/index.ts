@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
-import { commands } from "./commands.ts";
-import { type CSKData, CSKCommandsCodec, CSKDataCodec } from "./defines.ts";
-import { checkIsSystemShortcut } from "./utils.ts";
+import { commands } from "./commands";
+import { type CSKData, CSKCommandsCodec, CSKDataCodec } from "./defines";
+import { checkIsSystemShortcut } from "./utils";
 import { pipe } from 'fp-ts/function';
 import { fold, getOrElseW } from 'fp-ts/Either';
 
@@ -105,3 +105,18 @@ export class CustomShortcutKey {
     });
   }
 }
+
+// Re-export public APIs for convenience
+export { commands } from "./commands";
+export { 
+  type CSKData, 
+  type CSKCommands,
+  type FloorpCSKData,
+  CSKDataCodec, 
+  CSKCommandsCodec,
+  FloorpCSKData as FloorpCSKDataCodec,
+  floorpCSKToNora,
+  keyCodesList 
+} from "./defines";
+export { checkIsSystemShortcut } from "./utils";
+export * from "./i18n";

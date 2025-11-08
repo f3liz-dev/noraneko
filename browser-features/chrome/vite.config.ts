@@ -145,6 +145,10 @@ export default defineConfig({
         find: "@nora/solid-xul",
         replacement: r("../../libs/solid-xul/index.ts"),
       },
+      {
+        find: "@nora/shared",
+        replacement: r("../shared"),
+      },
       { find: "@std/toml", replacement: "@jsr/std__toml" },
       { find: "#i18n", replacement: r("../../i18n") },
       { find: "#features-chrome", replacement: r(".") },

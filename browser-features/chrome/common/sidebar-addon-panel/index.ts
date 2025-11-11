@@ -11,7 +11,7 @@
  *
  * Architecture:
  * - sidebar module: Renders dock bar, exposes icon registration API
- * - sidebar-addon-panel module: Manages panel browsers, registers icons via sidebar RPC
+ * - sidebar-addon-panel module: Manages panel browsers, registers icons via sidebar EventDispatcher
  *
  * The separation allows:
  * - sidebar to be independent and reusable for other dock-like UIs
@@ -20,7 +20,7 @@
  */
 
 import { component } from "#features-chrome/utils/base";
-import type { RPCDependencies } from "../rpc-interfaces.ts";
+import type { EventDispatcherDependencies } from "../event-dispatcher-interfaces.ts";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import { onCleanup } from "solid-js";
@@ -41,8 +41,8 @@ import iconNotes from "./icons/notes.svg?url";
   hot: import.meta.hot,
 })
 export default class SidebarAddonPanel {
-  // Type-safe RPC access - Either handles both available and missing modules
-  protected rpc!: RPCDependencies<["sidebar"]>;
+  // Type-safe EventDispatcher access - Either handles both available and missing modules
+  protected events!: EventDispatcherDependencies<["sidebar"]>;
 
   private ctx: CPanelSidebar | null = null;
 
@@ -79,7 +79,7 @@ export default class SidebarAddonPanel {
     this.registerExampleSidebarIcons();
   }
 
-  // RPC methods that can be called by sidebar via registered callbacks
+  // Event methods that can be called by sidebar via registered callbacks
   private onPanelDataUpdate(data: any): void {
     // Handle panel data updates from sidebar core
     console.debug("SidebarAddonPanel: Received panel data update", data);
@@ -100,13 +100,13 @@ export default class SidebarAddonPanel {
   }
 
   // Example method that demonstrates registering sidebar icons
-  // Note: Function references work here because the RPC system in this codebase
-  // is not a traditional serialized RPC - it's a typed dependency injection system
+  // Note: Function references work here because the EventDispatcher system in this codebase
+  // is not a traditional serialized RPC - it's a typed event dispatching system
   // where all modules run in the same JavaScript context. The callbacks are
   // direct function references, not serialized over a boundary.
   private async registerExampleSidebarIcons(): Promise<void> {
-    // Register notes icon with callback (not birpcMethodName)
-    const notesResult = await this.rpc.sidebar.registerSidebarIcon({
+    // Register notes icon with callback
+    const notesResult = await this.events.sidebar.registerSidebarIcon({
       name: "notes",
       i18nName: "sidebar.notes.title",
       iconUrl: iconNotes,
@@ -122,7 +122,7 @@ export default class SidebarAddonPanel {
     );
 
     // Register bookmarks icon with callback
-    const bookmarksResult = await this.rpc.sidebar.registerSidebarIcon({
+    const bookmarksResult = await this.events.sidebar.registerSidebarIcon({
       name: "bookmarks",
       i18nName: "sidebar.bookmarks.title",
       iconUrl: "chrome://browser/skin/bookmark.svg",
@@ -138,10 +138,10 @@ export default class SidebarAddonPanel {
     );
 
     // Register callbacks for data updates and selection changes
-    const dataCallbackResult = await this.rpc.sidebar
+    const dataCallbackResult = await this.events.sidebar
       .registerDataUpdateCallback((data: any) => this.onPanelDataUpdate(data));
 
-    const selectionCallbackResult = await this.rpc.sidebar
+    const selectionCallbackResult = await this.events.sidebar
       .registerSelectionChangeCallback(
         (panelId: string) => this.onPanelSelectionChange(panelId),
       );
@@ -152,18 +152,18 @@ export default class SidebarAddonPanel {
   // Example callback methods that would be triggered by sidebar icon activation
   private onNotesIconActivated(): void {
     console.debug("SidebarAddonPanel: Notes icon was activated");
-    // Handle notes panel activation - this would be called via RPC from sidebar module
+    // Handle notes panel activation - this would be called via EventDispatcher from sidebar module
   }
 
   private onBookmarksIconActivated(): void {
     console.debug("SidebarAddonPanel: Bookmarks icon was activated");
-    // Handle bookmarks panel activation - this would be called via RPC from sidebar module
+    // Handle bookmarks panel activation - this would be called via EventDispatcher from sidebar module
   }
 
   // Example method to demonstrate icon click handling
   public async handleIconClick(iconName: string): Promise<void> {
     console.debug(`SidebarAddonPanel: Handling click for icon: ${iconName}`);
-    const result = await this.rpc.sidebar.onClicked(iconName);
+    const result = await this.events.sidebar.onClicked(iconName);
 
     // Handle the Either result
     pipe(

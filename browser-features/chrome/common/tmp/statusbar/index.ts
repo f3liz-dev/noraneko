@@ -4,12 +4,17 @@ import { render } from "@nora/solid-xul";
 import { ContextMenu } from "./context-menu";
 import { StatusBarElem } from "./statusbar";
 import { StatusBarManager } from "./statusbar-manager";
-import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
+import { component } from "#features-chrome/utils/base";
 
 export let manager: StatusBarManager;
 
-@noraComponent(import.meta.hot)
-export default class StatusBar extends NoraComponentBase {
+@component({
+  moduleName: "statusbar",
+  dependencies: [],
+  softDependencies: [],
+  hot: import.meta.hot,
+})
+export default class StatusBar {
   init() {
     manager = new StatusBarManager();
     render(StatusBarElem, document.body, {
@@ -26,7 +31,7 @@ export default class StatusBar extends NoraComponentBase {
       moduleName: "statusbar",
       dependencies: [],
       softDependencies: [],
-      rpcMethods: {},
+      eventMethods: {},
     } as const;
   }
 }

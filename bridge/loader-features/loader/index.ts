@@ -8,7 +8,7 @@ import {
   _registerModuleLoadState,
   _rejectOtherLoadStates,
 } from "./modules-hooks.ts";
-import { registerModuleRPC } from "./rpc-registry.ts";
+import { registerModuleEventDispatcher } from "./event-dispatcher-registry.ts";
 
 console.log("[noraneko] Initializing scripts...");
 
@@ -144,7 +144,7 @@ async function initializeModules(modules: LoadedModule[]) {
   // @ts-expect-error SessionStore type not defined
   await SessionStore.promiseInitialized;
 
-  // Initialize each module and register RPC after init
+  // Initialize each module and register EventDispatcher after init
   for (const module of sortedModules) {
     try {
       console.log("init " + module.name);
@@ -160,20 +160,20 @@ async function initializeModules(modules: LoadedModule[]) {
         instance = new module.default();
       }
 
-      // Register RPC methods after initialization
-      if (instance && typeof instance.rpcMethods === "function") {
+      // Register EventDispatcher methods after initialization
+      if (instance && typeof instance.eventMethods === "function") {
         try {
-          const rpcMethods = instance.rpcMethods();
+          const eventMethods = instance.eventMethods();
           console.log(module.metadata.moduleName);
-          console.log(rpcMethods);
-          registerModuleRPC(module.metadata.moduleName, rpcMethods);
+          console.log(eventMethods);
+          registerModuleEventDispatcher(module.metadata.moduleName, eventMethods);
 
           console.debug(
-            `[noraneko] Registered RPC methods for module ${module.metadata.moduleName}`,
+            `[noraneko] Registered EventDispatcher methods for module ${module.metadata.moduleName}`,
           );
         } catch (e) {
           console.error(
-            `[noraneko] Failed to register RPC methods for module ${module.metadata.moduleName}:`,
+            `[noraneko] Failed to register EventDispatcher methods for module ${module.metadata.moduleName}:`,
             e,
           );
         }

@@ -144,7 +144,7 @@ async function initializeModules(modules: LoadedModule[]) {
   // @ts-expect-error SessionStore type not defined
   await SessionStore.promiseInitialized;
 
-  // Initialize each module and register RPC after init
+  // Initialize each module and register EventDispatcher after init
   for (const module of sortedModules) {
     try {
       console.log("init " + module.name);

@@ -182,7 +182,7 @@ export default class Sidebar implements SidebarEventDispatcher {
     this.selectionChangeCallbacks.delete(callback);
   }
 
-  // Public RPC methods (exposed to other modules)
+  // Public event methods (exposed to other modules)
   @eventMethod
   notifyDataChanged(data: any): void {
     setPanelSidebarData(data);
@@ -214,7 +214,7 @@ export default class Sidebar implements SidebarEventDispatcher {
     }
   }
 
-  // Public RPC method to get registered icons
+  // Public event method to get registered icons
   @eventMethod
   getRegisteredIcons(): SidebarIconRegistration[] {
     return Array.from(this.registeredIcons.values());
@@ -226,7 +226,7 @@ declare global {
   interface FeatureModuleRegistry {
     Sidebar: typeof Sidebar;
   }
-  interface FeatureModuleRPCMethods {
-    sidebar: SidebarRPC;
+  interface FeatureModuleEventMethods {
+    sidebar: SidebarEventDispatcher;
   }
 }

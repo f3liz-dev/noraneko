@@ -138,10 +138,10 @@ export default class SidebarAddonPanel {
     );
 
     // Register callbacks for data updates and selection changes
-    const dataCallbackResult = await this.rpc.sidebar
+    const dataCallbackResult = await this.events.sidebar
       .registerDataUpdateCallback((data: any) => this.onPanelDataUpdate(data));
 
-    const selectionCallbackResult = await this.rpc.sidebar
+    const selectionCallbackResult = await this.events.sidebar
       .registerSelectionChangeCallback(
         (panelId: string) => this.onPanelSelectionChange(panelId),
       );
@@ -152,18 +152,18 @@ export default class SidebarAddonPanel {
   // Example callback methods that would be triggered by sidebar icon activation
   private onNotesIconActivated(): void {
     console.debug("SidebarAddonPanel: Notes icon was activated");
-    // Handle notes panel activation - this would be called via RPC from sidebar module
+    // Handle notes panel activation - this would be called via EventDispatcher from sidebar module
   }
 
   private onBookmarksIconActivated(): void {
     console.debug("SidebarAddonPanel: Bookmarks icon was activated");
-    // Handle bookmarks panel activation - this would be called via RPC from sidebar module
+    // Handle bookmarks panel activation - this would be called via EventDispatcher from sidebar module
   }
 
   // Example method to demonstrate icon click handling
   public async handleIconClick(iconName: string): Promise<void> {
     console.debug(`SidebarAddonPanel: Handling click for icon: ${iconName}`);
-    const result = await this.rpc.sidebar.onClicked(iconName);
+    const result = await this.events.sidebar.onClicked(iconName);
 
     // Handle the Either result
     pipe(

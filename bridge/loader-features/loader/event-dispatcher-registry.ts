@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-import * as E from "fp-ts/Either";
+import * as E from "fp-ts/lib/Either.js";
 
 /**
  * EventDispatcher Registry

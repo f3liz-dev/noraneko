@@ -7,21 +7,21 @@
  * Sidebar Module
  *
  * This module provides an independent dock bar that can be used to register icons.
- * It exposes a registration API via RPC that other modules can use.
+ * It exposes a registration API via EventDispatcher that other modules can use.
  *
  * Key Features:
  * - Renders a vertical dock bar with icons
- * - Provides RPC methods for icon registration
+ * - Provides event methods for icon registration
  * - Manages icon click callbacks
  * - Does not depend on other feature modules
  *
  * Architecture:
  * - This module is independent and can be used by any other module
- * - Other modules (like sidebar-addon-panel) use RPC to register icons
+ * - Other modules (like sidebar-addon-panel) use EventDispatcher to register icons
  * - When icons are clicked, registered callbacks are invoked
  */
 
-import { component, rpcMethod } from "#features-chrome/utils/base.ts";
+import { component, eventMethod } from "#features-chrome/utils/base.ts";
 import { createSignal, onCleanup } from "solid-js";
 
 import {
@@ -42,8 +42,8 @@ export interface SidebarIconRegistration {
   callback: () => void | Promise<void>;
 }
 
-// 1. Define RPC interface
-export interface SidebarRPC {
+// 1. Define EventDispatcher interface
+export interface SidebarEventDispatcher {
   notifyDataChanged(data: any): void;
   notifyConfigChanged(config: any): void;
   selectPanel(panelId: string): void;
@@ -65,9 +65,9 @@ export interface SidebarRPC {
   moduleName: "sidebar",
   hot: import.meta.hot,
 })
-export default class Sidebar implements SidebarRPC {
+export default class Sidebar implements SidebarEventDispatcher {
   protected logger!: ConsoleInstance;
-  protected rpc!: any;
+  protected events!: any;
 
   private registeredIcons: Map<string, SidebarIconRegistration> = new Map();
   private dataUpdateCallbacks: Set<(data: any) => void> = new Set();
@@ -77,7 +77,7 @@ export default class Sidebar implements SidebarRPC {
 
   init(): void {
     console.log("init sidebar!");
-    console.log(this.rpcMethods());
+    console.log(this.eventMethods());
     // Create signal for icons
     const [getIcons, setIcons] = createSignal<SidebarIconRegistration[]>([]);
     this.getIcons = getIcons;
@@ -125,8 +125,8 @@ export default class Sidebar implements SidebarRPC {
     }
   }
 
-  // Public RPC methods for registration (exposed to other modules)
-  @rpcMethod
+  // Public event methods for registration (exposed to other modules)
+  @eventMethod
   registerSidebarIcon(options: SidebarIconRegistration): void {
     this.registeredIcons.set(options.name, options);
     // Update the signal to trigger UI update
@@ -134,7 +134,7 @@ export default class Sidebar implements SidebarRPC {
     this.logger.debug(`Registered icon ${options.name} with callback`);
   }
 
-  @rpcMethod
+  @eventMethod
   async onClicked(iconName: string): Promise<void> {
     const iconRegistration = this.registeredIcons.get(iconName);
     if (iconRegistration?.callback) {
@@ -152,7 +152,7 @@ export default class Sidebar implements SidebarRPC {
     }
   }
 
-  @rpcMethod
+  @eventMethod
   registerDataUpdateCallback(
     callback: (data: any) => void,
   ): void {
@@ -160,7 +160,7 @@ export default class Sidebar implements SidebarRPC {
     this.logger.debug("Registered data update callback");
   }
 
-  @rpcMethod
+  @eventMethod
   registerSelectionChangeCallback(
     callback: (panelId: string) => void,
   ): void {
@@ -168,14 +168,14 @@ export default class Sidebar implements SidebarRPC {
     this.logger.debug("Registered selection change callback");
   }
 
-  @rpcMethod
+  @eventMethod
   unregisterDataUpdateCallback(
     callback: (data: any) => void,
   ): void {
     this.dataUpdateCallbacks.delete(callback);
   }
 
-  @rpcMethod
+  @eventMethod
   unregisterSelectionChangeCallback(
     callback: (panelId: string) => void,
   ): void {
@@ -183,7 +183,7 @@ export default class Sidebar implements SidebarRPC {
   }
 
   // Public RPC methods (exposed to other modules)
-  @rpcMethod
+  @eventMethod
   notifyDataChanged(data: any): void {
     setPanelSidebarData(data);
 
@@ -196,12 +196,12 @@ export default class Sidebar implements SidebarRPC {
     }
   }
 
-  @rpcMethod
+  @eventMethod
   notifyConfigChanged(config: any): void {
     setPanelSidebarConfig(config);
   }
 
-  @rpcMethod
+  @eventMethod
   selectPanel(panelId: string): void {
     setSelectedPanelId(panelId);
 
@@ -215,7 +215,7 @@ export default class Sidebar implements SidebarRPC {
   }
 
   // Public RPC method to get registered icons
-  @rpcMethod
+  @eventMethod
   getRegisteredIcons(): SidebarIconRegistration[] {
     return Array.from(this.registeredIcons.values());
   }

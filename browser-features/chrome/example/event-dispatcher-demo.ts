@@ -1,19 +1,26 @@
 // SPDX-License-Identifier: MPL-2.0
-// This file demonstrates the simplified RPC system with automatic type inference
+// This file demonstrates the EventDispatcher system with automatic type inference
 
-import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
-import type { RPCDependencies } from "#features-chrome/common/rpc-interfaces.ts";
+import { component } from "#features-chrome/utils/base";
+import type { EventDispatcherDependencies } from "#features-chrome/common/event-dispatcher-interfaces.ts";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 
 /**
  * Example Module A - Provider
- * Exposes RPC methods with automatic type inference
+ * Exposes event methods with automatic type inference
+ * 
+ * Note: Payloads don't need to be serializable as everything runs in one process.
  */
-@noraComponent(import.meta.hot)
-export class ModuleA extends NoraComponentBase {
+@component({
+  moduleName: "module-a",
+  dependencies: [],
+  softDependencies: [],
+  hot: import.meta.hot,
+})
+export class ModuleA {
   // No dependencies
-  protected rpc!: RPCDependencies<[]>;
+  protected events!: EventDispatcherDependencies<[]>;
 
   private data = "initial value";
 
@@ -26,7 +33,7 @@ export class ModuleA extends NoraComponentBase {
       moduleName: "module-a",
       dependencies: [],
       softDependencies: [],
-      rpcMethods: {
+      eventMethods: {
         getData: () => this.getData(),
         setData: (value: string) => this.setData(value),
         performAction: (action: string) => this.performAction(action),
@@ -51,26 +58,24 @@ export class ModuleA extends NoraComponentBase {
   }
 }
 
-// Register in global registry for automatic type inference
-//declare global {
-//  interface FeatureModuleRegistry {
-//    ModuleA: typeof ModuleA;
-//  }
-//}
-
 /**
  * Example Module B - Consumer
- * Uses simplified RPC with Either for error handling
+ * Uses EventDispatcher with Either for error handling
  */
-@noraComponent(import.meta.hot)
-export class ModuleB extends NoraComponentBase {
+@component({
+  moduleName: "module-b",
+  dependencies: [],
+  softDependencies: ["module-a"],
+  hot: import.meta.hot,
+})
+export class ModuleB {
   // Simplified: no distinction between hard and soft dependencies
   // Either handles both available and missing modules
-  protected rpc!: RPCDependencies<["module-a"]>;
+  protected events!: EventDispatcherDependencies<["module-a"]>;
 
   init() {
     console.log("ModuleB initialized");
-    this.demonstrateRPCCalls();
+    this.demonstrateEventDispatcherCalls();
   }
 
   _metadata() {
@@ -78,19 +83,19 @@ export class ModuleB extends NoraComponentBase {
       moduleName: "module-b",
       dependencies: [],
       softDependencies: ["module-a"],
-      rpcMethods: {
+      eventMethods: {
         notifyModuleB: (message: string) => this.notifyModuleB(message),
       },
     } as const;
   }
 
-  private async demonstrateRPCCalls() {
-    console.log("=== Simplified RPC with Either ===");
+  private async demonstrateEventDispatcherCalls() {
+    console.log("=== EventDispatcher with Either ===");
 
     // All calls return Either<Error, T | undefined>
     // No distinction needed - Either handles everything!
 
-    const dataResult = await this.rpc["module-a"].getData();
+    const dataResult = await this.events["module-a"].getData();
 
     pipe(
       dataResult,
@@ -107,7 +112,7 @@ export class ModuleB extends NoraComponentBase {
     );
 
     // All the same pattern - clean and simple!
-    const setResult = await this.rpc["module-a"].setData("new value");
+    const setResult = await this.events["module-a"].setData("new value");
     pipe(
       setResult,
       E.fold(
@@ -116,7 +121,7 @@ export class ModuleB extends NoraComponentBase {
       ),
     );
 
-    const actionResult = await this.rpc["module-a"].performAction("test");
+    const actionResult = await this.events["module-a"].performAction("test");
     pipe(
       actionResult,
       E.fold(
@@ -131,26 +136,21 @@ export class ModuleB extends NoraComponentBase {
   }
 }
 
-// Register in global registry
-//declare global {
-//  interface FeatureModuleRegistry {
-//    ModuleB: typeof ModuleB;
-//  }
-//}
-
 /**
- * Benefits of Simplified RPC:
+ * Benefits of EventDispatcher:
  *
- * 1. ✅ **Real RPC Instances**: Direct access to birpc, not proxies
- * 2. ✅ **Single Type**: RPCDependencies for all - Either handles availability
- * 3. ✅ **Clean API**: Only this.rpc pattern, all helpers removed
+ * 1. ✅ **Real EventDispatcher Instances**: Direct access, not proxies
+ * 2. ✅ **Single Type**: EventDispatcherDependencies for all - Either handles availability
+ * 3. ✅ **Clean API**: Only this.events pattern, all helpers removed
  * 4. ✅ **Error Safety**: Either<Error, T | undefined> for all cases
- * 5. ✅ **Type Inference**: Types extracted from rpcMethods automatically
+ * 5. ✅ **Type Inference**: Types extracted from eventMethods automatically
  * 6. ✅ **Simple**: No complex proxy chains, no hard/soft distinction
+ * 7. ✅ **No Serialization**: Payloads don't need to be serializable - everything runs in one process
+ * 8. ✅ **Event-Based**: Better reflects the actual usage pattern than "RPC"
  *
  * Usage:
- * 1. Define rpcMethods in _metadata()
+ * 1. Define eventMethods in _metadata()
  * 2. Register module in FeatureModuleRegistry
- * 3. Use this.rpc.moduleName.method()
+ * 3. Use this.events.moduleName.method()
  * 4. Handle result with Either fold
  */

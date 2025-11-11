@@ -8,7 +8,7 @@ type ExtractModuleName<T> = T extends {
 
 declare global {
   interface FeatureModuleRegistry {}
-  interface FeatureModuleRPCMethods {}
+  interface FeatureModuleEventMethods {}
 }
 
 type AllFeatureClasses = FeatureModuleRegistry[keyof FeatureModuleRegistry];
@@ -17,10 +17,10 @@ type FeatureModuleClassMap = {
   [K in AllFeatureClasses as ExtractModuleName<K>]: K;
 };
 
-// Use the global RPC methods interface directly
-type FeatureRpcMethods = FeatureModuleRPCMethods;
+// Use the global event methods interface directly
+type FeatureEventMethods = FeatureModuleEventMethods;
 
-type RPCMethodsToEither<T> = {
+type EventMethodsToEither<T> = {
   [K in keyof T]: T[K] extends (...args: infer Args) => infer Ret
     ? Ret extends Promise<infer AsyncRet>
       ? (...args: Args) => Promise<E.Either<Error, AsyncRet>>
@@ -28,7 +28,7 @@ type RPCMethodsToEither<T> = {
     : never;
 };
 
-type RPCMethodsToSoftEither<T> = {
+type EventMethodsToSoftEither<T> = {
   [K in keyof T]: T[K] extends (...args: infer Args) => infer Ret
     ? Ret extends Promise<infer AsyncRet>
       ? (...args: Args) => Promise<E.Either<Error, AsyncRet | undefined>>
@@ -36,17 +36,17 @@ type RPCMethodsToSoftEither<T> = {
     : never;
 };
 
-export type InferredRPCDependencies<
-  TDeps extends readonly (keyof FeatureRpcMethods)[],
-  TSoftDeps extends readonly (keyof FeatureRpcMethods)[],
+export type InferredEventDispatcherDependencies<
+  TDeps extends readonly (keyof FeatureEventMethods)[],
+  TSoftDeps extends readonly (keyof FeatureEventMethods)[],
 > = {
-  [K in TDeps[number]]: RPCMethodsToEither<FeatureRpcMethods[K]>;
+  [K in TDeps[number]]: EventMethodsToEither<FeatureEventMethods[K]>;
 } & {
-  [K in TSoftDeps[number]]: RPCMethodsToSoftEither<FeatureRpcMethods[K]>;
+  [K in TSoftDeps[number]]: EventMethodsToSoftEither<FeatureEventMethods[K]>;
 };
 
-export type ModuleRPCType<TModuleName extends keyof FeatureRpcMethods> =
-  RPCMethodsToEither<FeatureRpcMethods[TModuleName]>;
+export type ModuleEventDispatcherType<TModuleName extends keyof FeatureEventMethods> =
+  EventMethodsToEither<FeatureEventMethods[TModuleName]>;
 
-export type SoftModuleRPCType<TModuleName extends keyof FeatureRpcMethods> =
-  RPCMethodsToSoftEither<FeatureRpcMethods[TModuleName]>;
+export type SoftModuleEventDispatcherType<TModuleName extends keyof FeatureEventMethods> =
+  EventMethodsToSoftEither<FeatureEventMethods[TModuleName]>;

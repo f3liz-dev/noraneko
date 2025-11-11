@@ -3,36 +3,39 @@
 import * as E from "fp-ts/Either";
 
 /**
- * Simplified RPC Registry
- * Provides real RPC instances to modules via this.rpc
+ * EventDispatcher Registry
+ * Provides event dispatcher instances to modules via this.events
  * All methods return Either<Error, T> for error safety
+ * 
+ * Note: Payloads don't need to be serializable as everything runs in one process.
+ * This is an event dispatching system, not traditional RPC.
  */
-class RPCRegistry {
-  private static instance: RPCRegistry | null = null;
+class EventDispatcherRegistry {
+  private static instance: EventDispatcherRegistry | null = null;
   
-  // Map of module name to their RPC instances
+  // Map of module name to their event dispatcher instances
   private modules: Map<string, any> = new Map();
 
   private constructor() {}
 
-  static getInstance(): RPCRegistry {
-    if (!RPCRegistry.instance) {
-      RPCRegistry.instance = new RPCRegistry();
+  static getInstance(): EventDispatcherRegistry {
+    if (!EventDispatcherRegistry.instance) {
+      EventDispatcherRegistry.instance = new EventDispatcherRegistry();
     }
-    return RPCRegistry.instance;
+    return EventDispatcherRegistry.instance;
   }
 
   /**
-   * Register a module's RPC interface
+   * Register a module's event dispatcher interface
    * @param moduleName - Name of the module
-   * @param functions - Object containing the module's RPC functions
+   * @param functions - Object containing the module's event handler functions
    */
   registerModule<T extends Record<string, any>>(
     moduleName: string,
     functions: T
   ): void {
     if (this.modules.has(moduleName)) {
-      console.warn(`[RPC] Module ${moduleName} is already registered, replacing...`);
+      console.warn(`[EventDispatcher] Module ${moduleName} is already registered, replacing...`);
     }
 
     // Wrap all functions with Either for error safety
@@ -51,25 +54,25 @@ class RPCRegistry {
     }
 
     this.modules.set(moduleName, wrappedFunctions);
-    console.debug(`[RPC] Registered module: ${moduleName}`);
+    console.debug(`[EventDispatcher] Registered module: ${moduleName}`);
   }
 
   /**
-   * Unregister a module's RPC interface
+   * Unregister a module's event dispatcher interface
    * @param moduleName - Name of the module to unregister
    */
   unregisterModule(moduleName: string): void {
     this.modules.delete(moduleName);
-    console.debug(`[RPC] Unregistered module: ${moduleName}`);
+    console.debug(`[EventDispatcher] Unregistered module: ${moduleName}`);
   }
 
   /**
-   * Get the RPC instance for a module
-   * Returns the actual RPC functions, or a soft proxy for missing modules
+   * Get the event dispatcher instance for a module
+   * Returns the actual event handler functions, or a soft proxy for missing modules
    * @param moduleName - Name of the module
-   * @returns The RPC instance with Either-wrapped methods
+   * @returns The event dispatcher instance with Either-wrapped methods
    */
-  getRPCInstance(moduleName: string): any {
+  getEventDispatcherInstance(moduleName: string): any {
     const instance = this.modules.get(moduleName);
     if (instance) {
       return instance;
@@ -94,44 +97,44 @@ class RPCRegistry {
 }
 
 // Export singleton instance
-export const rpcRegistry = RPCRegistry.getInstance();
+export const eventDispatcherRegistry = EventDispatcherRegistry.getInstance();
 
-// Export only the functions needed for this.rpc pattern
-export function registerModuleRPC<T extends Record<string, any>>(
+// Export only the functions needed for this.events pattern
+export function registerModuleEventDispatcher<T extends Record<string, any>>(
   moduleName: string,
   functions: T
 ): void {
-  rpcRegistry.registerModule(moduleName, functions);
+  eventDispatcherRegistry.registerModule(moduleName, functions);
 }
 
-export function unregisterModuleRPC(moduleName: string): void {
-  rpcRegistry.unregisterModule(moduleName);
+export function unregisterModuleEventDispatcher(moduleName: string): void {
+  eventDispatcherRegistry.unregisterModule(moduleName);
 }
 
 export function isModuleRegistered(moduleName: string): boolean {
-  return rpcRegistry.isModuleRegistered(moduleName);
+  return eventDispatcherRegistry.isModuleRegistered(moduleName);
 }
 
 /**
- * Create a typed RPC object for module dependencies
- * Returns real RPC instances with Either-wrapped methods
+ * Create a typed event dispatcher object for module dependencies
+ * Returns real event dispatcher instances with Either-wrapped methods
  * All dependencies (both hard and soft) handled the same way with Either
  * @param dependencies - Array of all dependency module names
- * @returns Object with RPC instances for each dependency
+ * @returns Object with event dispatcher instances for each dependency
  */
-export function createDependencyRPCProxies<T extends Record<string, any>>(
+export function createDependencyEventDispatchers<T extends Record<string, any>>(
   dependencies: string[]
 ): T {
-  const rpcObject: any = {};
+  const eventsObject: any = {};
   
   // Add all dependencies - Either handles both available and missing modules
   for (const dep of dependencies) {
-    Object.defineProperty(rpcObject, dep, {
-      get: () => rpcRegistry.getRPCInstance(dep),
+    Object.defineProperty(eventsObject, dep, {
+      get: () => eventDispatcherRegistry.getEventDispatcherInstance(dep),
       enumerable: true,
       configurable: false,
     });
   }
   
-  return rpcObject as T;
+  return eventsObject as T;
 }

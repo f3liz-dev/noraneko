@@ -1,50 +1,50 @@
 // Example demonstrating how to get class names from method decorators
 // This example shows the exact use case from the problem statement
 
-const _rpcMethods = new Map<string, Set<string | symbol>>();
+const _eventMethods = new Map<string, Set<string | symbol>>();
 
 /**
- * RPC method decorator that tracks which methods are RPC-enabled
+ * Event method decorator that tracks which methods are event-enabled
  * Now works correctly for both instance and static methods
  */
-export function rpcMethod(_: Function, context: ClassMethodDecoratorContext) {
+export function eventMethod(_: Function, context: ClassMethodDecoratorContext) {
   context.addInitializer(function () {
     // This initializer may be called with 'this' as the class (static)
     // or 'this' as the prototype (instance). We need the class name in both cases.
     const className =
       typeof this === "function" ? this.name : this.constructor.name;
 
-    console.log("rpcMethodDecorator");
+    console.log("eventMethodDecorator");
 
     if (!className) {
       console.error(
-        "RPCMethod: Could not determine class name for decorator on method:",
+        "EventMethod: Could not determine class name for decorator on method:",
         context.name,
       );
       return;
     }
-    console.log(`Registered RPC method: ${className}.${String(context.name)}`);
+    console.log(`Registered event method: ${className}.${String(context.name)}`);
 
-    if (!_rpcMethods.has(className)) _rpcMethods.set(className, new Set());
-    _rpcMethods.get(className)!.add(context.name);
+    if (!_eventMethods.has(className)) _eventMethods.set(className, new Set());
+    _eventMethods.get(className)!.add(context.name);
   });
 }
 
 /**
- * Example class with RPC methods
+ * Example class with event methods
  */
 class UserService {
-  @rpcMethod
+  @eventMethod
   getUser(id: number) {
     return { id, name: "John Doe" };
   }
 
-  @rpcMethod
+  @eventMethod
   updateUser(id: number, data: any) {
     return { id, ...data };
   }
 
-  @rpcMethod
+  @eventMethod
   static getUserCount() {
     return 42;
   }
@@ -67,12 +67,12 @@ function withLogging<T extends { new (...args: any[]): {} }>(constructor: T) {
  */
 @withLogging
 class OrderService {
-  @rpcMethod
+  @eventMethod
   getOrder(id: number) {
     return { id, status: "shipped" };
   }
 
-  @rpcMethod
+  @eventMethod
   static getOrderCount() {
     return 200;
   }
@@ -82,21 +82,21 @@ class OrderService {
  * Another example class to show it works for multiple classes
  */
 class ProductService {
-  @rpcMethod
+  @eventMethod
   getProduct(id: number) {
     return { id, name: "Product" };
   }
 
-  @rpcMethod
+  @eventMethod
   static getProductCount() {
     return 100;
   }
 }
 
 // Usage demonstration
-export function demonstrateRPCMethods() {
+export function demonstrateEventMethods() {
   console.log('='.repeat(80));
-  console.log('🎯 RPC Method Decorator Demo');
+  console.log('🎯 Event Method Decorator Demo');
   console.log('='.repeat(80));
   console.log();
 
@@ -113,9 +113,9 @@ export function demonstrateRPCMethods() {
   const productService = new ProductService();
   console.log();
 
-  // Display registered RPC methods
-  console.log('📋 Registered RPC Methods:');
-  for (const [className, methods] of _rpcMethods) {
+  // Display registered event methods
+  console.log('📋 Registered Event Methods:');
+  for (const [className, methods] of _eventMethods) {
     console.log(`  ${className}:`);
     for (const method of methods) {
       console.log(`    - ${String(method)}`);
@@ -129,11 +129,11 @@ export function demonstrateRPCMethods() {
 }
 
 // Export the registry for inspection
-export { _rpcMethods };
+export { _eventMethods };
 
 // Run demo automatically in browser context
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
-    demonstrateRPCMethods();
+    demonstrateEventMethods();
   });
 }

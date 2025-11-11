@@ -76,10 +76,10 @@ export function _rejectOtherLoadStates() {
   return ModuleLib.getInstance()._rejectOtherLoadStates();
 }
 
-// Re-export RPC registry functions for convenient access
+// Re-export EventDispatcher registry functions for convenient access
 export {
-  registerModuleRPC,
-  unregisterModuleRPC,
+  registerModuleEventDispatcher,
+  unregisterModuleEventDispatcher,
   isModuleRegistered,
-  createDependencyRPCProxies,
-} from "./rpc-registry.ts";
+  createDependencyEventDispatchers,
+} from "./event-dispatcher-registry.ts";

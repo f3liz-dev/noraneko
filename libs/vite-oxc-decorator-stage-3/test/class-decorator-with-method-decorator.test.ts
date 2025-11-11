@@ -20,7 +20,7 @@ describe('Class Decorator Replacement with Method Decorator', () => {
     return result.code;
   }
 
-  async function transformAndEvaluate(code: string, vars: string[] = ['_rpcMethods', 'service']): Promise<any> {
+  async function transformAndEvaluate(code: string, vars: string[] = ['_eventMethods', 'service']): Promise<any> {
     const transformed = await transformCode(code);
     
     // Create a function that evaluates the transformed code and returns the result
@@ -44,22 +44,22 @@ describe('Class Decorator Replacement with Method Decorator', () => {
 
   it('should preserve class name when class decorator returns extended class', async () => {
     const input = `
-      const _rpcMethods = new Map();
+      const _eventMethods = new Map();
 
-      function rpcMethod(_value, context) {
+      function eventMethod(_value, context) {
         context.addInitializer(function () {
           const className = context.static ? this.name : this.constructor.name;
 
           if (!className) {
             console.error(
-              "RPCMethod: Could not determine class name for decorator on method:",
+              "EventMethod: Could not determine class name for decorator on method:",
               context.name,
             );
             return;
           }
 
-          if (!_rpcMethods.has(className)) _rpcMethods.set(className, new Set());
-          _rpcMethods.get(className).add(context.name);
+          if (!_eventMethods.has(className)) _eventMethods.set(className, new Set());
+          _eventMethods.get(className).add(context.name);
         });
       }
 
@@ -71,12 +71,12 @@ describe('Class Decorator Replacement with Method Decorator', () => {
 
       @classDecorator
       class UserService {
-        @rpcMethod
+        @eventMethod
         getUser(id) {
           return { id, name: "John" };
         }
 
-        @rpcMethod
+        @eventMethod
         static getUserCount() {
           return 42;
         }
@@ -85,13 +85,13 @@ describe('Class Decorator Replacement with Method Decorator', () => {
       const service = new UserService();
     `;
 
-    const result = await transformAndEvaluate(input, ['_rpcMethods', 'UserService', 'service']);
+    const result = await transformAndEvaluate(input, ['_eventMethods', 'UserService', 'service']);
     
     // Verify that the class name was correctly identified
-    expect(result._rpcMethods.has("UserService")).toBe(true);
+    expect(result._eventMethods.has("UserService")).toBe(true);
     
     // Verify that both methods were registered
-    const methods = result._rpcMethods.get("UserService");
+    const methods = result._eventMethods.get("UserService");
     expect(methods.has("getUser")).toBe(true);
     expect(methods.has("getUserCount")).toBe(true);
     
@@ -105,14 +105,14 @@ describe('Class Decorator Replacement with Method Decorator', () => {
 
   it('should work with multiple class decorators that return extended classes', async () => {
     const input = `
-      const _rpcMethods = new Map();
+      const _eventMethods = new Map();
 
-      function rpcMethod(_value, context) {
+      function eventMethod(_value, context) {
         context.addInitializer(function () {
           const className = context.static ? this.name : this.constructor.name;
           if (!className) return;
-          if (!_rpcMethods.has(className)) _rpcMethods.set(className, new Set());
-          _rpcMethods.get(className).add(context.name);
+          if (!_eventMethods.has(className)) _eventMethods.set(className, new Set());
+          _eventMethods.get(className).add(context.name);
         });
       }
 
@@ -131,37 +131,37 @@ describe('Class Decorator Replacement with Method Decorator', () => {
       @decorator1
       @decorator2
       class TestClass {
-        @rpcMethod
+        @eventMethod
         method1() {}
 
-        @rpcMethod
+        @eventMethod
         static method2() {}
       }
 
       const service = new TestClass();
     `;
 
-    const result = await transformAndEvaluate(input, ['_rpcMethods', 'TestClass', 'service']);
+    const result = await transformAndEvaluate(input, ['_eventMethods', 'TestClass', 'service']);
     
     // Verify that the class name was correctly identified
-    expect(result._rpcMethods.has("TestClass")).toBe(true);
+    expect(result._eventMethods.has("TestClass")).toBe(true);
     
     // Verify that both methods were registered
-    const methods = result._rpcMethods.get("TestClass");
+    const methods = result._eventMethods.get("TestClass");
     expect(methods.has("method1")).toBe(true);
     expect(methods.has("method2")).toBe(true);
   });
 
   it('should preserve class name with class decorator that modifies but does not extend', async () => {
     const input = `
-      const _rpcMethods = new Map();
+      const _eventMethods = new Map();
 
-      function rpcMethod(_value, context) {
+      function eventMethod(_value, context) {
         context.addInitializer(function () {
           const className = context.static ? this.name : this.constructor.name;
           if (!className) return;
-          if (!_rpcMethods.has(className)) _rpcMethods.set(className, new Set());
-          _rpcMethods.get(className).add(context.name);
+          if (!_eventMethods.has(className)) _eventMethods.set(className, new Set());
+          _eventMethods.get(className).add(context.name);
         });
       }
 
@@ -172,30 +172,30 @@ describe('Class Decorator Replacement with Method Decorator', () => {
 
       @addProperty
       class MyClass {
-        @rpcMethod
+        @eventMethod
         myMethod() {}
       }
 
       const service = new MyClass();
     `;
 
-    const result = await transformAndEvaluate(input, ['_rpcMethods', 'MyClass', 'service']);
+    const result = await transformAndEvaluate(input, ['_eventMethods', 'MyClass', 'service']);
     
     // Verify that the class name was correctly identified
-    expect(result._rpcMethods.has("MyClass")).toBe(true);
-    expect(result._rpcMethods.get("MyClass").has("myMethod")).toBe(true);
+    expect(result._eventMethods.has("MyClass")).toBe(true);
+    expect(result._eventMethods.get("MyClass").has("myMethod")).toBe(true);
   });
 
   it('should work correctly when class decorator returns undefined', async () => {
     const input = `
-      const _rpcMethods = new Map();
+      const _eventMethods = new Map();
 
-      function rpcMethod(_value, context) {
+      function eventMethod(_value, context) {
         context.addInitializer(function () {
           const className = context.static ? this.name : this.constructor.name;
           if (!className) return;
-          if (!_rpcMethods.has(className)) _rpcMethods.set(className, new Set());
-          _rpcMethods.get(className).add(context.name);
+          if (!_eventMethods.has(className)) _eventMethods.set(className, new Set());
+          _eventMethods.get(className).add(context.name);
         });
       }
 
@@ -205,17 +205,17 @@ describe('Class Decorator Replacement with Method Decorator', () => {
 
       @noOpDecorator
       class SimpleClass {
-        @rpcMethod
+        @eventMethod
         simpleMethod() {}
       }
 
       const service = new SimpleClass();
     `;
 
-    const result = await transformAndEvaluate(input, ['_rpcMethods', 'SimpleClass', 'service']);
+    const result = await transformAndEvaluate(input, ['_eventMethods', 'SimpleClass', 'service']);
     
     // Verify that the class name was correctly identified
-    expect(result._rpcMethods.has("SimpleClass")).toBe(true);
-    expect(result._rpcMethods.get("SimpleClass").has("simpleMethod")).toBe(true);
+    expect(result._eventMethods.has("SimpleClass")).toBe(true);
+    expect(result._eventMethods.get("SimpleClass").has("simpleMethod")).toBe(true);
   });
 });

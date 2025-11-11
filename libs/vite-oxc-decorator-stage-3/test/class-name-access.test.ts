@@ -20,7 +20,7 @@ describe('Class Name Access in Method Decorator', () => {
     // Create a function that evaluates the transformed code and returns the result
     const evalFunc = new Function('console', `
       ${transformed}
-      return { _rpcMethods, TestClass, TestClass2, instance, result };
+      return { _eventMethods, TestClass, TestClass2, instance, result };
     `);
     
     // Mock console for capturing logs
@@ -37,42 +37,42 @@ describe('Class Name Access in Method Decorator', () => {
 
   it('should allow accessing class name from instance method decorator addInitializer', async () => {
     const input = `
-      const _rpcMethods = new Map();
+      const _eventMethods = new Map();
 
-      function rpcMethod(_, context) {
+      function eventMethod(_, context) {
         context.addInitializer(function () {
           const className =
             typeof this === "function" ? this.name : this.constructor.name;
 
           if (!className) {
             console.error(
-              "RPCMethod: Could not determine class name for decorator on method:",
+              "EventMethod: Could not determine class name for decorator on method:",
               context.name,
             );
             return;
           }
 
-          if (!_rpcMethods.has(className)) _rpcMethods.set(className, new Set());
-          _rpcMethods.get(className).add(context.name);
+          if (!_eventMethods.has(className)) _eventMethods.set(className, new Set());
+          _eventMethods.get(className).add(context.name);
         });
       }
 
       class TestClass {
-        @rpcMethod
+        @eventMethod
         testMethod() {
           return "test";
         }
       }
 
       const instance = new TestClass();
-      const result = _rpcMethods.has("TestClass") && _rpcMethods.get("TestClass").has("testMethod");
+      const result = _eventMethods.has("TestClass") && _eventMethods.get("TestClass").has("testMethod");
     `;
 
     const output = await transformCode(input);
     expect(output).toBeTruthy();
-    expect(output).toContain('function rpcMethod');
+    expect(output).toContain('function eventMethod');
     expect(output).toContain('static {');
-    expect(output).not.toContain('@rpcMethod');
+    expect(output).not.toContain('@eventMethod');
     
     // The transformation should include the initializer wrapper with isStatic flag
     expect(output).toContain('_initProto');
@@ -80,41 +80,41 @@ describe('Class Name Access in Method Decorator', () => {
 
   it('should allow accessing class name from static method decorator addInitializer', async () => {
     const input = `
-      const _rpcMethods = new Map();
+      const _eventMethods = new Map();
 
-      function rpcMethod(_, context) {
+      function eventMethod(_, context) {
         context.addInitializer(function () {
           const className =
             typeof this === "function" ? this.name : this.constructor.name;
 
           if (!className) {
             console.error(
-              "RPCMethod: Could not determine class name for decorator on method:",
+              "EventMethod: Could not determine class name for decorator on method:",
               context.name,
             );
             return;
           }
 
-          if (!_rpcMethods.has(className)) _rpcMethods.set(className, new Set());
-          _rpcMethods.get(className).add(context.name);
+          if (!_eventMethods.has(className)) _eventMethods.set(className, new Set());
+          _eventMethods.get(className).add(context.name);
         });
       }
 
       class TestClass2 {
-        @rpcMethod
+        @eventMethod
         static staticMethod() {
           return "static";
         }
       }
 
-      const result = _rpcMethods.has("TestClass2") && _rpcMethods.get("TestClass2").has("staticMethod");
+      const result = _eventMethods.has("TestClass2") && _eventMethods.get("TestClass2").has("staticMethod");
     `;
 
     const output = await transformCode(input);
     expect(output).toBeTruthy();
-    expect(output).toContain('function rpcMethod');
+    expect(output).toContain('function eventMethod');
     expect(output).toContain('static {');
-    expect(output).not.toContain('@rpcMethod');
+    expect(output).not.toContain('@eventMethod');
     
     // Static method decorators should use _initClass
     expect(output).toContain('_initClass');
@@ -122,26 +122,26 @@ describe('Class Name Access in Method Decorator', () => {
 
   it('should work for multiple methods on the same class', async () => {
     const input = `
-      const _rpcMethods = new Map();
+      const _eventMethods = new Map();
 
-      function rpcMethod(_, context) {
+      function eventMethod(_, context) {
         context.addInitializer(function () {
           const className =
             typeof this === "function" ? this.name : this.constructor.name;
 
-          if (!_rpcMethods.has(className)) _rpcMethods.set(className, new Set());
-          _rpcMethods.get(className).add(context.name);
+          if (!_eventMethods.has(className)) _eventMethods.set(className, new Set());
+          _eventMethods.get(className).add(context.name);
         });
       }
 
       class MultiMethodClass {
-        @rpcMethod
+        @eventMethod
         method1() {}
 
-        @rpcMethod
+        @eventMethod
         method2() {}
 
-        @rpcMethod
+        @eventMethod
         static staticMethod1() {}
       }
 
